@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+
+# Node/Angular
+node_modules/
+dist/
+.angular/
+.cache/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Databases & Cache
+*.sqlite3
+*.sqlite
+*.db
+clickhouse_data/
+clickhouse_data_old/
+
+# Datasets & Large files
+dataset/
+repomix-output.xml
+
+# IDEs & System
+.idea/
+.DS_Store
+Thumbs.db

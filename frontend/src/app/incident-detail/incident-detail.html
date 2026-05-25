@@ -1,0 +1,649 @@
+<div class="flex bg-background font-body-md text-on-background h-screen overflow-hidden w-full">
+
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden">
+
+    <!-- TopNavBar -->
+    <header class="sticky top-0 bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center h-16 w-full px-lg z-40">
+      <div class="flex items-center gap-3">
+        <button (click)="goBack()" class="p-1.5 rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant">
+          <span class="material-symbols-outlined text-xl notranslate" translate="no">arrow_back</span>
+        </button>
+        <span class="font-headline-md text-headline-md font-black tracking-tight text-primary">SafeCity Intelligence</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="relative hidden lg:block">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+          <input class="pl-9 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full text-body-sm text-on-surface focus:outline-none focus:border-primary w-64" placeholder="Search cases..." type="text"/>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-all">
+            <span class="material-symbols-outlined notranslate" translate="no">notifications</span>
+          </button>
+          <button class="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-all">
+            <span class="material-symbols-outlined notranslate" translate="no">history</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 overflow-y-auto p-lg bg-surface">
+
+      <!-- LOADING STATE -->
+      @if (isLoading) {
+        <div class="mb-lg bg-surface-container-lowest border border-outline-variant rounded-lg p-lg shadow-sm">
+          <div class="skeleton h-8 w-64 mb-3 rounded"></div>
+          <div class="skeleton h-6 w-48 mb-2 rounded"></div>
+          <div class="skeleton h-4 w-80 rounded"></div>
+        </div>
+        <div class="grid grid-cols-12 gap-lg">
+          <div class="col-span-12 xl:col-span-8 space-y-lg">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-lg shadow-sm space-y-4">
+              @for (i of [1,2,3,4]; track i) {
+                <div class="skeleton h-20 w-full rounded"></div>
+              }
+            </div>
+          </div>
+          <div class="col-span-12 xl:col-span-4 space-y-lg">
+            <div class="skeleton h-48 w-full rounded-lg"></div>
+            <div class="skeleton h-36 w-full rounded-lg"></div>
+          </div>
+        </div>
+      }
+
+      <!-- ERROR STATE -->
+      @if (hasError && !isLoading) {
+        <div class="flex flex-col items-center justify-center min-h-[50vh] gap-4 text-center">
+          <span class="material-symbols-outlined text-error text-6xl notranslate" translate="no">error_outline</span>
+          <h2 class="font-headline-md text-headline-md text-on-surface">Incident Not Found</h2>
+          <p class="font-body-md text-body-md text-on-surface-variant">Case #{{ caseNumber }} could not be retrieved from the database.</p>
+          <button (click)="goBack()" class="px-6 py-2.5 bg-primary text-on-primary font-headline-sm rounded-lg hover:bg-primary-container transition-colors">
+            Back to Incidents
+          </button>
+        </div>
+      }
+
+      <!-- INCIDENT DATA -->
+      @if (incident && !isLoading) {
+
+        <!-- Header Card -->
+        <div class="mb-lg bg-surface-container-lowest border border-outline-variant rounded-lg p-lg shadow-sm">
+          <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+            <div>
+              <div class="flex flex-wrap items-center gap-3 mb-2">
+                <span [class]="'font-label-caps text-label-caps px-2.5 py-1 rounded font-bold tracking-wider ' + getSeverityClass()">
+                  {{ incident.severity }}
+                </span>
+                @if (incident.domestic) {
+                  <span class="font-label-caps text-label-caps px-2.5 py-1 rounded font-bold tracking-wider bg-tertiary-container text-on-tertiary-container">
+                    DOMESTIC
+                  </span>
+                }
+                <h2 class="font-display-lg text-display-lg text-primary">Case #{{ incident.case_number }}</h2>
+              </div>
+              <h3 class="font-headline-md text-headline-md text-on-surface mb-1">{{ incident.primary_type }}</h3>
+              <p class="font-body-md text-body-md text-on-surface-variant">{{ incident.description }}</p>
+              <p class="font-body-md text-body-md text-secondary mt-1">
+                Judicial Status:
+                <span [class]="'font-bold ' + (incident.arrest ? 'text-on-secondary-container' : 'text-error')">
+                  {{ incident.status_label }}
+                </span>
+              </p>
+            </div>
+            <div class="flex gap-3 shrink-0">
+              <button (click)="goBack()" class="px-4 py-2 border border-outline text-secondary font-headline-sm rounded-lg hover:bg-surface-container-low transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg notranslate" translate="no">arrow_back</span>
+                All Incidents
+              </button>
+              <button (click)="editIncident()" class="px-4 py-2 bg-secondary-container text-on-secondary-container font-headline-sm rounded-lg hover:opacity-90 transition-colors shadow-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg notranslate" translate="no">edit</span>
+                Edit
+              </button>
+              <button (click)="confirmDelete()" class="px-4 py-2 bg-error-container text-on-error-container font-headline-sm rounded-lg hover:opacity-90 transition-colors shadow-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg notranslate" translate="no">delete</span>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-12 gap-lg">
+
+          <!-- LEFT: Timeline + Field Data -->
+          <div class="col-span-12 xl:col-span-8 space-y-lg">
+
+            <!-- Case Tracking Timeline (dynamic mixed data) -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
+              <div class="px-md py-3 border-b border-outline-variant flex justify-between items-center bg-surface-bright rounded-t-lg">
+                <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+                  <span class="material-symbols-outlined notranslate" translate="no">timeline</span>
+                  Case Tracking & Progress Logs
+                </h3>
+                <span class="font-label-caps text-label-caps text-outline">LATEST UPDATES</span>
+              </div>
+              <div class="p-lg">
+                <div class="relative border-l-2 border-surface-container-high ml-4 space-y-8">
+
+                  @for (log of timelineLogs; track log.id_log) {
+                    <div class="relative pl-6">
+                      <!-- Select circle color based on the log action -->
+                      @if (log.accion === 'Nota de Progreso') {
+                        <div class="absolute -left-2 top-1.5 w-4 h-4 rounded-full bg-primary ring-4 ring-primary/20 shadow-[0_0_10px_rgba(6,182,212,0.8)] animate-pulse"></div>
+                      } @else if (log.accion === 'Arresto Realizado') {
+                        <div class="absolute -left-2 top-1.5 w-4 h-4 rounded-full bg-success ring-4 ring-success/20"></div>
+                      } @else if (log.accion === 'Creación de Caso') {
+                        <div class="absolute -left-2 top-1.5 w-4 h-4 rounded-full bg-surface-variant ring-4 ring-surface-container-lowest border-2 border-outline-variant"></div>
+                      } @else {
+                        <div class="absolute -left-2 top-1.5 w-4 h-4 rounded-full bg-secondary ring-4 ring-secondary/20"></div>
+                      }
+
+                      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1.5 gap-1.5">
+                        <div class="flex items-center gap-2">
+                          <h4 class="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-1.5">
+                            <!-- Select icon based on action -->
+                            @if (log.accion === 'Nota de Progreso') {
+                              <span class="material-symbols-outlined text-primary text-[18px] notranslate" translate="no">edit_note</span>
+                            } @else if (log.accion === 'Arresto Realizado') {
+                              <span class="material-symbols-outlined text-success text-[18px] notranslate" translate="no">gavel</span>
+                            } @else if (log.accion === 'Creación de Caso') {
+                              <span class="material-symbols-outlined text-on-surface-variant text-[18px] notranslate" translate="no">fiber_new</span>
+                            } @else if (log.accion === 'Evidencia Asegurada') {
+                              <span class="material-symbols-outlined text-secondary text-[18px] notranslate" translate="no">inventory_2</span>
+                            } @else if (log.accion === 'Sospechoso Vinculado') {
+                              <span class="material-symbols-outlined text-error text-[18px] notranslate" translate="no">person_alert</span>
+                            } @else if (log.accion === 'Declaración Tomada') {
+                              <span class="material-symbols-outlined text-tertiary text-[18px] notranslate" translate="no">record_voice_over</span>
+                            } @else if (log.accion === 'Víctima Registrada') {
+                              <span class="material-symbols-outlined text-primary text-[18px] notranslate" translate="no">volunteer_activism</span>
+                            } @else {
+                              <span class="material-symbols-outlined text-outline text-[18px] notranslate" translate="no">info</span>
+                            }
+                            {{ log.accion }}
+                          </h4>
+                        </div>
+                        <span class="font-data-mono text-data-mono text-secondary text-[11px]">{{ log.fecha | date:'MMM d, y · HH:mm' }}</span>
+                      </div>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant mb-2">
+                        {{ log.comentario }}
+                      </p>
+                      <div class="flex items-center gap-2.5 text-xs text-outline select-none">
+                        <span class="material-symbols-outlined text-[14px] notranslate" translate="no">account_circle</span>
+                        <span class="font-semibold text-secondary-variant">{{ log.oficial }}</span>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="text-center py-6 text-on-surface-variant text-body-md">
+                      No hay registros ni notas de seguimiento disponibles para este caso.
+                    </div>
+                  }
+
+                </div>
+
+                <!-- Sleek Add Note Form -->
+                <div class="mt-8 border-t border-outline-variant pt-6 bg-surface/10 p-md rounded-xl border border-outline-variant/40 shadow-sm relative overflow-hidden backdrop-blur-sm">
+                  <div class="absolute right-0 top-0 w-1.5 h-full bg-primary/20"></div>
+                  
+                  <h4 class="font-headline-sm text-headline-sm text-primary mb-3 flex items-center gap-2 font-bold select-none">
+                    <span class="material-symbols-outlined notranslate" translate="no">rate_review</span>
+                    Añadir Nota de Seguimiento
+                  </h4>
+                  
+                  <div class="flex flex-col gap-3">
+                    <textarea 
+                      [(ngModel)]="newNoteComment" 
+                      rows="3" 
+                      placeholder="Escribe aquí los últimos avances de la investigación criminal..."
+                      class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary text-xs font-semibold leading-relaxed transition-all shadow-inner placeholder:text-on-surface-variant/40"
+                      [disabled]="isSavingNote"
+                    ></textarea>
+
+                    @if (noteError) {
+                      <div class="text-error font-semibold text-xs flex items-center gap-1.5 mt-1 font-bold">
+                        <span class="material-symbols-outlined text-sm notranslate" translate="no">error</span>
+                        {{ noteError }}
+                      </div>
+                    }
+
+                    <div class="flex justify-between items-center mt-1">
+                      <div class="flex items-center gap-2 text-[10px] text-outline font-bold uppercase select-none">
+                        <span class="material-symbols-outlined text-sm text-primary notranslate" translate="no">account_circle</span>
+                        <span>Autor: {{ authService.getOfficerName() }}</span>
+                      </div>
+                      
+                      <button 
+                        (click)="addNote()" 
+                        [disabled]="isSavingNote || !newNoteComment.trim()"
+                        class="px-5 py-2.5 bg-primary hover:bg-primary/95 text-on-primary rounded-lg font-bold text-xs flex items-center gap-2 transition-all shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed select-none"
+                      >
+                        @if (isSavingNote) {
+                          <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                          Guardando Nota...
+                        } @else {
+                          <span class="material-symbols-outlined text-sm notranslate" translate="no">send</span>
+                          Registrar Avance
+                        }
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Field Details Card -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
+              <div class="px-md py-3 border-b border-outline-variant flex justify-between items-center bg-surface-bright rounded-t-lg">
+                <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+                  <span class="material-symbols-outlined notranslate" translate="no">info</span>
+                  Incident Field Data
+                </h3>
+                <span class="font-data-mono text-data-mono text-outline">RAW RECORD</span>
+              </div>
+              <div class="divide-y divide-outline-variant">
+                <div class="detail-row grid grid-cols-2 gap-4 px-md py-3">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Case Number</span>
+                  <span class="font-data-mono text-data-mono text-primary font-medium">{{ incident.case_number }}</span>
+                </div>
+                <div class="detail-row grid grid-cols-2 gap-4 px-md py-3">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Date & Time</span>
+                  <span class="font-body-sm text-body-sm text-on-surface">{{ incident.date | date:'MMMM d, y — HH:mm' }}</span>
+                </div>
+                <div class="detail-row grid grid-cols-2 gap-4 px-md py-3">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Block / Location</span>
+                  <span class="font-body-sm text-body-sm text-on-surface">{{ incident.block }}</span>
+                </div>
+                <div class="detail-row grid grid-cols-2 gap-4 px-md py-3">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Location Type</span>
+                  <span class="font-body-sm text-body-sm text-on-surface">{{ incident.location_description || 'N/A' }}</span>
+                </div>
+                <div class="detail-row grid grid-cols-2 gap-4 px-md py-3">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">IUCR Code</span>
+                  <span class="font-data-mono text-data-mono text-on-surface">{{ incident.iucr }}</span>
+                </div>
+                <div class="detail-row grid grid-cols-2 gap-4 px-md py-3">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">FBI Code</span>
+                  <span class="font-data-mono text-data-mono text-on-surface">{{ incident.fbi_code }} — {{ getFbiCodeLabel() }}</span>
+                </div>
+                <div class="detail-row grid grid-cols-2 gap-4 px-md py-3">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">District / Beat</span>
+                  <span class="font-body-sm text-body-sm text-on-surface">D-{{ incident.district }} / Beat {{ incident.beat }}</span>
+                </div>
+                <div class="detail-row grid grid-cols-2 gap-4 px-md py-3">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Ward / Community</span>
+                  <span class="font-body-sm text-body-sm text-on-surface">Ward {{ incident.ward }}, Area {{ incident.community_area }}</span>
+                </div>
+                <div class="detail-row grid grid-cols-2 gap-4 px-md py-3">
+                  <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Coordinates</span>
+                  <span class="font-data-mono text-data-mono text-on-surface text-[11px]">
+                    @if (incident.latitude && incident.longitude) {
+                      {{ incident.latitude }}, {{ incident.longitude }}
+                    } @else {
+                      Not available
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Criminal Intelligence Associations -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
+              <div class="px-md py-3 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+                <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+                  <span class="material-symbols-outlined notranslate" translate="no">groups</span>
+                  Inteligencia Criminal Asociada
+                </h3>
+                <span class="font-label-caps text-label-caps text-secondary bg-surface-container-high px-2 py-0.5 rounded">
+                  {{ (incident.suspects?.length || 0) + (incident.evidence?.length || 0) + (incident.witnesses?.length || 0) + (incident.victims?.length || 0) }} Registros
+                </span>
+              </div>
+              <div class="p-lg space-y-lg">
+                
+                <!-- SUSPECTS SECTION -->
+                <div>
+                  <h4 class="font-headline-sm text-headline-sm text-secondary mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg notranslate" translate="no">person_alert</span>
+                    Sospechosos Investigados
+                  </h4>
+                  @if (incident.suspects && incident.suspects.length > 0) {
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                      @for (suspect of incident.suspects; track suspect.id_sospechoso) {
+                        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-md relative overflow-hidden flex flex-col justify-between">
+                          <!-- Background Accent -->
+                          <div class="absolute right-0 top-0 w-2 h-full bg-error animate-pulse"></div>
+                          
+                          <div>
+                            <div class="flex justify-between items-start mb-2 pr-4">
+                              <div>
+                                <h5 class="font-headline-sm text-headline-sm text-on-surface font-semibold">{{ suspect.nombres }}</h5>
+                                @if (suspect.alias_conocido) {
+                                  <p class="text-body-sm font-medium text-tertiary">Alias: "{{ suspect.alias_conocido }}"</p>
+                                }
+                              </div>
+                              <span class="font-label-caps text-label-caps px-2 py-0.5 rounded font-bold text-[10px] bg-error-container text-on-error-container">
+                                SOSPECHOSO
+                              </span>
+                            </div>
+                            
+                            <div class="space-y-1 text-body-sm text-on-surface-variant mb-3">
+                              <p><strong class="text-on-surface">Identificación:</strong> {{ suspect.identificacion || 'N/A' }}</p>
+                              <p><strong class="text-on-surface">Banda Criminal:</strong> 
+                                <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant">
+                                  {{ suspect.nombre_banda }}
+                                </span>
+                              </p>
+                              <p><strong class="text-on-surface">Detalles Fisiológicos:</strong> {{ suspect.genero }}, Nacido en {{ suspect.fecha_nacimiento | date:'yyyy' }}</p>
+                              @if (suspect.antecedentes) {
+                                <p class="text-error font-medium flex items-center gap-1">
+                                  <span class="material-symbols-outlined text-sm notranslate" translate="no">warning</span>
+                                  Posee antecedentes penales
+                                </p>
+                              }
+                            </div>
+                          </div>
+
+                          @if (suspect.declaracion) {
+                            <div class="bg-surface-container-high rounded p-2.5 border border-outline-variant mt-2">
+                              <p class="font-label-caps text-label-caps text-outline text-[9px] mb-1">DECLARACIÓN DEL SOSPECHOSO</p>
+                              <p class="text-body-sm italic text-on-surface-variant font-serif">"{{ suspect.declaracion }}"</p>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="bg-surface-container rounded-lg p-md text-center border border-outline-variant border-dashed">
+                      <p class="text-body-sm text-on-surface-variant">No hay sospechosos fichados para este incidente.</p>
+                    </div>
+                  }
+                </div>
+
+                <hr class="border-outline-variant" />
+
+                <!-- WITNESSES & VICTIMS SECTION -->
+                <div>
+                  <h4 class="font-headline-sm text-headline-sm text-secondary mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg notranslate" translate="no">record_voice_over</span>
+                    Declarantes (Testigos y Víctimas)
+                  </h4>
+                  
+                  <!-- Witnesses sub-list -->
+                  @if ((incident.witnesses && incident.witnesses.length > 0) || (incident.victims && incident.victims.length > 0)) {
+                    <div class="space-y-4">
+                      
+                      <!-- Victims -->
+                      @if (incident.victims && incident.victims.length > 0) {
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                          @for (victim of incident.victims; track victim.id_victima) {
+                            <div class="bg-surface-container-low border border-outline-variant rounded-lg p-md relative overflow-hidden">
+                              <div class="absolute right-0 top-0 w-2 h-full bg-primary"></div>
+                              <div class="flex justify-between items-start mb-2 pr-4">
+                                <div>
+                                  <h5 class="font-headline-sm text-headline-sm text-on-surface font-semibold">{{ victim.nombres }}</h5>
+                                  <p class="text-body-sm text-on-surface-variant font-mono">DNI: {{ victim.identificacion || 'N/A' }}</p>
+                                </div>
+                                <span class="font-label-caps text-label-caps px-2 py-0.5 rounded font-bold text-[10px] bg-primary-container text-on-primary-container">
+                                  VÍCTIMA
+                                </span>
+                              </div>
+                              <div class="space-y-1 text-body-sm text-on-surface-variant">
+                                <p><strong class="text-on-surface">Contacto:</strong> {{ victim.telefono || 'No registrado' }}</p>
+                                <p><strong class="text-on-surface">Dirección:</strong> {{ victim.direccion || 'N/A' }}</p>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      <!-- Witnesses -->
+                      @if (incident.witnesses && incident.witnesses.length > 0) {
+                        <div class="space-y-3">
+                          @for (witness of incident.witnesses; track witness.id_testigo) {
+                            <div class="bg-surface-container-low border border-outline-variant rounded-lg p-md relative overflow-hidden">
+                              <div class="absolute right-0 top-0 w-2 h-full bg-tertiary"></div>
+                              <div class="flex justify-between items-start mb-2 pr-4">
+                                <div>
+                                  <h5 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                                    {{ witness.es_anonimo ? 'Testigo Protegido (Anónimo)' : witness.nombres }}
+                                  </h5>
+                                  @if (!witness.es_anonimo) {
+                                    <p class="text-body-sm text-on-surface-variant">Contacto: {{ witness.telefono || 'No registrado' }}</p>
+                                  }
+                                </div>
+                                <span class="font-label-caps text-label-caps px-2 py-0.5 rounded font-bold text-[10px] bg-tertiary-container text-on-tertiary-container">
+                                  TESTIGO
+                                </span>
+                              </div>
+                              
+                              @if (witness.testimonio) {
+                                <div class="bg-surface-container-high rounded-lg p-3 border-l-4 border-tertiary/40 font-serif italic text-on-surface-variant text-body-md mt-2">
+                                  "{{ witness.testimonio }}"
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+
+                    </div>
+                  } @else {
+                    <div class="bg-surface-container rounded-lg p-md text-center border border-outline-variant border-dashed">
+                      <p class="text-body-sm text-on-surface-variant">No hay declaraciones de testigos ni víctimas para este incidente.</p>
+                    </div>
+                  }
+                </div>
+
+                <hr class="border-outline-variant" />
+
+                <!-- EVIDENCE SECTION -->
+                <div>
+                  <h4 class="font-headline-sm text-headline-sm text-secondary mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg notranslate" translate="no">inventory_2</span>
+                    Evidencias Registradas
+                  </h4>
+                  @if (incident.evidence && incident.evidence.length > 0) {
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                      @for (ev of incident.evidence; track ev.id_evidencia) {
+                        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-md relative overflow-hidden flex items-center gap-4">
+                          <!-- Accent Icon -->
+                          <div class="w-12 h-12 bg-[#3b82f6]/10 border border-[#3b82f6]/20 rounded-lg flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[#3b82f6] text-2xl notranslate" translate="no">fingerprint</span>
+                          </div>
+                          
+                          <div class="min-w-0 flex-1">
+                            <div class="flex justify-between items-start">
+                              <h5 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">{{ ev.tipo_evidencia }}</h5>
+                              <span class="font-data-mono text-data-mono text-[9px] text-outline">ID #{{ ev.id_evidencia }}</span>
+                            </div>
+                            <p class="text-body-sm text-on-surface-variant mt-1">
+                              <strong>Custodio:</strong> {{ ev.officer_name }}
+                            </p>
+                            <p class="text-[11px] text-secondary font-medium font-data-mono mt-0.5">
+                              Recogido: {{ ev.fecha_recoleccion | date:'MMM d, y · HH:mm' }}
+                            </p>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="bg-surface-container rounded-lg p-md text-center border border-outline-variant border-dashed">
+                      <p class="text-body-sm text-on-surface-variant">No se han registrado evidencias físicas para este caso.</p>
+                    </div>
+                  }
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT Column -->
+          <div class="col-span-12 xl:col-span-4 space-y-lg">
+
+            <!-- Incident Status Card -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
+              <div class="px-md py-3 border-b border-outline-variant bg-surface-bright rounded-t-lg">
+                <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+                  <span class="material-symbols-outlined notranslate" translate="no">shield</span>
+                  Incident Status
+                </h3>
+              </div>
+              <div class="p-md space-y-3">
+                <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-surface-variant">
+                  <span class="font-body-sm text-body-sm text-on-surface-variant">Arrest</span>
+                  <span [class]="'font-label-caps text-label-caps px-2.5 py-1 rounded font-bold ' + (incident.arrest ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container')">
+                    {{ incident.arrest ? 'MADE' : 'PENDING' }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-surface-variant">
+                  <span class="font-body-sm text-body-sm text-on-surface-variant">Domestic</span>
+                  <span [class]="'font-label-caps text-label-caps px-2.5 py-1 rounded font-bold ' + (incident.domestic ? 'bg-error-container text-on-error-container' : 'bg-surface-container-highest text-on-surface-variant')">
+                    {{ incident.domestic ? 'YES' : 'NO' }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-surface-variant">
+                  <span class="font-body-sm text-body-sm text-on-surface-variant">Severity</span>
+                  <span [class]="'font-label-caps text-label-caps px-2.5 py-1 rounded font-bold ' + getSeverityClass()">
+                    {{ incident.severity }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-surface-variant">
+                  <span class="font-body-sm text-body-sm text-on-surface-variant">Year</span>
+                  <span class="font-data-mono text-data-mono text-on-surface">{{ incident.year }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location Card -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
+              <div class="px-md py-3 border-b border-outline-variant bg-surface-bright rounded-t-lg">
+                <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+                  <span class="material-symbols-outlined notranslate" translate="no">location_on</span>
+                  Location Intel
+                </h3>
+              </div>
+              <div class="p-md space-y-2">
+                <div class="bg-surface-container rounded-lg p-3 border border-outline-variant">
+                  <p class="font-label-caps text-label-caps text-on-surface-variant mb-1">ADDRESS</p>
+                  <p class="font-body-sm text-body-sm text-on-surface font-medium">{{ incident.block }}</p>
+                </div>
+                <div class="bg-surface-container rounded-lg p-3 border border-outline-variant">
+                  <p class="font-label-caps text-label-caps text-on-surface-variant mb-1">LOCATION TYPE</p>
+                  <p class="font-body-sm text-body-sm text-on-surface">{{ incident.location_description || 'Not specified' }}</p>
+                </div>
+                <div class="bg-surface-container rounded-lg p-3 border border-outline-variant">
+                  <p class="font-label-caps text-label-caps text-on-surface-variant mb-1">DISTRICT / BEAT / WARD</p>
+                  <p class="font-data-mono text-data-mono text-on-surface">D-{{ incident.district }} · Beat {{ incident.beat }} · Ward {{ incident.ward }}</p>
+                </div>
+                @if (incident.latitude && incident.longitude) {
+                  <div class="bg-surface-container rounded-lg p-3 border border-outline-variant">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant mb-1">GPS COORDINATES</p>
+                    <p class="font-data-mono text-data-mono text-on-surface text-[11px]">{{ incident.latitude }}, {{ incident.longitude }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Evidence Log Card -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
+              <div class="px-md py-3 border-b border-outline-variant bg-surface-bright rounded-t-lg">
+                <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+                  <span class="material-symbols-outlined notranslate" translate="no">inventory_2</span>
+                  Classification Log
+                </h3>
+              </div>
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-surface border-b border-outline-variant">
+                    <th class="font-label-caps text-label-caps text-secondary py-2 px-md font-normal">FIELD</th>
+                    <th class="font-label-caps text-label-caps text-secondary py-2 px-md font-normal text-right">VALUE</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant">
+                  <tr>
+                    <td class="py-3 px-md font-body-sm text-body-sm text-on-surface-variant">Primary Type</td>
+                    <td class="py-3 px-md text-right">
+                      <span class="font-label-caps text-label-caps text-primary bg-primary-fixed px-2 py-1 rounded">{{ incident.primary_type }}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-3 px-md font-body-sm text-body-sm text-on-surface-variant">IUCR</td>
+                    <td class="py-3 px-md text-right">
+                      <span class="font-data-mono text-data-mono text-on-surface-variant bg-surface-container-high px-2 py-1 rounded">{{ incident.iucr }}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-3 px-md font-body-sm text-body-sm text-on-surface-variant">FBI Code</td>
+                    <td class="py-3 px-md text-right">
+                      <span class="font-data-mono text-data-mono text-on-surface-variant bg-surface-container-high px-2 py-1 rounded">{{ incident.fbi_code }}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-3 px-md font-body-sm text-body-sm text-on-surface-variant">Description</td>
+                    <td class="py-3 px-md text-right font-body-sm text-body-sm text-on-surface">{{ incident.description }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      }
+
+    </main>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+@if (showDeleteModal) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" (click)="cancelDelete()">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-2xl w-full max-w-md p-lg" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="flex items-center gap-3 mb-md">
+        <div class="w-10 h-10 bg-error-container rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined text-error notranslate" translate="no">warning</span>
+        </div>
+        <div>
+          <h3 class="font-headline-sm text-headline-sm text-on-surface">Confirm Deletion</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">This action cannot be undone</p>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="bg-error-container/30 border border-error/20 rounded-lg p-md mb-md">
+        <p class="font-body-md text-body-md text-on-surface">
+          You are about to permanently delete incident
+          <span class="font-bold font-data-mono text-error">#{{ caseNumber }}</span>.
+          This record will be removed from ClickHouse and cannot be recovered.
+        </p>
+      </div>
+
+      @if (deleteError) {
+        <div class="bg-error-container border border-error/30 rounded-lg p-3 mb-md">
+          <p class="font-body-sm text-body-sm text-on-error-container">{{ deleteError }}</p>
+        </div>
+      }
+
+      <!-- Modal Actions -->
+      <div class="flex gap-3 justify-end">
+        <button (click)="cancelDelete()" [disabled]="isDeleting"
+          class="px-4 py-2 border border-outline text-on-surface font-headline-sm rounded-lg hover:bg-surface-container-low transition-colors disabled:opacity-50">
+          Cancel
+        </button>
+        <button (click)="executeDelete()" [disabled]="isDeleting"
+          class="px-4 py-2 bg-error text-on-error font-headline-sm rounded-lg hover:opacity-90 transition-colors flex items-center gap-2 disabled:opacity-50 min-w-[120px] justify-center">
+          @if (isDeleting) {
+            <span class="material-symbols-outlined text-lg animate-spin notranslate" translate="no">progress_activity</span>
+            Deleting...
+          } @else {
+            <span class="material-symbols-outlined text-lg notranslate" translate="no">delete_forever</span>
+            Delete Record
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

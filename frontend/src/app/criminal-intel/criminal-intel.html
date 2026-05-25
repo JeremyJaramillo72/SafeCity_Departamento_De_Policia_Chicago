@@ -1,0 +1,882 @@
+<div class="flex bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden relative">
+        <!-- TopNavBar Component -->
+        <header class="sticky top-0 bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-on-surface-variant flex justify-between items-center h-16 w-full px-lg z-40">
+            <!-- Brand -->
+            <div class="flex items-center gap-4">
+                <span class="font-headline-md text-headline-md font-black tracking-tight text-primary dark:text-primary-fixed">SafeCity Intelligence</span>
+            </div>
+            <!-- Actions -->
+            <div class="flex items-center gap-6">
+                <div class="relative hidden lg:block">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+                    <input class="pl-9 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Buscar inteligencia..." type="text"/>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all">
+                        <span class="material-symbols-outlined notranslate" translate="no">notifications</span>
+                    </button>
+                </div>
+                <div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
+                    <img alt="Officer Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVZCFb_VW_PmEcwto3luZFMSKOxh1BHw879119sxZhYwIrmO9gD3gU6wCFhyQPaE0p7UwDvmKcuA0pe4KJ0hCmJkogNz_1vjSxrGayA7Iyx6QhFgrACkEY6WoqCi15tET9WVhdmPknHND6q_ba-yajyLWTPaJp4Nyl9nnNKB_GYbaRSpi95tdm1o0xa2pMJEyRK7GHikT9TaQbIH-VuEbryhgYBr6VbBfABW8ADzdESdw9mbQr9iV85a6uQQXs6dz16IEh3emy_-vA"/>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Canvas -->
+        <main class="flex-1 overflow-hidden p-md lg:p-lg flex flex-col gap-md max-w-[1600px] w-full mx-auto">
+            
+            <div class="flex justify-between items-center gap-4 shrink-0">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h2 class="font-display-lg text-display-lg text-primary flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[28px] text-primary notranslate" translate="no">groups</span>
+                            Inteligencia Criminal
+                        </h2>
+                        <button (click)="toggleKpis()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 transition-all font-semibold text-xs cursor-pointer select-none" title="Alternar Resumen de KPIs">
+                            <span class="material-symbols-outlined text-[16px] transition-transform duration-300 notranslate" [ngClass]="{'rotate-180': !showKpis}" translate="no">expand_less</span>
+                            <span>{{ showKpis ? 'Ocultar Resumen' : 'Mostrar Resumen' }}</span>
+                        </button>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-secondary mt-0.5">Archivo táctico de sospechosos, bandas delictivas, lockers de evidencias, víctimas y testigos vinculados a incidentes.</p>
+                </div>
+            </div>
+
+            <!-- Modern Collapsible KPI & Analytics Panel using pure CSS grid transition -->
+            <div class="collapsible-grid shrink-0" [ngClass]="{'expanded': showKpis}">
+                <div class="collapsible-content">
+                    @if (isLoading) {
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-md pb-xs">
+                            @for (i of [1,2,3,4]; track i) {
+                                <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm h-[60px] skeleton animate-pulse"></div>
+                            }
+                        </div>
+                    } @else {
+                        <!-- KPI Section -->
+                        <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-md pb-xs animate-fade-in">
+                            <!-- Suspects KPI -->
+                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">person_pin</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Sospechosos</span>
+                                        <span class="text-lg font-black text-on-surface block mt-0.5">{{ suspects.length }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide bg-error-container text-on-error-container border border-error/10 inline-flex items-center">
+                                        <span class="w-1 h-1 rounded-full mr-1 bg-error animate-pulse"></span>
+                                        FICHADOS
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Gangs KPI -->
+                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">security</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Bandas</span>
+                                        <span class="text-lg font-black text-on-surface block mt-0.5">{{ gangs.length }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide bg-secondary-container text-on-secondary-container border border-secondary/10 inline-flex items-center">
+                                        <span class="w-1 h-1 rounded-full mr-1 bg-secondary"></span>
+                                        BAJO MONITOREO
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Evidences KPI -->
+                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">inventory</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Evidencias</span>
+                                        <span class="text-lg font-black text-on-surface block mt-0.5">{{ evidences.length }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide bg-secondary-container text-on-secondary-container border border-secondary/10 inline-flex items-center">
+                                        <span class="w-1 h-1 rounded-full mr-1 bg-secondary"></span>
+                                        EN BÓVEDA
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Statements KPI -->
+                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">forum</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Declaraciones</span>
+                                        <span class="text-lg font-black text-on-surface block mt-0.5">{{ witnesses.length + victims.length }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide bg-secondary-container text-on-secondary-container border border-secondary/10 inline-flex items-center">
+                                        <span class="w-1 h-1 rounded-full mr-1 bg-secondary"></span>
+                                        PROCESADAS
+                                    </span>
+                                </div>
+                            </div>
+                        </section>
+                    }
+                </div>
+            </div>
+
+            <!-- TAB SEGMENTED NAVIGATION BAR -->
+            <div class="bg-surface-container-low border border-outline-variant/65 p-1 rounded-xl flex gap-1 self-start shadow-sm shrink-0 z-10">
+                <button (click)="setActiveTab('suspects')" class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'suspects' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">person_search</span>
+                    Sospechosos y Bandas
+                </button>
+                <button (click)="setActiveTab('evidence')" class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'evidence' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">inventory_2</span>
+                    Bóveda de Evidencias
+                </button>
+                <button (click)="setActiveTab('witnesses')" class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'witnesses' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">record_voice_over</span>
+                    Testigos y Víctimas
+                </button>
+            </div>
+
+                <!-- ======================================================== -->
+                <!-- SUSPECTS & GANGS PANEL -->
+                <!-- ======================================================== -->
+                @if (activeTab === 'suspects') {
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-lg flex-1 min-h-0 animate-fade-in">
+                    <!-- Left: Suspect Roster (w-2/3) -->
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg lg:col-span-2 min-h-0">
+                        <div class="flex justify-between items-center mb-4 shrink-0">
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">person_pin</span>
+                                Sospechosos Vinculados a Casos
+                            </h3>
+                            <button (click)="openCreateSuspectModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm scale-98 active:scale-95 cursor-pointer text-xs">
+                                <span class="material-symbols-outlined text-xs font-black notranslate" translate="no">add</span> Añadir Sospechoso
+                            </button>
+                        </div>
+                        <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                    <tr>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Sospechoso</th>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Caso Incidente</th>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Banda Afiliada</th>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Ficha Técnica</th>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-surface-variant">
+                                    @for (s of suspects; track s.id_sospechoso) {
+                                    <tr class="hover:bg-surface-bright/50 transition-colors group">
+                                        <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-3">
+                                            <div class="flex flex-col">
+                                                <span class="font-bold text-on-surface capitalize">{{ s.nombres }}</span>
+                                                <span class="text-[10px] text-error font-bold tracking-wider uppercase">Alias: "{{ s.alias_conocido }}"</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <a [routerLink]="['/incidents', s.case_number]" class="font-data-mono text-data-mono text-primary font-bold hover:underline" title="Ver detalle del incidente">
+                                                {{ s.case_number }}
+                                            </a>
+                                        </td>
+                                        <td class="py-3 px-4 font-body-sm text-body-sm text-secondary flex items-center gap-2 mt-2">
+                                            <span class="material-symbols-outlined text-[16px] text-secondary notranslate" translate="no">shield</span>
+                                            {{ s.nombre_banda || 'Ninguna' }}
+                                        </td>
+                                        <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                                            <div class="flex flex-col gap-0.5 text-xs">
+                                                <span>DNI: {{ s.identificacion }} | G: {{ s.genero }}</span>
+                                                <span class="font-bold" [ngClass]="s.antecedentes ? 'text-error' : 'text-secondary'">
+                                                    {{ s.antecedentes ? 'Con Antecedentes' : 'Sin Antecedentes' }}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <button (click)="openEditSuspectModal(s)" class="text-primary hover:text-primary/80 mr-2 p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Editar Ficha">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
+                                            </button>
+                                            <button (click)="deleteSuspect(s.id_sospechoso, $event)" class="text-error hover:text-error/80 p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Eliminar Registro">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    } @empty {
+                                        <tr>
+                                            <td colspan="5" class="py-12 text-center text-on-surface-variant font-body-md">
+                                                No se encontraron sospechosos registrados.
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Criminal Gangs (w-1/3) -->
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg min-h-0">
+                        <div class="flex justify-between items-center mb-4 shrink-0">
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">security</span>
+                                Bandas Criminales
+                            </h3>
+                            <button (click)="openCreateGangModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 transition-all shadow-sm cursor-pointer text-xs">
+                                <span class="material-symbols-outlined text-xs font-black notranslate" translate="no">add</span> Añadir
+                            </button>
+                        </div>
+                        <div class="overflow-auto flex-1 min-h-0 divide-y divide-surface-variant">
+                            @for (g of gangs; track g.id_banda) {
+                            <div class="p-md hover:bg-surface-bright/50 transition-all flex justify-between items-center group">
+                                <div class="flex flex-col gap-1">
+                                    <span class="font-body-md text-body-md text-on-surface font-bold capitalize">{{ g.nombre_banda }}</span>
+                                    <span class="text-xs text-secondary-variant">Zona: <strong>{{ g.zona_operacion }}</strong></span>
+                                    <div class="mt-1">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] font-bold"
+                                              [ngClass]="{
+                                                'bg-error-container text-on-error-container': g.nivel_peligrosidad === 'Crítica' || g.nivel_peligrosidad === 'Alta',
+                                                'bg-secondary-container text-on-secondary-container': g.nivel_peligrosidad === 'Media' || g.nivel_peligrosidad === 'Baja'
+                                              }">
+                                            PELIGRO: {{ g.nivel_peligrosidad | uppercase }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                                    <button (click)="openEditGangModal(g)" class="text-primary hover:text-primary/80 mr-2 p-1 hover:bg-surface-container-high rounded-full cursor-pointer">
+                                        <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
+                                    </button>
+                                    <button (click)="deleteGang(g.id_banda, $event)" class="text-error hover:text-error/80 p-1 hover:bg-surface-container-high rounded-full cursor-pointer">
+                                        <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                            } @empty {
+                                <div class="py-12 text-center text-on-surface-variant font-body-md">
+                                    No hay bandas registradas.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                }
+
+                <!-- ======================================================== -->
+                <!-- EVIDENCE LOCKER PANEL -->
+                <!-- ======================================================== -->
+                @if (activeTab === 'evidence') {
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg flex-1 min-h-0 animate-fade-in">
+                    <div class="flex justify-between items-center mb-4 shrink-0">
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">inventory_2</span>
+                            Bóveda de Evidencias Incautadas
+                        </h3>
+                        <button (click)="openCreateEvidenceModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm scale-98 active:scale-95 cursor-pointer text-xs">
+                            <span class="material-symbols-outlined text-xs font-black notranslate" translate="no">add</span> Registrar Evidencia
+                        </button>
+                    </div>
+                    <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                <tr>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Evidencia Incautada</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Caso Relacionado</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Fecha Recolección</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Oficial Custodio</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-surface-variant">
+                                @for (ev of evidences; track ev.id_evidencia) {
+                                <tr class="hover:bg-surface-bright/50 transition-colors group">
+                                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface font-bold text-wrap max-w-sm flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary notranslate" translate="no">gavel</span>
+                                        {{ ev.tipo_evidencia }}
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <a [routerLink]="['/incidents', ev.case_number]" class="font-data-mono text-data-mono text-primary font-bold hover:underline">
+                                            {{ ev.case_number }}
+                                        </a>
+                                    </td>
+                                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-secondary">{{ ev.fecha_recoleccion }}</td>
+                                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                                        Ofc. {{ ev.officer_name }}
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <button (click)="openEditEvidenceModal(ev)" class="text-primary hover:text-primary/80 mr-3 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Editar Evidencia">
+                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">edit</span>
+                                        </button>
+                                        <button (click)="deleteEvidence(ev.id_evidencia, $event)" class="text-error hover:text-error/80 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Eliminar Registro">
+                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">delete</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                } @empty {
+                                    <tr>
+                                        <td colspan="5" class="py-12 text-center text-on-surface-variant font-body-md">
+                                            No hay evidencias registradas en la bóveda.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                }
+
+                <!-- ======================================================== -->
+                <!-- WITNESSES & VICTIMS PANEL -->
+                <!-- ======================================================== -->
+                @if (activeTab === 'witnesses') {
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg flex-1 min-h-0 animate-fade-in">
+                    <!-- Witnesses Card (w-1/2) -->
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg min-h-0 animate-fade-in">
+                        <div class="flex justify-between items-center mb-4 shrink-0">
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">record_voice_over</span>
+                                Registro de Testigos del Delito
+                            </h3>
+                            <button (click)="openCreateWitnessModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-2 px-3 rounded-lg flex items-center gap-1 transition-all shadow-sm cursor-pointer text-xs">
+                                <span class="material-symbols-outlined text-xs font-black notranslate" translate="no">add</span> Añadir Testigo
+                            </button>
+                        </div>
+                        <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                    <tr>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Testigo</th>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Caso / Testimonio</th>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-surface-variant">
+                                    @for (w of witnesses; track w.id_testigo) {
+                                    <tr class="hover:bg-surface-bright/50 transition-colors group">
+                                        <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-semibold">
+                                            <div class="flex flex-col">
+                                                <span>{{ w.nombres }}</span>
+                                                <span class="text-[10px] font-bold mt-1 px-2 py-0.5 rounded-full self-start" [ngClass]="w.es_anonimo ? 'bg-amber-container text-on-amber-container border border-amber/10' : 'bg-secondary-container text-on-secondary-container border border-secondary/10'">
+                                                    {{ w.es_anonimo ? 'ANÓNIMO' : 'PÚBLICO' }}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">
+                                            <a [routerLink]="['/incidents', w.case_number]" class="font-data-mono text-data-mono text-primary font-bold hover:underline mb-1 block">
+                                                {{ w.case_number }}
+                                            </a>
+                                            <p class="text-xs text-on-surface-variant italic bg-surface-container p-2 rounded border border-outline-variant/50 max-w-sm whitespace-normal text-wrap">
+                                                "{{ w.testimonio }}"
+                                            </p>
+                                        </td>
+                                        <td class="py-3 px-4 text-right whitespace-nowrap">
+                                            <button (click)="openEditWitnessModal(w)" class="text-primary hover:text-primary/80 mr-2 p-1 hover:bg-surface-container-high rounded-full cursor-pointer">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
+                                            </button>
+                                            <button (click)="deleteWitness(w.id_testigo, $event)" class="text-error hover:text-error/80 p-1 hover:bg-surface-container-high rounded-full cursor-pointer">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    } @empty {
+                                        <tr>
+                                            <td colspan="3" class="py-12 text-center text-on-surface-variant font-body-md">
+                                                No hay testigos registrados.
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Victims Card (w-1/2) -->
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg min-h-0 animate-fade-in">
+                        <div class="flex justify-between items-center mb-4 shrink-0">
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">volunteer_activism</span>
+                                Archivo de Víctimas Afectadas
+                            </h3>
+                            <button (click)="openCreateVictimModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-2 px-3 rounded-lg flex items-center gap-1 transition-all shadow-sm cursor-pointer text-xs">
+                                <span class="material-symbols-outlined text-xs font-black notranslate" translate="no">add</span> Registrar Víctima
+                            </button>
+                        </div>
+                        <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                    <tr>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Víctima</th>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Caso</th>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Datos Contacto</th>
+                                        <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-surface-variant">
+                                    @for (v of victims; track v.id_victima) {
+                                    <tr class="hover:bg-surface-bright/50 transition-colors group">
+                                        <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-semibold capitalize">
+                                            {{ v.nombres }}
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <a [routerLink]="['/incidents', v.case_number]" class="font-data-mono text-data-mono text-primary font-bold hover:underline">
+                                                {{ v.case_number }}
+                                            </a>
+                                        </td>
+                                        <td class="py-3 px-4 font-body-sm text-xs text-secondary-variant">
+                                            <div class="flex flex-col gap-0.5">
+                                                <span>Identificación: {{ v.identificacion }}</span>
+                                                <span>Tel: {{ v.telefono }}</span>
+                                                <span>Dir: {{ v.direccion }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 text-right whitespace-nowrap">
+                                            <button (click)="openEditVictimModal(v)" class="text-primary hover:text-primary/80 mr-2 p-1 hover:bg-surface-container-high rounded-full cursor-pointer">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
+                                            </button>
+                                            <button (click)="deleteVictim(v.id_victima, $event)" class="text-error hover:text-error/80 p-1 hover:bg-surface-container-high rounded-full cursor-pointer">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    } @empty {
+                                        <tr>
+                                            <td colspan="4" class="py-12 text-center text-on-surface-variant font-body-md">
+                                                No hay víctimas registradas.
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                }
+        </main>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- SOSPECHOSO MODAL -->
+<!-- ======================================================================= -->
+@if (showSuspectModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="premium-modal-container w-full max-w-md">
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-primary notranslate" translate="no">{{ isEditingSuspect ? 'edit' : 'person_add' }}</span>
+                {{ isEditingSuspect ? 'Editar Sospechoso' : 'Registrar Nuevo Sospechoso' }}
+            </h3>
+            <button (click)="closeSuspectModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Nombres Completos</label>
+                        <input type="text" [(ngModel)]="currentSuspect.nombres" placeholder="ej. John Doe" />
+                    </div>
+                    <div>
+                        <label>Alias / Apodo</label>
+                        <input type="text" [(ngModel)]="currentSuspect.alias_conocido" placeholder="ej. Blade" />
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Nro Identificación (DNI)</label>
+                        <input type="text" [(ngModel)]="currentSuspect.identificacion" placeholder="ej. ID-9842" />
+                    </div>
+                    <div>
+                        <label>Caso / Incidente (Case Number)</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   [(ngModel)]="currentSuspect.case_number" 
+                                   (input)="searchCases(currentSuspect.case_number)"
+                                   (focus)="searchCases(currentSuspect.case_number)"
+                                   placeholder="ej. G149281" />
+                            
+                            @if (showCaseSuggestions && caseSuggestions.length > 0) {
+                                <div class="absolute left-0 right-0 mt-1 bg-surface-container-high border border-outline-variant rounded-lg shadow-lg z-[200] max-h-48 overflow-y-auto">
+                                    @for (sug of caseSuggestions; track sug.case_number) {
+                                        <button type="button" 
+                                                (click)="selectCaseNumber(sug.case_number, 'suspect')" 
+                                                class="w-full text-left px-3 py-2 hover:bg-primary/5 text-xs text-on-surface flex justify-between items-center transition-colors border-b border-outline-variant/35 last:border-b-0 cursor-pointer">
+                                            <div class="flex flex-col">
+                                                <span class="font-bold text-primary">{{ sug.case_number }}</span>
+                                                <span class="text-[10px] text-on-surface-variant capitalize">{{ sug.primary_type | lowercase }}</span>
+                                            </div>
+                                            <span class="material-symbols-outlined text-[14px] text-primary/50 notranslate" translate="no">arrow_forward</span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1.5">Género</label>
+                        <select [(ngModel)]="currentSuspect.genero" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-semibold">
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1.5">Banda Criminal</label>
+                        <select [(ngModel)]="currentSuspect.id_banda" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-semibold">
+                            <option [value]="0">Ninguna</option>
+                            @for (g of gangs; track g.id_banda) {
+                                <option [value]="g.id_banda">{{ g.nombre_banda }}</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1.5">Teléfono</label>
+                        <input type="text" [(ngModel)]="currentSuspect.telefono" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1.5">Fecha Nacimiento</label>
+                        <input type="date" [(ngModel)]="currentSuspect.fecha_nacimiento" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1.5">Dirección Domiciliaria</label>
+                    <input type="text" [(ngModel)]="currentSuspect.direccion" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs" />
+                </div>
+                <div class="flex items-center gap-2 mt-1">
+                    <input type="checkbox" id="antecedentes" [(ngModel)]="currentSuspect.antecedentes" class="w-4 h-4 bg-surface-container border border-outline-variant text-primary rounded" />
+                    <label for="antecedentes" class="text-xs font-bold text-on-surface select-none">¿Posee antecedentes criminales previos?</label>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1.5">Declaración / Testimonio del sospechoso</label>
+                    <textarea rows="3" [(ngModel)]="currentSuspect.declaracion" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs" placeholder="Detalle la declaración tomada..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeSuspectModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+            <button (click)="saveSuspect()" [disabled]="isSavingSuspect" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold">
+                @if (isSavingSuspect) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Guardar Sospechoso
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ======================================================================= -->
+<!-- BANDA CRIMINAL MODAL -->
+<!-- ======================================================================= -->
+@if (showGangModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="premium-modal-container w-full max-w-sm">
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-primary notranslate" translate="no">{{ isEditingGang ? 'edit' : 'security' }}</span>
+                {{ isEditingGang ? 'Editar Banda' : 'Añadir Banda Criminal' }}
+            </h3>
+            <button (click)="closeGangModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1.5">Nombre de la Banda</label>
+                    <input type="text" [(ngModel)]="currentGang.nombre_banda" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs" />
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1.5">Zona de Operación</label>
+                    <input type="text" [(ngModel)]="currentGang.zona_operacion" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs" placeholder="ej. Chicago West Sector" />
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1.5">Nivel de Peligrosidad</label>
+                    <select [(ngModel)]="currentGang.nivel_peligrosidad" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary text-xs font-semibold">
+                        <option value="Baja">Baja</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Crítica">Crítica</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeGangModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+            <button (click)="saveGang()" [disabled]="isSavingGang" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold">
+                @if (isSavingGang) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Guardar Banda
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ======================================================================= -->
+<!-- EVIDENCIA MODAL -->
+<!-- ======================================================================= -->
+@if (showEvidenceModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="premium-modal-container w-full max-w-sm">
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-primary notranslate" translate="no">{{ isEditingEvidence ? 'edit' : 'inventory_2' }}</span>
+                {{ isEditingEvidence ? 'Editar Evidencia' : 'Registrar Evidencia' }}
+            </h3>
+            <button (click)="closeEvidenceModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label>Caso Relacionado (Case Number)</label>
+                    <div class="relative">
+                        <input type="text" 
+                               [(ngModel)]="currentEvidence.case_number" 
+                               (input)="searchCases(currentEvidence.case_number)"
+                               (focus)="searchCases(currentEvidence.case_number)"
+                               placeholder="ej. G149281" />
+                        
+                        @if (showCaseSuggestions && caseSuggestions.length > 0) {
+                            <div class="absolute left-0 right-0 mt-1 bg-surface-container-high border border-outline-variant rounded-lg shadow-lg z-[200] max-h-48 overflow-y-auto">
+                                @for (sug of caseSuggestions; track sug.case_number) {
+                                    <button type="button" 
+                                            (click)="selectCaseNumber(sug.case_number, 'evidence')" 
+                                            class="w-full text-left px-3 py-2 hover:bg-primary/5 text-xs text-on-surface flex justify-between items-center transition-colors border-b border-outline-variant/35 last:border-b-0 cursor-pointer">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-primary">{{ sug.case_number }}</span>
+                                            <span class="text-[10px] text-on-surface-variant capitalize">{{ sug.primary_type | lowercase }}</span>
+                                        </div>
+                                        <span class="material-symbols-outlined text-[14px] text-primary/50 notranslate" translate="no">arrow_forward</span>
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div>
+                    <label>Descripción de la Evidencia</label>
+                    <textarea rows="3" [(ngModel)]="currentEvidence.tipo_evidencia" placeholder="Detalle los elementos confiscados, marca, serie, etc..."></textarea>
+                </div>
+                <div>
+                    <label>Oficial Custodio (En Sesión)</label>
+                    <div class="flex items-center gap-2.5 bg-primary/5 border border-primary/10 p-2.5 rounded-lg text-primary select-none mt-1">
+                        <span class="material-symbols-outlined text-[18px] notranslate" translate="no">account_circle</span>
+                        <span class="text-xs font-bold">{{ authService.getOfficerName() }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeEvidenceModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+            <button (click)="saveEvidence()" [disabled]="isSavingEvidence" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold">
+                @if (isSavingEvidence) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Guardar Evidencia
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ======================================================================= -->
+<!-- WITNESS MODAL -->
+<!-- ======================================================================= -->
+@if (showWitnessModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="premium-modal-container w-full max-w-md">
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-primary notranslate" translate="no">{{ isEditingWitness ? 'edit' : 'record_voice_over' }}</span>
+                {{ isEditingWitness ? 'Editar Testigo' : 'Registrar Testigo' }}
+            </h3>
+            <button (click)="closeWitnessModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Nombre Completo</label>
+                        <input type="text" [(ngModel)]="currentWitness.nombres" placeholder="ej. María López" />
+                    </div>
+                    <div>
+                        <label>Caso Relacionado</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   [(ngModel)]="currentWitness.case_number" 
+                                   (input)="searchCases(currentWitness.case_number)"
+                                   (focus)="searchCases(currentWitness.case_number)"
+                                   placeholder="ej. G149281" />
+                            
+                            @if (showCaseSuggestions && caseSuggestions.length > 0) {
+                                <div class="absolute left-0 right-0 mt-1 bg-surface-container-high border border-outline-variant rounded-lg shadow-lg z-[200] max-h-48 overflow-y-auto">
+                                    @for (sug of caseSuggestions; track sug.case_number) {
+                                        <button type="button" 
+                                                (click)="selectCaseNumber(sug.case_number, 'witness')" 
+                                                class="w-full text-left px-3 py-2 hover:bg-primary/5 text-xs text-on-surface flex justify-between items-center transition-colors border-b border-outline-variant/35 last:border-b-0 cursor-pointer">
+                                            <div class="flex flex-col">
+                                                <span class="font-bold text-primary">{{ sug.case_number }}</span>
+                                                <span class="text-[10px] text-on-surface-variant capitalize">{{ sug.primary_type | lowercase }}</span>
+                                            </div>
+                                            <span class="material-symbols-outlined text-[14px] text-primary/50 notranslate" translate="no">arrow_forward</span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Identificación (DNI)</label>
+                        <input type="text" [(ngModel)]="currentWitness.identificacion" placeholder="ej. ID-4567" />
+                    </div>
+                    <div>
+                        <label>Género</label>
+                        <select [(ngModel)]="currentWitness.genero">
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Teléfono</label>
+                        <input type="text" [(ngModel)]="currentWitness.telefono" placeholder="ej. +34 622..." />
+                    </div>
+                    <div class="flex items-center gap-2 mt-5">
+                        <input type="checkbox" id="anonimo" [(ngModel)]="currentWitness.es_anonimo" />
+                        <label for="anonimo" class="text-xs font-bold text-on-surface select-none cursor-pointer" style="margin-bottom: 0 !important; display: inline-block !important;">¿Testigo Anónimo?</label>
+                    </div>
+                </div>
+                <div>
+                    <label>Dirección de Contacto</label>
+                    <input type="text" [(ngModel)]="currentWitness.direccion" placeholder="ej. Av. Siempreviva 742" />
+                </div>
+                <div>
+                    <label>Declaración / Testimonio del Testigo</label>
+                    <textarea rows="3" [(ngModel)]="currentWitness.testimonio" placeholder="Escriba la declaración tomada..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeWitnessModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+            <button (click)="saveWitness()" [disabled]="isSavingWitness" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold">
+                @if (isSavingWitness) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Guardar Testigo
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ======================================================================= -->
+<!-- VICTIMA MODAL -->
+<!-- ======================================================================= -->
+@if (showVictimModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="premium-modal-container w-full max-w-md">
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-primary notranslate" translate="no">volunteer_activism</span>
+                {{ isEditingVictim ? 'Editar Víctima' : 'Registrar Víctima' }}
+            </h3>
+            <button (click)="closeVictimModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Nombre Completo</label>
+                        <input type="text" [(ngModel)]="currentVictim.nombres" placeholder="ej. Jane Doe" />
+                    </div>
+                    <div>
+                        <label>Caso Relacionado</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   [(ngModel)]="currentVictim.case_number" 
+                                   (input)="searchCases(currentVictim.case_number)"
+                                   (focus)="searchCases(currentVictim.case_number)"
+                                   placeholder="ej. G149281" />
+                            
+                            @if (showCaseSuggestions && caseSuggestions.length > 0) {
+                                <div class="absolute left-0 right-0 mt-1 bg-surface-container-high border border-outline-variant rounded-lg shadow-lg z-[200] max-h-48 overflow-y-auto">
+                                    @for (sug of caseSuggestions; track sug.case_number) {
+                                        <button type="button" 
+                                                (click)="selectCaseNumber(sug.case_number, 'victim')" 
+                                                class="w-full text-left px-3 py-2 hover:bg-primary/5 text-xs text-on-surface flex justify-between items-center transition-colors border-b border-outline-variant/35 last:border-b-0 cursor-pointer">
+                                            <div class="flex flex-col">
+                                                <span class="font-bold text-primary">{{ sug.case_number }}</span>
+                                                <span class="text-[10px] text-on-surface-variant capitalize">{{ sug.primary_type | lowercase }}</span>
+                                            </div>
+                                            <span class="material-symbols-outlined text-[14px] text-primary/50 notranslate" translate="no">arrow_forward</span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Identificación (DNI)</label>
+                        <input type="text" [(ngModel)]="currentVictim.identificacion" placeholder="ej. ID-9988" />
+                    </div>
+                    <div>
+                        <label>Género</label>
+                        <select [(ngModel)]="currentVictim.genero">
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label>Teléfono</label>
+                    <input type="text" [(ngModel)]="currentVictim.telefono" placeholder="ej. +34 600..." />
+                </div>
+                <div>
+                    <label>Dirección Domiciliaria</label>
+                    <input type="text" [(ngModel)]="currentVictim.direccion" placeholder="ej. Calle Falsa 123" />
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeVictimModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+            <button (click)="saveVictim()" [disabled]="isSavingVictim" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold">
+                @if (isSavingVictim) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Guardar Víctima
+            </button>
+        </div>
+    </div>
+</div>
+}

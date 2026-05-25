@@ -1,0 +1,570 @@
+<div class="flex bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden relative">
+        <!-- TopNavBar Component -->
+        <header class="sticky top-0 bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-on-surface-variant flex justify-between items-center h-16 w-full px-lg z-40">
+            <!-- Brand / Active Tab Context -->
+            <div class="flex items-center gap-4">
+                <span class="font-headline-md text-headline-md font-black tracking-tight text-primary dark:text-primary-fixed">SafeCity Intelligence</span>
+            </div>
+            <!-- Actions & Profile -->
+            <div class="flex items-center gap-6">
+                <!-- Search -->
+                <div class="relative hidden lg:block">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+                    <input class="pl-9 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Buscar logística..." type="text"/>
+                </div>
+                <!-- Icons -->
+                <div class="flex items-center gap-2">
+                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out relative">
+                        <span class="material-symbols-outlined notranslate" translate="no">notifications</span>
+                    </button>
+                </div>
+                <!-- Profile -->
+                <div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
+                    <img alt="Officer Profile Image" class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVZCFb_VW_PmEcwto3luZFMSKOxh1BHw879119sxZhYwIrmO9gD3gU6wCFhyQPaE0p7UwDvmKcuA0pe4KJ0hCmJkogNz_1vjSxrGayA7Iyx6QhFgrACkEY6WoqCi15tET9WVhdmPknHND6q_ba-yajyLWTPaJp4Nyl9nnNKB_GYbaRSpi95tdm1o0xa2pMJEyRK7GHikT9TaQbIH-VuEbryhgYBr6VbBfABW8ADzdESdw9mbQr9iV85a6uQQXs6dz16IEh3emy_-vA"/>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Canvas -->
+        <main class="flex-1 overflow-hidden p-md lg:p-lg flex flex-col gap-md max-w-[1600px] w-full mx-auto">
+            
+            <div class="flex justify-between items-center gap-4 shrink-0">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h2 class="font-display-lg text-display-lg text-primary">Logística del Departamento</h2>
+                        <button (click)="toggleKpis()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 transition-all font-semibold text-xs cursor-pointer select-none" title="Alternar Resumen de KPIs">
+                            <span class="material-symbols-outlined text-[16px] transition-transform duration-300 notranslate" [ngClass]="{'rotate-180': !showKpis}" translate="no">expand_less</span>
+                            <span>{{ showKpis ? 'Ocultar Resumen' : 'Mostrar Resumen' }}</span>
+                        </button>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-secondary mt-0.5">Gestión integral de personal policial, flota de vehículos y asignación de rutas de patrullaje.</p>
+                </div>
+            </div>
+
+            <!-- Modern Collapsible KPI & Analytics Panel using pure CSS grid transition -->
+            <div class="collapsible-grid shrink-0" [ngClass]="{'expanded': showKpis}">
+                <div class="collapsible-content">
+                    @if (isLoading) {
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-md pb-xs">
+                            @for (i of [1,2,3]; track i) {
+                                <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm h-[60px] skeleton animate-pulse"></div>
+                            }
+                        </div>
+                    } @else {
+                        <!-- KPI Section -->
+                        <section class="grid grid-cols-1 md:grid-cols-3 gap-md pb-xs">
+                            <!-- Vehicles KPI -->
+                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">directions_car</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Estado de Flota</span>
+                                        <div class="flex items-baseline gap-1.5 mt-0.5">
+                                            <span class="text-lg font-black text-on-surface">{{ kpis.operational_vehicles }}</span>
+                                            <span class="text-[11px] text-on-surface-variant">/ {{ kpis.total_vehicles }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide inline-flex items-center" [ngClass]="{'bg-error-container text-on-error-container border border-error/10': getVehicleMaintenancePercentage() > 20, 'bg-secondary-container text-on-secondary-container border border-secondary/10': getVehicleMaintenancePercentage() <= 20}">
+                                        <span class="w-1 h-1 rounded-full mr-1" [ngClass]="getVehicleMaintenancePercentage() > 20 ? 'bg-error' : 'bg-secondary'"></span>
+                                        {{ getVehicleMaintenancePercentage() }}% EN MANTENIMIENTO
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Officers KPI -->
+                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">badge</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Oficiales Registrados</span>
+                                        <span class="text-lg font-black text-on-surface block mt-0.5">{{ kpis.total_officers }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide bg-secondary-container text-on-secondary-container border border-secondary/10 inline-flex items-center">
+                                        <span class="w-1 h-1 rounded-full mr-1 bg-secondary animate-pulse"></span>
+                                        ROSTER ACTIVO
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Equipment KPI -->
+                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">inventory_2</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Equipamiento Operativo</span>
+                                        <div class="flex items-baseline gap-1.5 mt-0.5">
+                                            <span class="text-lg font-black text-on-surface">{{ kpis.operational_equipment }}</span>
+                                            <span class="text-[11px] text-on-surface-variant">/ {{ kpis.total_equipment }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide inline-flex items-center" [ngClass]="{'bg-error-container text-on-error-container border border-error/10': getEquipmentMaintenancePercentage() > 10, 'bg-secondary-container text-on-secondary-container border border-secondary/10': getEquipmentMaintenancePercentage() <= 10}">
+                                        <span class="w-1 h-1 rounded-full mr-1" [ngClass]="getEquipmentMaintenancePercentage() > 10 ? 'bg-error' : 'bg-secondary'"></span>
+                                        {{ getEquipmentMaintenancePercentage() }}% EXTRAVIADO/DAÑADO
+                                    </span>
+                                </div>
+                            </div>
+                        </section>
+                    }
+                </div>
+            </div>
+
+            <!-- TAB SEGMENTED NAVIGATION BAR -->
+            <div class="bg-surface-container-low border border-outline-variant/65 p-1 rounded-xl flex gap-1 self-start shadow-sm shrink-0 z-10">
+                <button (click)="setActiveTab('vehicles')" class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'vehicles' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">directions_car</span>
+                    Flota de Vehículos
+                </button>
+                <button (click)="setActiveTab('officers')" class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'officers' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">badge</span>
+                    Oficiales de Policía
+                </button>
+                <button (click)="setActiveTab('patrols')" class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'patrols' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">map</span>
+                    Rutas de Patrullaje
+                </button>
+            </div>
+
+                <!-- ======================================================== -->
+                <!-- VEHICLES PANEL -->
+                <!-- ======================================================== -->
+                @if (activeTab === 'vehicles') {
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg flex-1 min-h-0 animate-fade-in">
+                    <div class="flex justify-between items-center mb-4 shrink-0">
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">directions_car</span>
+                            Administración de Flota de Vehículos
+                        </h3>
+                        <button (click)="openCreateVehicleModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm scale-98 active:scale-95 cursor-pointer">
+                            <span class="material-symbols-outlined text-sm font-black notranslate" translate="no">add</span> Añadir Vehículo
+                        </button>
+                    </div>
+                    <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                <tr>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Placa</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Tipo de Vehículo</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Beat Asignado</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Estado Operativo</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-surface-variant">
+                                @for (v of vehicles; track v.id_vehiculo) {
+                                <tr class="hover:bg-surface-bright/50 transition-colors group">
+                                    <td class="py-3.5 px-4 font-data-mono text-data-mono font-bold text-primary">{{ v.placa_vehiculo }}</td>
+                                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface">{{ v.tipo_vehiculo }}</td>
+                                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-secondary">{{ v.codigo_beat }}</td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-[10px] font-bold tracking-wider"
+                                              [ngClass]="v.estado_mantenimiento === 'operativo' ? 'bg-secondary-container text-on-secondary-container border border-secondary/20' : 'bg-error-container text-on-error-container border border-error/20'">
+                                            <span class="w-1.5 h-1.5 rounded-full mr-1.5" [ngClass]="v.estado_mantenimiento === 'operativo' ? 'bg-secondary' : 'bg-error'"></span>
+                                            {{ v.estado_mantenimiento | uppercase }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <button (click)="openEditVehicleModal(v)" class="text-primary hover:text-primary/80 mr-3 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Editar">
+                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">edit</span>
+                                        </button>
+                                        <button (click)="deleteVehicle(v.id_vehiculo, $event)" class="text-error hover:text-error/80 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Eliminar">
+                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">delete</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                } @empty {
+                                    <tr>
+                                        <td colspan="5" class="py-12 text-center text-on-surface-variant font-body-md">
+                                            <span class="material-symbols-outlined text-[48px] text-outline mb-2 notranslate" translate="no">directions_car</span>
+                                            <p>No se encontraron vehículos registrados en la flota.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                }
+
+                <!-- ======================================================== -->
+                <!-- OFFICERS PANEL -->
+                <!-- ======================================================== -->
+                @if (activeTab === 'officers') {
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg flex-1 min-h-0 animate-fade-in">
+                    <div class="flex justify-between items-center mb-4 shrink-0">
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">badge</span>
+                            Roster de Oficiales de Policía
+                        </h3>
+                        <button (click)="openCreateOfficerModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm scale-98 active:scale-95 cursor-pointer">
+                            <span class="material-symbols-outlined text-sm font-black notranslate" translate="no">add</span> Registrar Oficial
+                        </button>
+                    </div>
+                    <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                <tr>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Oficial</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Placa Policial</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Correo Electrónico</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Teléfono</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Fecha Ingreso</th>
+                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-surface-variant">
+                                @for (o of officers; track o.id_oficial) {
+                                <tr class="hover:bg-surface-bright/50 transition-colors group">
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-3">
+                                        <img [src]="o.url_fotografia || '/assets/avatars/default.jpg'" alt="Ofc" class="w-9 h-9 rounded-full object-cover border border-outline-variant shadow-inner" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuAVZCFb_VW_PmEcwto3luZFMSKOxh1BHw879119sxZhYwIrmO9gD3gU6wCFhyQPaE0p7UwDvmKcuA0pe4KJ0hCmJkogNz_1vjSxrGayA7Iyx6QhFgrACkEY6WoqCi15tET9WVhdmPknHND6q_ba-yajyLWTPaJp4Nyl9nnNKB_GYbaRSpi95tdm1o0xa2pMJEyRK7GHikT9TaQbIH-VuEbryhgYBr6VbBfABW8ADzdESdw9mbQr9iV85a6uQQXs6dz16IEh3emy_-vA'"/>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-on-surface capitalize">Ofc. {{ o.nombres }} {{ o.apellidos }}</span>
+                                            <span class="text-[10px] text-on-surface-variant tracking-wider uppercase font-semibold">{{ o.id_rol === 1 ? 'Comandante' : 'Patrullero' }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 font-data-mono text-data-mono text-primary font-bold">{{ o.placa_policial }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ o.correo_electronico }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface-variant">{{ o.telefono_contacto }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ o.fecha_ingreso }}</td>
+                                    <td class="py-3 px-4 text-right">
+                                        <button (click)="openEditOfficerModal(o)" class="text-primary hover:text-primary/80 mr-3 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Editar">
+                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">edit</span>
+                                        </button>
+                                        <button (click)="deleteOfficer(o.id_oficial, $event)" class="text-error hover:text-error/80 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Eliminar">
+                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">delete</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                } @empty {
+                                    <tr>
+                                        <td colspan="6" class="py-12 text-center text-on-surface-variant font-body-md">
+                                            <span class="material-symbols-outlined text-[48px] text-outline mb-2 notranslate" translate="no">badge</span>
+                                            <p>No se encontraron oficiales registrados en el roster.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                }
+
+                <!-- ======================================================== -->
+                <!-- PATROL SHIFTS & INTERACTIVE ROUTE MAP PANEL -->
+                <!-- ======================================================== -->
+                @if (activeTab === 'patrols') {
+                <div class="flex flex-col lg:flex-row gap-md flex-1 min-h-0 animate-fade-in">
+                    <!-- Shift list & edit panel -->
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col w-full lg:w-4/12 h-full overflow-hidden">
+                        @if (!showShiftModal) {
+                            <!-- List panel header -->
+                            <div class="px-md py-4 border-b border-outline-variant flex justify-between items-center shrink-0 bg-surface-container-low">
+                                <div class="flex flex-col">
+                                    <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">map</span>
+                                        Rutas Asignadas
+                                    </h3>
+                                    <span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mt-0.5">Turnos de Patrullaje Activos</span>
+                                </div>
+                                <button (click)="openCreateShiftModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-all text-body-sm shadow-sm cursor-pointer scale-98 active:scale-95">
+                                    <span class="material-symbols-outlined text-sm font-black notranslate" translate="no">add</span> Asignar Turno
+                                </button>
+                            </div>
+                            
+                            <!-- List container -->
+                            <div class="overflow-y-auto flex-1 divide-y divide-surface-variant">
+                                @for (shift of patrolShifts; track shift.id_turno) {
+                                <div (click)="selectShift(shift)" class="p-md hover:bg-surface-bright/50 transition-all cursor-pointer flex justify-between items-center border-l-4 group relative" [ngClass]="selectedShiftId === shift.id_turno ? 'border-primary bg-primary/5' : 'border-transparent'">
+                                    <div class="flex flex-col gap-0.5">
+                                        <span class="font-body-md text-body-md text-on-surface font-bold capitalize">Ofc. {{ shift.officer_name }}</span>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="font-data-mono text-data-mono text-[11px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">{{ shift.vehicle_plate }}</span>
+                                            <span class="text-xs text-secondary-variant">Beat: <strong>{{ shift.beat }}</strong></span>
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[11px] text-on-surface-variant font-medium mt-1">
+                                            <span class="material-symbols-outlined text-xs notranslate" translate="no">schedule</span>
+                                            <span>{{ shift.hora_inicio }} - {{ shift.hora_fin }}</span>
+                                            <span class="mx-1">•</span>
+                                            <span>{{ shift.fecha_turno }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                                        <button (click)="openEditShiftModal(shift)" class="text-primary hover:text-primary/80 mr-2 p-1.5 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer" title="Editar Turno">
+                                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
+                                        </button>
+                                        <button (click)="deleteShift(shift.id_turno, $event)" class="text-error hover:text-error/80 p-1.5 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer" title="Eliminar Turno">
+                                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                } @empty {
+                                    <div class="py-16 text-center text-on-surface-variant font-body-md flex flex-col items-center justify-center h-full">
+                                        <span class="material-symbols-outlined text-[48px] text-outline mb-2 notranslate" translate="no">map</span>
+                                        <p class="px-6 text-sm">No hay turnos con rutas de patrullaje asignadas actualmente.</p>
+                                    </div>
+                                }
+                            </div>
+                        } @else {
+                            <!-- CREATE/EDIT FORM DIRECTLY IN SIDEBAR PANEL (No backdrop overlay blocker) -->
+                            <div class="px-md py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low shrink-0">
+                                <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                                    <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">route</span>
+                                    {{ isEditingShift ? 'Editar Turno' : 'Asignar Turno' }}
+                                </h3>
+                                <button (click)="closeShiftModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                                    <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+                                </button>
+                            </div>
+                            <div class="p-md overflow-y-auto flex-1 flex flex-col gap-4">
+                                <!-- Interactive drawing guidelines -->
+                                <div class="bg-primary-container/15 border border-primary/20 p-3 rounded-xl flex gap-2.5 text-on-surface shrink-0">
+                                    <span class="material-symbols-outlined text-[#3b82f6] text-[24px] shrink-0 animate-pulse notranslate" translate="no">gesture</span>
+                                    <div class="font-body-sm text-body-sm leading-snug">
+                                        <span class="font-bold text-[#3b82f6] text-xs">Instrucciones de Trazado:</span>
+                                        <p class="text-on-surface-variant text-[11px] mt-0.5">Completa el formulario y luego **haz clic directo sobre el mapa oscuro a la derecha** para dibujar la ruta de patrullaje.</p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Oficial de Policía</label>
+                                    <select [(ngModel)]="currentShift.id_oficial" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2.5 py-1.5 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-xs font-semibold">
+                                        <option [value]="0" disabled>-- Seleccionar Oficial --</option>
+                                        @for (officer of officers; track officer.id_oficial) {
+                                            <option [value]="officer.id_oficial">Ofc. {{ officer.nombres }} {{ officer.apellidos }} ({{ officer.placa_policial }})</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Vehículo de Patrulla</label>
+                                    <select [(ngModel)]="currentShift.id_vehiculo" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2.5 py-1.5 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-xs font-semibold">
+                                        <option [value]="0" disabled>-- Seleccionar Vehículo --</option>
+                                        @for (vehicle of vehicles; track vehicle.id_vehiculo) {
+                                            <option [value]="vehicle.id_vehiculo">{{ vehicle.placa_vehiculo }} (Beat: {{ vehicle.codigo_beat }})</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="col-span-1">
+                                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Fecha</label>
+                                        <input type="date" [(ngModel)]="currentShift.fecha_turno" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-on-surface focus:outline-none focus:border-primary text-xs" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Hora Inicio</label>
+                                        <input type="text" [(ngModel)]="currentShift.hora_inicio" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-on-surface focus:outline-none focus:border-primary text-xs" placeholder="08:00" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Hora Fin</label>
+                                        <input type="text" [(ngModel)]="currentShift.hora_fin" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-on-surface focus:outline-none focus:border-primary text-xs" placeholder="16:00" />
+                                    </div>
+                                </div>
+
+                                <!-- Drawn Route Nodes Status -->
+                                <div class="bg-surface-container-low border border-outline-variant p-3 rounded-xl flex justify-between items-center mt-1 shrink-0">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-on-surface">Puntos en Ruta</span>
+                                        <span class="text-[10px] text-on-surface-variant mt-0.5">{{ drawnCoordinates.length }} esquinas marcadas</span>
+                                    </div>
+                                    <button (click)="clearRoutePoints()" [disabled]="drawnCoordinates.length === 0" class="border border-error/30 text-error hover:bg-error/5 py-1 px-2.5 rounded-lg flex items-center gap-1 transition-colors font-semibold text-[11px] disabled:opacity-40 cursor-pointer">
+                                        <span class="material-symbols-outlined text-[14px] notranslate" translate="no">delete_sweep</span> Limpiar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="px-md py-4 border-t border-outline-variant bg-surface-container flex justify-end gap-2 shrink-0">
+                                <button (click)="closeShiftModal()" class="px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+                                <button (click)="saveShift()" [disabled]="isSavingShift || currentShift.id_oficial == 0 || currentShift.id_vehiculo == 0" class="px-4 py-1.5 rounded-lg font-label-md text-label-md bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer font-bold">
+                                    @if (isSavingShift) {
+                                        <span class="material-symbols-outlined animate-spin text-[12px] notranslate" translate="no">progress_activity</span>
+                                    }
+                                    Guardar
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Interactive Map Container -->
+                    <div class="relative flex-1 h-full rounded-xl border border-outline-variant shadow-lg overflow-hidden bg-surface-container-lowest">
+                        <div id="patrol-route-map" class="w-full h-full z-0"></div>
+
+                        <!-- Map instruction overlays -->
+                        @if (drawingMode) {
+                        <div class="absolute top-4 left-4 z-[999] bg-error-container/95 backdrop-blur-md text-on-error-container px-4 py-2.5 rounded-xl border border-error/20 font-body-sm shadow-md flex items-center gap-2 max-w-sm animate-pulse">
+                            <span class="material-symbols-outlined text-error text-[20px] notranslate" translate="no">gesture</span>
+                            <div>
+                                <span class="font-bold">Modo Trazado Activo</span>
+                                <p class="text-xs text-on-error-container/80 mt-0.5">Haz clic sobre el mapa a la derecha para marcar la ruta del vehículo.</p>
+                            </div>
+                        </div>
+                        }
+
+                        @if (selectedShiftId && !drawingMode) {
+                        <div class="absolute top-4 left-4 z-[999] bg-primary-container/95 backdrop-blur-md text-on-primary-container px-4 py-2.5 rounded-xl border border-primary/20 font-body-sm shadow-md flex items-center gap-2 max-w-sm">
+                            <span class="material-symbols-outlined text-[#60a5fa] text-[20px] notranslate" translate="no">route</span>
+                            <div>
+                                <span class="font-bold">Mostrando Ruta Activa</span>
+                                <p class="text-xs text-on-primary-container/80 mt-0.5">Ruta de patrullaje destacada en color cian brillante en el mapa.</p>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+                }
+        </main>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- ADD/EDIT VEHICLE MODAL (GLASSMORPHISM EFFECT) -->
+<!-- ======================================================================= -->
+@if (showVehicleModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-full transition-all scale-100">
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-primary notranslate" translate="no">{{ isEditingVehicle ? 'edit' : 'add_circle' }}</span>
+                {{ isEditingVehicle ? 'Editar Vehículo' : 'Añadir Nuevo Vehículo' }}
+            </h3>
+            <button (click)="closeVehicleModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="flex flex-col gap-5">
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Número de Placa</label>
+                    <input type="text" [(ngModel)]="currentVehicle.placa_vehiculo" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. CPD-5421" />
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Tipo de Vehículo</label>
+                    <select [(ngModel)]="currentVehicle.tipo_vehiculo" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm">
+                        <option value="SUV Patrol">SUV Patrol</option>
+                        <option value="Sedan">Sedan</option>
+                        <option value="Transport Van">Transport Van</option>
+                        <option value="K9 Unit">K9 Unit</option>
+                        <option value="Armored">Armored</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Beat de Jurisdicción</label>
+                    <input type="text" [(ngModel)]="currentVehicle.codigo_beat" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. B-201" />
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Estado de Mantenimiento</label>
+                    <select [(ngModel)]="currentVehicle.estado_mantenimiento" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm">
+                        <option value="operativo">Operativo / En Patrulla</option>
+                        <option value="mantenimiento">En Taller / Mantenimiento</option>
+                        <option value="dañado">Inoperativo / Dañado</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeVehicleModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+            <button (click)="saveVehicle()" [disabled]="isSavingVehicle" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold">
+                @if (isSavingVehicle) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Guardar Vehículo
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ======================================================================= -->
+<!-- ADD/EDIT OFFICER MODAL (GLASSMORPHISM EFFECT WITH FILE PICKER) -->
+<!-- ======================================================================= -->
+@if (showOfficerModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-full transition-all scale-100">
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-primary notranslate" translate="no">{{ isEditingOfficer ? 'edit' : 'person_add' }}</span>
+                {{ isEditingOfficer ? 'Editar Oficial' : 'Registrar Nuevo Oficial' }}
+            </h3>
+            <button (click)="closeOfficerModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Nombres</label>
+                        <input type="text" [(ngModel)]="currentOfficer.nombres" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. John" />
+                    </div>
+                    <div>
+                        <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Apellidos</label>
+                        <input type="text" [(ngModel)]="currentOfficer.apellidos" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. Doe" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Placa Policial</label>
+                    <input type="text" [(ngModel)]="currentOfficer.placa_policial" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. SC-9841" />
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Correo Electrónico</label>
+                    <input type="email" [(ngModel)]="currentOfficer.correo_electronico" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. jdoe@safecity.gov" />
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Teléfono de Contacto</label>
+                    <input type="text" [(ngModel)]="currentOfficer.telefono_contacto" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. 555-0145" />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Rol en Sistema</label>
+                        <select [(ngModel)]="currentOfficer.id_rol" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm">
+                            <option [value]="1">Comandante</option>
+                            <option [value]="2">Patrullero</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Fecha de Ingreso</label>
+                        <input type="date" [(ngModel)]="currentOfficer.fecha_ingreso" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Fotografía del Oficial</label>
+                    <div class="flex items-center gap-4 bg-surface-container border border-outline-variant p-2 rounded-lg">
+                        <!-- Preview thumbnail -->
+                        <img [src]="currentOfficer.url_fotografia || '/assets/avatars/default.jpg'" alt="Preview" class="w-10 h-10 rounded-full object-cover border border-outline-variant shadow-inner animate-fade-in" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuAVZCFb_VW_PmEcwto3luZFMSKOxh1BHw879119sxZhYwIrmO9gD3gU6wCFhyQPaE0p7UwDvmKcuA0pe4KJ0hCmJkogNz_1vjSxrGayA7Iyx6QhFgrACkEY6WoqCi15tET9WVhdmPknHND6q_ba-yajyLWTPaJp4Nyl9nnNKB_GYbaRSpi95tdm1o0xa2pMJEyRK7GHikT9TaQbIH-VuEbryhgYBr6VbBfABW8ADzdESdw9mbQr9iV85a6uQQXs6dz16IEh3emy_-vA'"/>
+                        <!-- File input & button -->
+                        <div class="relative flex-1">
+                            <input type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden" #fileInput />
+                            <button type="button" (click)="fileInput.click()" class="bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-on-surface py-1.5 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-xs font-bold w-full cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">photo_library</span>
+                                Seleccionar Imagen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeOfficerModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+            <button (click)="saveOfficer()" [disabled]="isSavingOfficer" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold font-semibold">
+                @if (isSavingOfficer) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Guardar Oficial
+            </button>
+        </div>
+    </div>
+</div>
+}

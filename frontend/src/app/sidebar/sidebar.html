@@ -1,0 +1,104 @@
+<aside class="fixed left-0 top-0 h-full w-[280px] premium-sidebar flex flex-col z-50">
+    <!-- Header -->
+    <div class="px-6 py-5 border-b border-white/5 flex items-center gap-3.5 select-none">
+        <div class="h-10 w-10 bg-white/5 rounded-lg flex items-center justify-center shrink-0 border border-white/10 relative overflow-hidden">
+            <img alt="CPD Badge" class="w-7 h-7 object-contain opacity-80 grayscale contrast-120" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD79bpMlsPyt30Xx086RJmYzJdAMRfM84Mde2muNorBXaqMtV4lAQaNPEZCMeX5LigT_5RbOsVNBKrhrZVPpc7KDhanIyIrBAqcR0FUeIjVESZacQjnGJvwBJeWCNVT05kH8nrVGuGsMPeYfmqJBKH1w-DaVz0j1AhVK9WxEyyHaQq-57IP6gWuHrZhOJj2YepwQOtNyJ1_u99tAIgsAqEcuXwQLHqWKRWM-gz1Ezgra6mwHtOr1d1XjxRV5PJl-0blnI5RKWKI31E"/>
+        </div>
+        <div>
+            <h1 class="font-headline-md text-[15px] font-bold text-white leading-none tracking-tight">SafeCity</h1>
+            <p class="font-label-caps text-[10px] text-[#94a3b8] uppercase tracking-[0.12em] font-semibold mt-1.5">Intelligence Ops</p>
+        </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="flex flex-col flex-1 py-4 overflow-y-auto">
+
+        <!-- Operations Section -->
+        <div class="px-6 pt-2 pb-1 select-none">
+            <span class="font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold">Operations</span>
+        </div>
+
+        <a routerLink="/dashboard" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}"
+           class="nav-link">
+            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+
+        <a routerLink="/incidents" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}"
+           class="nav-link">
+            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">folder</span>
+            <span>Active Cases</span>
+            <span class="ml-auto bg-white/10 text-white text-[10.5px] font-semibold py-0.5 px-2 rounded-full border border-white/5">12</span>
+        </a>
+
+        @if (profile === 'administrador') {
+        <a routerLink="/logistics" routerLinkActive="active-link"
+           class="nav-link">
+            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">local_shipping</span>
+            <span>Logistics</span>
+        </a>
+        }
+
+        <!-- Field Intelligence Section -->
+        <div class="px-6 pt-5 pb-1 select-none">
+            <span class="font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold">Field Intelligence</span>
+        </div>
+
+        <a routerLink="/tactical-map" routerLinkActive="active-link"
+           class="nav-link">
+            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">explore</span>
+            <span>Tactical Map</span>
+        </a>
+
+        @if (profile === 'administrador') {
+        <a routerLink="/criminal-intel" routerLinkActive="active-link"
+           class="nav-link">
+            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">group</span>
+            <span>Criminal Intel</span>
+        </a>
+        }
+
+        <a class="nav-link cursor-not-allowed opacity-35">
+            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">shield</span>
+            <span>Domestic Threats</span>
+        </a>
+
+        <a class="nav-link cursor-not-allowed opacity-35">
+            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">error</span>
+            <span>B.O.L.O. Alerts</span>
+            <span class="ml-auto w-1.5 h-1.5 rounded-full bg-error shrink-0"></span>
+        </a>
+
+        <!-- Records Section -->
+        <div class="px-6 pt-5 pb-1 select-none">
+            <span class="font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold">Records</span>
+        </div>
+
+        <a class="nav-link cursor-not-allowed opacity-35">
+            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">check_circle</span>
+            <span>Arrests Log</span>
+        </a>
+
+        <!-- Bottom User Card & Sign Out -->
+        <div class="mt-auto flex flex-col gap-2.5 p-4 border-t border-white/5 bg-white/[0.01]">
+            
+            <!-- User Profile Card -->
+            <div class="flex items-center gap-3 p-2.5 rounded-xl border border-white/5 bg-white/[0.02] select-none hover:bg-white/[0.04] transition-colors">
+                <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-bold text-xs text-white uppercase tracking-wider relative shrink-0">
+                    {{ authService.getOfficerName().substring(0,2) }}
+                    <span class="absolute -right-0.5 -bottom-0.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-[#0b0f19]"></span>
+                </div>
+                <div class="flex flex-col overflow-hidden">
+                    <span class="text-[13px] font-medium text-white leading-none truncate">{{ authService.getOfficerName() }}</span>
+                    <span class="text-[9px] font-bold text-slate-400 mt-1.5 select-none uppercase tracking-wider">{{ profile === 'administrador' ? 'COMMANDER' : 'OFFICER' }}</span>
+                </div>
+            </div>
+
+            <!-- Sign Out Button -->
+            <button (click)="logout()" class="w-full border border-white/10 hover:border-error/30 hover:bg-error/10 hover:text-error text-[#94a3b8] font-semibold py-2 px-3 rounded-lg transition-all text-[12px] flex items-center justify-center gap-2 cursor-pointer">
+                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">logout</span>
+                Sign Out
+            </button>
+        </div>
+    </nav>
+</aside>

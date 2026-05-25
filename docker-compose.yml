@@ -1,0 +1,46 @@
+services:
+
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    container_name: safecity_pocketbase
+    environment:
+      PB_ADMIN_EMAIL: admin@safecity.com
+      PB_ADMIN_PASSWORD: password12345
+    ports:
+      - "8091:8090"
+    volumes:
+      - ./datos_nuevos_pb:/pb_data
+    restart: always
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: safecity_clickhouse
+    environment:
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=password12345
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - safecity_clickhouse_volume:/var/lib/clickhouse
+    restart: always
+
+
+  airflow:
+    image: apache/airflow:2.8.3-python3.11
+    container_name: safecity_airflow
+    environment:
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - _PIP_ADDITIONAL_REQUIREMENTS=pandas requests clickhouse-connect pyarrow
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./dataset:/opt/airflow/dataset
+    command: standalone
+    restart: always
+
+volumes:
+  safecity_clickhouse_volume:
+

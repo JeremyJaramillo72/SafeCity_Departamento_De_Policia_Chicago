@@ -1,0 +1,78 @@
+<div class="flex h-full w-full">
+<!-- Left Side: Atmospheric Branding -->
+<div class="hidden lg:flex w-1/2 relative bg-primary">
+<!-- Background Image -->
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('bg.png');"></div>
+<!-- Dark Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-primary/20"></div>
+<!-- Content Container -->
+<div class="relative z-10 flex flex-col justify-end p-xl h-full w-full text-on-primary">
+<div class="mb-auto mt-xl">
+<img alt="SafeCity Intelligence Logo" class="h-24 w-auto drop-shadow-lg opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcY6hZTNLZtSkC9JCK3fAzAQBIQDFRnzz5ERYor7xXZgMiwRFeowQCyOCb3fCKKFIyQesKoDZuhUaVEDuHKOoJpBiTAEfk5FynYalZ1M1TfeZdait25MF4Rdmp5uDKMI1uID0RzQGGP0J_fnX5RuB_CQrWXH2CafeCSdSapuBQcXvIPp2MUnwEiyt2lCcOq2NIRoHQewVKKIJV920jeNv4ZWUsS80_NmvuLrBKDQn1qfn7FGV8zaHPiT6qv7ZdMEfUvRW45Gi7aZrQ"/>
+</div>
+<div class="space-y-sm max-w-lg mb-xl">
+<h1 class="font-display-lg text-display-lg text-on-primary tracking-tight">SafeCity Intelligence</h1>
+<p class="font-body-lg text-body-lg text-on-primary/80 border-l-4 border-on-primary/30 pl-md py-xs">
+                        Authorized Personnel Only. All access is logged and monitored.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Right Side: Login Form -->
+<div class="w-full lg:w-1/2 flex items-center justify-center bg-surface p-lg">
+<div class="w-full max-w-md bg-surface-container-lowest p-xl rounded border border-outline-variant shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),_0_2px_4px_-2px_rgba(0,0,0,0.05)]">
+<!-- Mobile Logo (Visible only on small screens) -->
+<div class="lg:hidden flex justify-center mb-lg">
+<img alt="SafeCity Intelligence Logo" class="h-16 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcY6hZTNLZtSkC9JCK3fAzAQBIQDFRnzz5ERYor7xXZgMiwRFeowQCyOCb3fCKKFIyQesKoDZuhUaVEDuHKOoJpBiTAEfk5FynYalZ1M1TfeZdait25MF4Rdmp5uDKMI1uID0RzQGGP0J_fnX5RuB_CQrWXH2CafeCSdSapuBQcXvIPp2MUnwEiyt2lCcOq2NIRoHQewVKKIJV920jeNv4ZWUsS80_NmvuLrBKDQn1qfn7FGV8zaHPiT6qv7ZdMEfUvRW45Gi7aZrQ"/>
+</div>
+<div class="mb-xl text-center lg:text-left">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Secure Officer Access</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Enter your credentials to access the command center.</p>
+</div>
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-lg">
+@if (error) {
+<div class="bg-error-container text-on-error-container p-sm rounded font-body-sm text-center">
+    {{ error }}
+</div>
+}
+<!-- Badge Number / Username -->
+<div class="space-y-xs">
+<label class="block font-label-caps text-label-caps text-on-surface uppercase tracking-wider" for="badge_number">Badge Number / Username</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-[18px] notranslate" translate="no">badge</span>
+</div>
+<input class="block w-full pl-xl pr-sm py-sm border border-outline-variant bg-surface-bright rounded text-on-surface font-data-mono text-data-mono focus:ring-2 focus:ring-primary focus:border-primary transition-colors" id="badge_number" formControlName="username" placeholder="e.g. SC-7482" type="text"/>
+</div>
+</div>
+<!-- Password -->
+<div class="space-y-xs">
+<label class="block font-label-caps text-label-caps text-on-surface uppercase tracking-wider" for="password">Password</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-[18px] notranslate" translate="no">lock</span>
+</div>
+<input class="block w-full pl-xl pr-xl py-sm border border-outline-variant bg-surface-bright rounded text-on-surface font-data-mono text-data-mono focus:ring-2 focus:ring-primary focus:border-primary transition-colors" id="password" formControlName="password" placeholder="••••••••" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-sm flex items-center text-outline hover:text-on-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px] notranslate" translate="no">visibility</span>
+</button>
+</div>
+</div>
+<!-- Submit Button -->
+<div class="pt-sm">
+<button class="w-full flex justify-center items-center py-md px-lg border border-transparent rounded bg-primary-container text-on-primary font-headline-sm text-headline-sm hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors" type="submit" [disabled]="!loginForm.valid" [class.opacity-50]="!loginForm.valid">
+<span class="material-symbols-outlined mr-sm text-[20px] notranslate" translate="no">login</span>
+                            Secure Login
+                        </button>
+</div>
+</form>
+<!-- Footer Link -->
+<div class="mt-xl text-center border-t border-surface-variant pt-lg">
+<a class="font-body-sm text-body-sm text-primary hover:text-primary-container font-medium flex items-center justify-center gap-xs transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px] notranslate" translate="no">support_agent</span>
+                        Contact IT Support
+                    </a>
+</div>
+</div>
+</div>
+</div>

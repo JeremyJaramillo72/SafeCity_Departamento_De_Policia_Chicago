@@ -1,0 +1,171 @@
+<div class="flex bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden relative">
+        <!-- TopNavBar Component -->
+        <header class="sticky top-0 bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-on-surface-variant flex justify-between items-center h-16 w-full px-lg z-40">
+            <!-- Brand / Active Tab Context -->
+            <div class="flex items-center gap-4">
+                <span class="font-headline-md text-headline-md font-black tracking-tight text-primary dark:text-primary-fixed">SafeCity Intelligence</span>
+            </div>
+            <!-- Actions & Profile -->
+            <div class="flex items-center gap-6">
+                <!-- Search -->
+                <div class="relative hidden lg:block">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+                    <input class="pl-9 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Search database..." type="text"/>
+                </div>
+                <!-- Icons -->
+                <div class="flex items-center gap-2">
+                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out relative">
+                        <span class="material-symbols-outlined notranslate" translate="no">notifications</span>
+                    </button>
+                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out">
+                        <span class="material-symbols-outlined notranslate" translate="no">history</span>
+                    </button>
+                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out">
+                        <span class="material-symbols-outlined notranslate" translate="no">help</span>
+                    </button>
+                </div>
+                <!-- Profile -->
+                <div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
+                    <img alt="Officer Profile Image" class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVZCFb_VW_PmEcwto3luZFMSKOxh1BHw879119sxZhYwIrmO9gD3gU6wCFhyQPaE0p7UwDvmKcuA0pe4KJ0hCmJkogNz_1vjSxrGayA7Iyx6QhFgrACkEY6WoqCi15tET9WVhdmPknHND6q_ba-yajyLWTPaJp4Nyl9nnNKB_GYbaRSpi95tdm1o0xa2pMJEyRK7GHikT9TaQbIH-VuEbryhgYBr6VbBfABW8ADzdESdw9mbQr9iV85a6uQQXs6dz16IEh3emy_-vA"/>
+                </div>
+            </div>
+        </header>
+
+        <!-- List View Canvas -->
+        <main class="flex-1 overflow-y-auto p-lg lg:p-xl flex flex-col gap-lg max-w-[1600px] w-full mx-auto">
+            <!-- Page Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
+                <div>
+                    <h2 class="font-display-lg text-display-lg text-primary">Incident Records</h2>
+                    <p class="font-body-md text-body-md text-secondary mt-1">Manage and review all operational event logs.</p>
+                </div>
+                <a routerLink="/incidents/new" class="bg-primary-container text-on-primary font-headline-sm text-headline-sm px-6 py-2.5 rounded-lg hover:bg-primary transition-colors flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-primary-container shadow-sm inline-flex">
+                    <span class="material-symbols-outlined text-lg notranslate" translate="no">add</span>
+                    Log New Incident
+                </a>
+            </div>
+
+            <!-- Filter & Search Toolbar (Bento/Card style) -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-wrap lg:flex-nowrap gap-md items-end shadow-sm shrink-0">
+                <div class="w-full lg:w-1/3 min-w-[250px]">
+                    <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Search Records</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg notranslate" translate="no">search</span>
+                        <input [ngModel]="filters.search" (ngModelChange)="onSearchChange($event)" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="Search ID, Location, or Type..." type="text"/>
+                    </div>
+                </div>
+                <div class="w-full lg:w-2/3 flex flex-wrap sm:flex-nowrap gap-md">
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Date Range</label>
+                        <select [(ngModel)]="filters.date_range" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+                            <option value="All Time">All Time</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">District</label>
+                        <select [(ngModel)]="filters.district" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+                            <option value="All Districts">All Districts</option>
+                            <option value="District 1 - Central">District 1 - Central</option>
+                            <option value="District 2 - North">District 2 - North</option>
+                            <option value="District 3 - South">District 3 - South</option>
+                            <option value="District 14">District 14</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Crime Type</label>
+                        <select [(ngModel)]="filters.type" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+                            <option value="All Types">All Types</option>
+                            <option value="HOMICIDE">Homicide</option>
+                            <option value="BATTERY">Battery</option>
+                            <option value="THEFT">Theft</option>
+                            <option value="CRIMINAL DAMAGE">Criminal Damage</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table Card -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col min-h-0">
+                <div class="overflow-auto flex-1">
+                    <table class="w-full text-left border-collapse whitespace-nowrap">
+                        <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                            <tr>
+                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4 w-32">ID</th>
+                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Date &amp; Time</th>
+                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Primary Type</th>
+                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Location</th>
+                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">District</th>
+                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Status</th>
+                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4 w-16 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-variant">
+                            @for (incident of incidents; track incident.case_number) {
+                            <tr class="hover:bg-surface-bright transition-colors group cursor-pointer" (click)="viewIncident(incident.case_number)">
+                                <td class="py-3 px-4 font-data-mono text-data-mono text-primary font-medium">#{{ incident.case_number }}</td>
+                                <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface">{{ incident.date | date:'MMM d, y' }} <span class="text-secondary ml-1">{{ incident.date | date:'HH:mm' }}</span></td>
+                                <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium">{{ incident.primary_type }}</td>
+                                <td class="py-3 px-4 font-body-sm text-body-sm text-secondary truncate max-w-[200px]" [title]="incident.block">{{ incident.block }}</td>
+                                <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface">{{ incident.district ? 'D-' + incident.district : 'N/A' }}</td>
+                                <td class="py-3 px-4">
+                                    @if (incident.arrest) {
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-secondary-container text-on-secondary-container border border-secondary-container/30">
+                                            Arrest Made
+                                        </span>
+                                    } @else {
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-error-container text-on-error-container border border-error-container/30">
+                                            Under Investigation
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-3 px-4 text-center" (click)="$event.stopPropagation()">
+                                    <button (click)="viewIncident(incident.case_number)" class="text-outline hover:text-primary transition-colors p-1 rounded hover:bg-surface-container-low" title="View details">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">visibility</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Footer -->
+                <div class="border-t border-outline-variant bg-surface-container-lowest px-4 py-3 flex items-center justify-between sm:px-6 shrink-0">
+                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant">
+                                Showing
+                                <span class="font-medium text-on-surface">{{ (pagination.page - 1) * pagination.per_page + 1 }}</span>
+                                to
+                                <span class="font-medium text-on-surface">{{ Math.min(pagination.page * pagination.per_page, pagination.total) }}</span>
+                                of
+                                <span class="font-medium text-on-surface">{{ pagination.total | number }}</span>
+                                results
+                            </p>
+                        </div>
+                        <div>
+                            <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
+                                <button (click)="prevPage()" [disabled]="pagination.page === 1" class="relative inline-flex items-center rounded-l-md px-2 py-1.5 text-on-surface-variant ring-1 ring-inset ring-outline-variant hover:bg-surface-container-low focus:z-20 outline-none disabled:opacity-50">
+                                    <span class="sr-only">Previous</span>
+                                    <span class="material-symbols-outlined text-sm notranslate" translate="no">chevron_left</span>
+                                </button>
+                                <button aria-current="page" class="relative z-10 inline-flex items-center bg-primary text-on-primary px-3 py-1.5 font-body-sm text-body-sm font-semibold focus:z-20 outline-none">{{ pagination.page }}</button>
+                                <button (click)="nextPage()" [disabled]="pagination.page === pagination.total_pages" class="relative inline-flex items-center rounded-r-md px-2 py-1.5 text-on-surface-variant ring-1 ring-inset ring-outline-variant hover:bg-surface-container-low focus:z-20 outline-none disabled:opacity-50">
+                                    <span class="sr-only">Next</span>
+                                    <span class="material-symbols-outlined text-sm notranslate" translate="no">chevron_right</span>
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

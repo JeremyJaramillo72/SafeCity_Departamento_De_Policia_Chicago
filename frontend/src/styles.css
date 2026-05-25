@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* You can add global styles to this file, and also import other style files */
+
+@layer components {
+  .premium-sidebar {
+    background-color: #0b0f19 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3.5 px-4 py-2.5 mx-3.5 my-0.5 rounded-lg
+           text-[#94a3b8] hover:text-white
+           hover:bg-white/[0.03]
+           transition-all duration-150 cursor-pointer
+           font-medium text-[13px] select-none;
+  }
+
+  .nav-link.active-link {
+    @apply text-white font-semibold bg-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.2)] !important;
+  }
+}
+
+/* ==========================================================================
+   MODERN WEB GUIDANCE SKILL IMPLEMENTATIONS
+   ========================================================================== */
+
+/* 1. Slim Modern Scrollbar using Standard CSS scrollbar-color / scrollbar-width */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 198, 209, 0.4) transparent; /* outline-variant color with opacity */
+  transition: scrollbar-color 0.2s ease;
+}
+
+*:hover {
+  scrollbar-color: rgba(196, 198, 209, 0.8) transparent;
+}
+
+/* Dark mode scrollbars */
+.dark * {
+  scrollbar-color: rgba(68, 71, 79, 0.4) transparent;
+}
+
+.dark *:hover {
+  scrollbar-color: rgba(68, 71, 79, 0.8) transparent;
+}
+
+/* 2. Collapsible CSS Grid for Height-Auto Transitions */
+.collapsible-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsible-grid.expanded {
+  grid-template-rows: 1fr;
+}
+
+.collapsible-content {
+  overflow: hidden;
+}
+
+/* 3. Premium Modals UI Redesign using modern CSS transitions and shadow systems */
+.premium-modal-container {
+  background-color: #ffffff;
+  border: 1px solid rgba(196, 198, 209, 0.5);
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: modal-slide-up 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modal-slide-up {
+  from {
+    transform: translateY(16px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.premium-modal-container input[type="text"],
+.premium-modal-container input[type="email"],
+.premium-modal-container input[type="date"],
+.premium-modal-container select,
+.premium-modal-container textarea {
+  background-color: #f7f9fb !important; /* surface-container-lowest light tint */
+  border: 1px solid rgba(196, 198, 209, 0.7) !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  color: #191c1e !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  transition: all 180ms ease !important;
+  width: 100% !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+.premium-modal-container input[type="text"]:focus,
+.premium-modal-container input[type="email"]:focus,
+.premium-modal-container input[type="date"]:focus,
+.premium-modal-container select:focus,
+.premium-modal-container textarea:focus {
+  outline: none !important;
+  border-color: #0b2b5e !important; /* primary-container color */
+  box-shadow: 0 0 0 3px rgba(11, 43, 94, 0.12), inset 0 1px 2px rgba(0, 0, 0, 0.01) !important;
+  background-color: #ffffff !important;
+}
+
+.premium-modal-container label {
+  display: block !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: #505f76 !important; /* secondary color */
+  margin-bottom: 5px !important;
+}
+
+.premium-modal-container input[type="checkbox"] {
+  accent-color: #0b2b5e !important;
+  width: 16px !important;
+  height: 16px !important;
+  cursor: pointer !important;
+}
+
+
