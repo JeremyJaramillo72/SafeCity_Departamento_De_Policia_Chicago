@@ -1,12 +1,12 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './login/login';
-import { DashboardComponent } from './dashboard/dashboard';
-import { IncidentsComponent } from './incidents/incidents';
-import { IncidentFormComponent } from './incident-form/incident-form';
-import { IncidentDetailComponent } from './incident-detail/incident-detail';
-import { LogisticsComponent } from './logistics/logistics';
-import { TacticalMapComponent } from './tactical-map/tactical-map';
-import { CriminalIntelComponent } from './criminal-intel/criminal-intel';
+import { LoginComponent } from './administracion_seguridad/login/login';
+import { DashboardComponent } from './gestion_operativa/dashboard/dashboard';
+import { IncidentsComponent } from './gestion_operativa/incidents/incidents';
+import { IncidentFormComponent } from './gestion_operativa/incident-form/incident-form';
+import { IncidentDetailComponent } from './gestion_operativa/incident-detail/incident-detail';
+import { LogisticsComponent } from './logistica_patrullaje/logistics/logistics';
+import { TacticalMapComponent } from './inteligencia_geografica/tactical-map/tactical-map';
+import { CriminalIntelComponent } from './inteligencia_criminal/criminal-intel/criminal-intel';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },

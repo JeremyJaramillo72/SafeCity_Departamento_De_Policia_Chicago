@@ -39,8 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'auth_api',
-    'data_api',
+    'gestion_operativa',
+    'inteligencia_geografica',
+    'inteligencia_criminal',
+    'logistica_patrullaje',
+    'administracion_seguridad',
 ]
 
 MIDDLEWARE = [
