@@ -1,0 +1,224 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+
+    <!-- Main Canvas (Fluid Full Width) -->
+    <main class="p-4 lg:p-6 flex flex-col gap-4 w-full pb-16">
+      <!-- Page Title -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
+        <div>
+          <h2 class="font-display-lg text-display-lg text-primary flex items-center gap-3">
+            <span class="material-symbols-outlined text-3xl text-primary notranslate" translate="no">local_police</span>
+            Reporte de Incidentes por Patrulla
+          </h2>
+          <p class="font-body-md text-body-md text-secondary mt-1">Revisión de incidentes de campo activos, cerrados y asignados por unidad de patrullaje.</p>
+        </div>
+      </div>
+
+      <!-- Bento Stats Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-md shrink-0 select-none">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex items-center justify-between">
+          <div>
+            <span class="block font-label-caps text-[10.5px] text-on-surface-variant uppercase font-bold tracking-wider">Total Registrado</span>
+            <span class="text-2xl font-black text-on-surface mt-1 block">{{ pagination.total | number }}</span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined notranslate" translate="no">folder_open</span>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex items-center justify-between">
+          <div>
+            <span class="block font-label-caps text-[10.5px] text-tertiary uppercase font-bold tracking-wider">Investigaciones Activas</span>
+            <span class="text-2xl font-black text-tertiary mt-1 block">{{ activeCount }}</span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-tertiary/10 border border-tertiary/20 flex items-center justify-center text-tertiary">
+            <span class="material-symbols-outlined notranslate" translate="no">pending_actions</span>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex items-center justify-between">
+          <div>
+            <span class="block font-label-caps text-[10.5px] text-secondary uppercase font-bold tracking-wider">Cerrados (Con Arresto)</span>
+            <span class="text-2xl font-black text-secondary mt-1 block">{{ closedCount }}</span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary">
+            <span class="material-symbols-outlined notranslate" translate="no">check_circle</span>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex items-center justify-between">
+          <div>
+            <span class="block font-label-caps text-[10.5px] text-error uppercase font-bold tracking-wider">Tipo Predominante</span>
+            <span class="text-sm font-bold text-on-surface mt-1 block truncate max-w-[140px]">{{ predominantType }}</span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-error/10 border border-error/20 flex items-center justify-center text-error">
+            <span class="material-symbols-outlined notranslate" translate="no">warning</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter & Search Toolbar (Bento Style) -->
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-wrap lg:flex-nowrap gap-md items-end shadow-sm shrink-0">
+        <!-- Patrol Selector -->
+        <div class="w-full lg:w-1/4">
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Unidad de Patrullaje</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg notranslate" translate="no">directions_car</span>
+            <select [(ngModel)]="filters.patrol" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+              @for (p of patrols; track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Status Selector -->
+        <div class="w-full lg:w-1/4">
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Estado del Incidente</label>
+          <select [(ngModel)]="filters.status" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+            <option value="all">Todos los Estados (Activos y Cerrados)</option>
+            <option value="active">Solo Activos (En Investigación)</option>
+            <option value="closed">Solo Cerrados (Con Arresto)</option>
+          </select>
+        </div>
+
+        <!-- Crime Type Selector -->
+        <div class="w-full lg:w-1/4">
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Tipo de Delito</label>
+          <select [(ngModel)]="filters.type" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+            @for (ct of crimeTypes; track ct) {
+              <option [value]="ct">{{ ct }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Search Input -->
+        <div class="w-full lg:w-1/4">
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Buscar Caso o Dirección</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg notranslate" translate="no">search</span>
+            <input [ngModel]="filters.search" (ngModelChange)="onSearchChange($event)" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="Caso #, Dirección o Descripción..." type="text"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Section -->
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col flex-1 overflow-hidden">
+        <div class="overflow-x-auto flex-1">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-bright border-b border-outline-variant text-on-surface-variant">
+                <th class="py-3 px-4 font-label-caps text-label-caps">NÚMERO DE CASO</th>
+                <th class="py-3 px-4 font-label-caps text-label-caps">FECHA Y HORA</th>
+                <th class="py-3 px-4 font-label-caps text-label-caps">TIPO PRINCIPAL</th>
+                <th class="py-3 px-4 font-label-caps text-label-caps">UBICACIÓN Y DISTRITO</th>
+                <th class="py-3 px-4 font-label-caps text-label-caps">PATRULLA ASIGNADA</th>
+                <th class="py-3 px-4 font-label-caps text-label-caps">ESTADO</th>
+                <th class="py-3 px-4 font-label-caps text-label-caps text-right">ACCIÓN</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/60">
+              @if (isLoading) {
+                @for (i of [1,2,3,4,5]; track i) {
+                  <tr>
+                    <td colspan="7" class="py-4 px-4">
+                      <div class="skeleton h-6 w-full rounded"></div>
+                    </td>
+                  </tr>
+                }
+              } @else if (incidents.length > 0) {
+                @for (inc of incidents; track inc.case_number) {
+                  <tr class="hover:bg-surface-container-low transition-colors group">
+                    <td class="py-3.5 px-4">
+                      <span (click)="viewIncident(inc.case_number)" class="font-data-mono text-data-mono font-bold text-primary hover:underline cursor-pointer">
+                        #{{ inc.case_number }}
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap">
+                      {{ inc.date | date:'medium' }}
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span [class]="'text-[10.5px] font-bold px-2 py-0.5 rounded ' + getSeverityClass(inc.primary_type)">
+                        {{ inc.primary_type }}
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface">
+                      <div class="font-medium truncate max-w-[220px]">{{ inc.block }}</div>
+                      <div class="text-[11px] text-outline font-data-mono">D-{{ inc.district || 'N/A' }} · Sector {{ inc.ward || 'N/A' }}</div>
+                    </td>
+                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface">
+                      <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-secondary notranslate" translate="no">directions_car</span>
+                        <span class="font-semibold text-xs">{{ inc.patrol_assigned || 'Sin asignar' }}</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      @if (inc.arrest) {
+                        <span class="text-[10.5px] font-bold px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container border border-secondary-container/20 flex items-center gap-1 w-fit select-none">
+                          <span class="material-symbols-outlined text-[12px] notranslate" translate="no">check_circle</span>
+                          Cerrado - Con Arresto
+                        </span>
+                      } @else {
+                        <span class="text-[10.5px] font-bold px-2 py-0.5 rounded bg-tertiary-container text-on-tertiary-container border border-tertiary-container/20 flex items-center gap-1 w-fit select-none">
+                          <span class="material-symbols-outlined text-[12px] animate-pulse notranslate" translate="no">pending</span>
+                          Investigación Activa
+                        </span>
+                      }
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <button (click)="viewIncident(inc.case_number)" class="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary rounded font-label-lg text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1">
+                        Ver Expediente
+                        <span class="material-symbols-outlined text-sm notranslate" translate="no">arrow_forward</span>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              } @else {
+                <tr>
+                  <td colspan="7" class="py-12 text-center text-on-surface-variant">
+                    <span class="material-symbols-outlined text-5xl mb-2 opacity-50 notranslate" translate="no">search_off</span>
+                    <p class="font-headline-sm text-headline-sm text-on-surface">No se encontraron incidentes</p>
+                    <p class="font-body-md text-body-md mt-1">Intente seleccionar una patrulla diferente o restablecer los filtros de estado.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="border-t border-outline-variant bg-surface-container-lowest px-4 py-3 flex items-center justify-between sm:px-6 shrink-0">
+          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                Mostrando
+                <span class="font-medium text-on-surface">{{ (pagination.page - 1) * pagination.per_page + 1 }}</span>
+                a
+                <span class="font-medium text-on-surface">{{ Math.min(pagination.page * pagination.per_page, pagination.total) }}</span>
+                de
+                <span class="font-medium text-on-surface">{{ pagination.total | number }}</span>
+                resultados
+              </p>
+            </div>
+            <div>
+              <nav aria-label="Paginación" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
+                <button (click)="prevPage()" [disabled]="pagination.page === 1" class="relative inline-flex items-center rounded-l-md px-2 py-1.5 text-on-surface-variant ring-1 ring-inset ring-outline-variant hover:bg-surface-container-low focus:z-20 outline-none disabled:opacity-50 cursor-pointer">
+                  <span class="sr-only">Anterior</span>
+                  <span class="material-symbols-outlined text-sm notranslate" translate="no">chevron_left</span>
+                </button>
+                <button aria-current="page" class="relative z-10 inline-flex items-center bg-primary text-on-primary px-3 py-1.5 font-body-sm text-body-sm font-semibold focus:z-20 outline-none">{{ pagination.page }}</button>
+                <button (click)="nextPage()" [disabled]="pagination.page === pagination.total_pages" class="relative inline-flex items-center rounded-r-md px-2 py-1.5 text-on-surface-variant ring-1 ring-inset ring-outline-variant hover:bg-surface-container-low focus:z-20 outline-none disabled:opacity-50 cursor-pointer">
+                  <span class="sr-only">Siguiente</span>
+                  <span class="material-symbols-outlined text-sm notranslate" translate="no">chevron_right</span>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,109 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+    
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <!-- Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-5 w-full pb-16">
+            <!-- Toast Success Notification -->
+            @if (showSuccessMessage) {
+                <div class="bg-success-container border border-success/20 text-white rounded-xl p-4 flex items-center gap-3 shadow-lg select-none animate-fade-in">
+                    <span class="material-symbols-outlined text-green-400 notranslate" translate="no">check_circle</span>
+                    <div>
+                        <div class="font-semibold text-[13px] text-green-400">¡Configuraciones Guardadas Exitosamente!</div>
+                        <div class="text-[11.5px] text-slate-300 mt-0.5">Los parámetros globales de seguridad han sido propagados exitosamente a ClickHouse y SQLite.</div>
+                    </div>
+                </div>
+            }
+
+            <!-- Settings Form Layout -->
+            <form (ngSubmit)="saveSettings()" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col gap-6 max-w-3xl">
+                <!-- Section 1: Seguridad de Cuentas y Accesos -->
+                <div>
+                    <h3 class="text-sm font-bold text-on-surface uppercase tracking-wider mb-4 border-b border-outline-variant pb-2 select-none flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary notranslate" translate="no">security</span>
+                        Seguridad de Cuentas y Accesos
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Tiempo de Inactividad de Sesión (Minutos)</label>
+                            <input type="number" name="sessionTimeout" [(ngModel)]="settings.sessionTimeout" min="5" max="180" class="w-full mt-1.5 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary"/>
+                            <span class="text-[10.5px] text-on-surface-variant mt-1 block">Fuerza el cierre de sesión tras inactividad. Recomendado: 30 minutos.</span>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Intentos Fallidos de Inicio de Sesión Permitidos</label>
+                            <select name="maxFailedAttempts" [(ngModel)]="settings.maxFailedAttempts" class="w-full mt-1.5 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary">
+                                <option [ngValue]="3">3 intentos (Máxima Seguridad)</option>
+                                <option [ngValue]="5">5 intentos (Estándar)</option>
+                                <option [ngValue]="10">10 intentos (Flexible)</option>
+                            </select>
+                            <span class="text-[10.5px] text-on-surface-variant mt-1 block">Bloquea temporalmente al exceder el límite.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Umbrales de Peligro y Alertas Urbanas -->
+                <div>
+                    <h3 class="text-sm font-bold text-on-surface uppercase tracking-wider mb-4 border-b border-outline-variant pb-2 select-none flex items-center gap-2">
+                        <span class="material-symbols-outlined text-success notranslate" translate="no">notifications_active</span>
+                        Umbrales de Peligro y Alertas Urbanas
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Umbral de Alerta por Alta Amenaza (Incidentes/Distrito)</label>
+                            <input type="number" name="threatAlarmThreshold" [(ngModel)]="settings.threatAlarmThreshold" min="2" max="50" class="w-full mt-1.5 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary"/>
+                            <span class="text-[10.5px] text-on-surface-variant mt-1 block">Dispara una advertencia en el Mapa Táctico de Patrullaje.</span>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Medio de Notificación Crítica para Comisarios</label>
+                            <select name="alertsNotificationType" [(ngModel)]="settings.alertsNotificationType" class="w-full mt-1.5 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary">
+                                <option value="sms_email">SMS Táctico y Correo Institucional</option>
+                                <option value="only_sms">Solo SMS Crítico</option>
+                                <option value="system_only">Solo Alertas en Plataforma</option>
+                            </select>
+                            <span class="text-[10.5px] text-on-surface-variant mt-1 block">Canal a través del cual se transmiten las alertas de incidentes graves.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Global Dispatch and Integration Policies -->
+                <div>
+                    <h3 class="text-sm font-bold text-on-surface uppercase tracking-wider mb-4 border-b border-outline-variant pb-2 select-none flex items-center gap-2">
+                        <span class="material-symbols-outlined text-warning notranslate" translate="no">settings_input_component</span>
+                        Políticas Globales de Despacho e Integración
+                    </h3>
+                    <div class="flex flex-col gap-4">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="enableAutoDispatch" [(ngModel)]="settings.enableAutoDispatch" class="mt-0.5 accent-primary h-4 w-4"/>
+                            <div>
+                                <span class="text-xs text-on-surface font-semibold">Habilitar Asignación y Despacho Automático de Patrullas (CAD)</span>
+                                <span class="text-[11px] text-on-surface-variant mt-0.5 block">Aplica modelos inteligentes para sugerir y despachar la patrulla más cercana al incidente reportado.</span>
+                            </div>
+                        </label>
+
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="apiEncryption" [(ngModel)]="settings.apiEncryption" class="mt-0.5 accent-primary h-4 w-4"/>
+                            <div>
+                                <span class="text-xs text-on-surface font-semibold">Requerir Cifrado y Firmas Criptográficas en la API de Tránsito</span>
+                                <span class="text-[11px] text-on-surface-variant mt-0.5 block">Protege las conexiones en vivo y peticiones HTTP de oficiales en campo mediante cifrado AES-GCM.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Form Submit buttons -->
+                <div class="border-t border-outline-variant pt-4 flex justify-end gap-3 mt-2 select-none">
+                    <button type="submit" [disabled]="isSaving" class="bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-white text-[13px] font-semibold py-2 px-6 rounded-lg cursor-pointer flex items-center justify-center gap-2 min-w-44 transition-all">
+                        @if (isSaving) {
+                            <span class="material-symbols-outlined text-[18px] animate-spin notranslate" translate="no">sync</span>
+                            Guardando...
+                        } @else {
+                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">save</span>
+                            Guardar Cambios
+                        }
+                    </button>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>

@@ -1,0 +1,97 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+  <app-sidebar></app-sidebar>
+  <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+    <div class="p-6 max-w-4xl mx-auto mt-10 mb-10 bg-surface-container-lowest rounded-2xl border border-outline-variant w-full shadow-sm">
+      <!-- Header -->
+      <div class="mb-8 border-b border-outline-variant pb-5">
+        <div class="flex items-center gap-4 mb-2">
+          <div class="w-12 h-12 rounded-xl bg-error-container text-on-error-container flex items-center justify-center border border-error/20">
+            <span class="material-symbols-outlined text-[24px] notranslate" translate="no">report</span>
+          </div>
+          <div>
+            <h1 class="text-[22px] font-headline-lg font-bold text-on-surface">Reporte de Uso de Fuerza</h1>
+            <p class="text-xs font-body-sm text-on-surface-variant">Documentación de Incidentes Críticos y Tácticos</p>
+          </div>
+        </div>
+        <div class="mt-4 p-4 rounded-xl bg-error/10 border border-error/30 text-sm font-body-md text-error font-medium flex gap-3">
+          <span class="material-symbols-outlined text-[20px] notranslate shrink-0" translate="no">warning</span>
+          <p>
+            <strong>ATENCIÓN OFICIAL:</strong> Conforme al reglamento policial (Orden General 12.04), todo uso de la fuerza debe ser reportado antes de finalizar el turno. Omitir o falsear detalles en este informe constituye una falta grave.
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="successMessage" class="mb-6 p-5 rounded-xl bg-success-container border border-success/30 flex gap-4 animate-fade-in">
+        <div class="text-on-success-container">
+          <span class="material-symbols-outlined text-[24px] notranslate" translate="no">check_circle</span>
+        </div>
+        <div>
+          <h3 class="font-bold text-on-success-container mb-1">Reporte Registrado</h3>
+          <p class="text-on-success-container text-xs">{{successMessage}}</p>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="mb-6 p-4 rounded-xl bg-error-container border border-error/30 text-on-error-container text-sm flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">error</span>
+        {{errorMessage}}
+      </div>
+
+      <form *ngIf="!successMessage" (ngSubmit)="submitReport()" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Número de Incidente / Caso (Opcional)</label>
+            <input type="text" [(ngModel)]="formData.id_incidente" name="id_incidente" class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:ring-2 focus:ring-error/50 focus:border-error transition-all bg-surface-container-low text-on-surface text-sm" placeholder="ej. INC-2026-9812">
+          </div>
+          
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Fecha y Hora del Incidente <span class="text-error">*</span></label>
+            <input type="datetime-local" [(ngModel)]="formData.fecha_hora" name="fecha_hora" class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:ring-2 focus:ring-error/50 focus:border-error transition-all bg-surface-container-low text-on-surface text-sm">
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Ubicación de los Hechos <span class="text-error">*</span></label>
+            <input type="text" [(ngModel)]="formData.ubicacion" name="ubicacion" class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:ring-2 focus:ring-error/50 focus:border-error transition-all bg-surface-container-low text-on-surface text-sm" placeholder="Calle, Intersección o Cuadrante">
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Tipo de Fuerza Empleada <span class="text-error">*</span></label>
+            <select [(ngModel)]="formData.tipo_fuerza" name="tipo_fuerza" class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:ring-2 focus:ring-error/50 focus:border-error transition-all bg-surface-container-low text-on-surface text-sm">
+              <option value="Fisica No Letal">Física No Letal (Reducción, llaves, control físico)</option>
+              <option value="Arma Electrica (Taser)">Arma Eléctrica (Taser / Dispositivo de Choque)</option>
+              <option value="Arma Quimica (Gas)">Arma Química (Gas Pimienta / Lacrimógeno)</option>
+              <option value="Arma de Fuego (Letal)">Arma de Fuego (Fuerza Letal)</option>
+            </select>
+          </div>
+          
+          <div class="space-y-2 md:col-span-2">
+            <div class="flex items-center mt-2 p-3 bg-surface-variant/50 border border-outline-variant rounded-lg">
+              <input type="checkbox" id="heridos" [(ngModel)]="formData.hubo_heridos" name="hubo_heridos" class="h-4 w-4 text-error focus:ring-error/50 border-outline-variant rounded bg-surface-container cursor-pointer">
+              <label for="heridos" class="ml-3 block text-sm font-semibold text-on-surface cursor-pointer select-none">
+                ¿Hubo personas lesionadas? (Oficiales o sospechosos)
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Justificación Legal y Narrativa <span class="text-error">*</span></label>
+          <textarea [(ngModel)]="formData.justificacion_legal" name="justificacion_legal" rows="5" class="w-full px-4 py-3 rounded-xl border border-outline-variant focus:ring-2 focus:ring-error/50 focus:border-error transition-all bg-surface-container-low text-on-surface text-sm" placeholder="Describa la conducta del sospechoso que motivó el uso de la fuerza y por qué fue necesaria y proporcional..."></textarea>
+        </div>
+
+        <div class="pt-6 border-t border-outline-variant flex justify-end gap-3">
+          <button type="submit" [disabled]="isLoading" class="px-8 py-2.5 rounded-xl bg-error font-semibold text-on-error hover:bg-error/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm shadow-sm">
+            <span *ngIf="isLoading" class="material-symbols-outlined animate-spin text-[18px] notranslate" translate="no">progress_activity</span>
+            <span *ngIf="!isLoading" class="material-symbols-outlined text-[18px] notranslate" translate="no">gavel</span>
+            <span>{{isLoading ? 'Guardando Reporte Oficial...' : 'Firmar y Enviar Reporte Oficial'}}</span>
+          </button>
+        </div>
+      </form>
+
+      <div *ngIf="successMessage" class="flex justify-center mt-6">
+        <button (click)="successMessage = ''" class="px-6 py-2 rounded-xl text-error border border-error/20 hover:bg-error-container transition-colors font-medium text-sm">Registrar otro incidente</button>
+      </div>
+    </div>
+  </div>
+</div>

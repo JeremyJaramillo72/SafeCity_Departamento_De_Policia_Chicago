@@ -1,0 +1,85 @@
+/* Emergency Dispatch Console styles */
+
+#dispatch-map-container {
+  background-color: #0b0f19;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  position: absolute;
+  inset: 0;
+}
+
+/* Custom leaflet dark popup styling to match command look */
+::ng-deep .leaflet-dark-popup .leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #fff !important;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+::ng-deep .leaflet-dark-popup .leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+::ng-deep .leaflet-dark-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+::ng-deep .leaflet-dark-tooltip::before {
+  display: none !important;
+}
+
+::ng-deep .leaflet-container a.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 8px 8px 0 0 !important;
+}
+
+::ng-deep .leaflet-container a.leaflet-popup-close-button:hover {
+  color: #fff !important;
+}
+
+/* Pulsating animation for critical 911 calls */
+@keyframes ping-subtle {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px rgba(244, 63, 94, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+  }
+}
+
+.animate-ping-subtle {
+  animation: ping-subtle 1.8s infinite;
+}
+
+/* Custom scrollbars for side panels */
+aside::-webkit-scrollbar {
+  width: 6px;
+}
+
+aside::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+aside::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 3px;
+}
+
+aside::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+

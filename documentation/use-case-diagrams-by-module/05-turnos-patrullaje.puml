@@ -1,0 +1,74 @@
+@startuml Módulo 05 - Gestión de Turnos y Patrullaje
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam actorStyle helio
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam package {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor White
+  BorderColor Black
+}
+
+title Módulo 05: Gestión de Turnos y Patrullaje\n(Gestión de Turnos y Patrullaje)
+
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "Sistema SafeCity Intelligence Ops" {
+
+  actor "Oficial de Patrulla" as Officer
+  actor "Sheriff" as Commander
+  actor "Jefe de Logística" as Logistics
+
+  package "\n\nMódulo: Gestión de Turnos y Patrullaje\n" as mod5 {
+    usecase "CU-O30: Ingresar Solicitud\nde Permisos" as UC30
+    usecase "CU-O28: Registrar asistencia\ndiario de cada oficial" as UC28
+    
+    usecase "CU-O32: Actualizar Récord de\nCertificaciones" as UC32
+    usecase "CU-O31: Registrar Amonestación\nen Hoja de Vida" as UC31
+    
+    usecase "CU-T07: Programar Turnos\nde Patrullaje" as UC_T07
+    usecase "CU-O29: Asignar Oficial\na Cuadrante (Beat)" as UC29
+  }
+
+  Officer --> UC30
+  Officer ---> UC28
+
+  Commander --> UC32
+  Commander --> UC31
+
+  Logistics --> UC_T07
+  Logistics --> UC29
+
+  UC_T07 ..> UC29 : <<asigna>>
+  UC_T07 ..> UC28 : <<controla>>
+}
+
+note right of mod5
+  <b>Actor principal:</b> Jefe de Logística
+  <b>Objetivo:</b> Control de personal,
+  cuadrantes y turnos
+  <b>Tablas Fact:</b> Fact_Turno_Patrullaje
+  <b>Tablas Dim:</b> Dim_Oficial_Policia,
+  Dim_Catalogo_Ubicacion
+end note
+
+@enduml

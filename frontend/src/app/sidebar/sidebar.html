@@ -1,104 +1,385 @@
-<aside class="fixed left-0 top-0 h-full w-[280px] premium-sidebar flex flex-col z-50">
-    <!-- Header -->
-    <div class="px-6 py-5 border-b border-white/5 flex items-center gap-3.5 select-none">
-        <div class="h-10 w-10 bg-white/5 rounded-lg flex items-center justify-center shrink-0 border border-white/10 relative overflow-hidden">
-            <img alt="CPD Badge" class="w-7 h-7 object-contain opacity-80 grayscale contrast-120" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD79bpMlsPyt30Xx086RJmYzJdAMRfM84Mde2muNorBXaqMtV4lAQaNPEZCMeX5LigT_5RbOsVNBKrhrZVPpc7KDhanIyIrBAqcR0FUeIjVESZacQjnGJvwBJeWCNVT05kH8nrVGuGsMPeYfmqJBKH1w-DaVz0j1AhVK9WxEyyHaQq-57IP6gWuHrZhOJj2YepwQOtNyJ1_u99tAIgsAqEcuXwQLHqWKRWM-gz1Ezgra6mwHtOr1d1XjxRV5PJl-0blnI5RKWKI31E"/>
-        </div>
-        <div>
-            <h1 class="font-headline-md text-[15px] font-bold text-white leading-none tracking-tight">SafeCity</h1>
-            <p class="font-label-caps text-[10px] text-[#94a3b8] uppercase tracking-[0.12em] font-semibold mt-1.5">Intelligence Ops</p>
-        </div>
+<!-- BARRA SUPERIOR OFICIAL SAFECITY POLICE CAD (AZUL NAVY Y CONTENEDOR PRIMARIO) -->
+<header class="w-full h-[68px] bg-[#00173d] border-b border-white/10 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-[5000] select-none shadow-lg shrink-0">
+    
+    <!-- IZQUIERDA: Logo de Marca y Título -->
+    <div class="flex items-center gap-6 shrink-0">
+        <a routerLink="/dashboard" class="flex items-center gap-3 group cursor-pointer no-underline">
+            <div class="h-10 w-10 bg-[#0b2b5e] rounded-xl flex items-center justify-center border border-white/15 group-hover:border-blue-400/50 group-hover:bg-[#133d7d] transition-all overflow-hidden shadow-md">
+                <img alt="Insignia SafeCity" class="w-7 h-7 object-contain rounded" src="/logo.png"/>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[15px] font-black text-white tracking-wider group-hover:text-blue-200 transition-colors">SAFECITY</span>
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-black tracking-wider bg-[#0b2b5e] text-blue-200 border border-white/15 font-mono">CAD</span>
+                </div>
+                <p class="text-[10px] text-blue-200/80 uppercase tracking-widest font-semibold">Departamento de Policía</p>
+            </div>
+        </a>
+
+        <!-- Enlaces de Navegación Principal y Mega-Menús (Escritorio) -->
+        <nav class="hidden md:flex items-center gap-1.5 text-[13px] font-bold">
+            
+            <!-- 1. Panel Principal / Dashboard (Enlace Directo) -->
+            @if (hasDashboardAccess) {
+            <a routerLink="/dashboard" 
+               routerLinkActive="bg-[#0b2b5e] text-white border-white/20 shadow-md ring-1 ring-white/10" 
+               [routerLinkActiveOptions]="{ exact: true }"
+               class="px-3.5 py-2 rounded-xl text-blue-100/90 hover:text-white hover:bg-[#0b2b5e]/70 transition-all flex items-center gap-2 border border-transparent cursor-pointer no-underline">
+                <span class="material-symbols-outlined text-[18px] text-blue-300">dashboard</span>
+                <span>Panel Principal</span>
+            </a>
+            }
+
+            <!-- Botón Destacado: Demo OpenSpec -->
+            <a routerLink="/demo-openspec" 
+               routerLinkActive="bg-emerald-600 text-slate-950 border-emerald-400 shadow-md font-bold" 
+               class="px-3.5 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-400/40 transition-all flex items-center gap-2 cursor-pointer no-underline shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                <span>Demo OpenSpec</span>
+                <span class="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-emerald-400 text-slate-950">SPEC</span>
+            </a>
+
+            <!-- 2. Mega-Menú de Personal y RRHH (Exclusivo RRHH) -->
+            @if (rrhhItems.length > 0) {
+            <div class="relative">
+                <button (click)="toggleDropdown('rrhh', $event)"
+                        [class.bg-[#0b2b5e]]="activeDropdown === 'rrhh'"
+                        [class.text-white]="activeDropdown === 'rrhh'"
+                        [class.border-white/20]="activeDropdown === 'rrhh'"
+                        [class.shadow-md]="activeDropdown === 'rrhh'"
+                        class="px-3.5 py-2 rounded-xl text-blue-100/90 hover:text-white hover:bg-[#0b2b5e]/70 transition-all flex items-center gap-2 border border-transparent cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px] text-purple-300">groups</span>
+                    <span>Personal y RRHH</span>
+                    <span class="material-symbols-outlined text-[16px] text-blue-200/70 transition-transform duration-200" [class.rotate-180]="activeDropdown === 'rrhh'">expand_more</span>
+                </button>
+
+                @if (activeDropdown === 'rrhh') {
+                <div class="absolute left-0 top-full mt-2 w-[560px] lg:w-[620px] bg-[#00173d] border border-[#0b2b5e] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-4 z-[5010] animate-fade-in flex flex-col gap-2 ring-1 ring-white/10"
+                     (click)="$event.stopPropagation()">
+                    <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[17px] text-purple-300">groups</span>
+                            <span class="text-xs font-bold text-white uppercase tracking-wider">Módulos de Personal y RRHH</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-blue-200 bg-[#0b2b5e] px-2 py-0.5 rounded border border-white/10 font-bold">
+                            {{ rrhhItems.length }} Herramientas
+                        </span>
+                    </div>
+
+                    <!-- Cuadrícula de 2 Columnas -->
+                    <div class="grid grid-cols-2 gap-2">
+                        @for (item of rrhhItems; track item.id) {
+                        <a (click)="navigateTo(item)" class="flex items-start gap-3 p-3 rounded-xl bg-[#0b2b5e]/40 hover:bg-[#0b2b5e] border border-white/10 hover:border-blue-400/40 transition-all cursor-pointer group shadow-sm">
+                            <div class="w-9 h-9 rounded-lg bg-[#001230] border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#0b2b5e] group-hover:scale-105 transition-all">
+                                <span class="material-symbols-outlined text-[20px] {{ item.color }} group-hover:scale-110 transition-transform">{{ item.icon }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <span class="text-xs font-bold text-white group-hover:text-blue-100 truncate block">{{ item.title }}</span>
+                                <span class="text-[11px] text-blue-200/70 group-hover:text-blue-100/90 truncate block mt-0.5">{{ item.subtitle }}</span>
+                            </div>
+                        </a>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+            }
+
+            <!-- 3. Mega-Menú de Operaciones -->
+            @if (opsItems.length > 0) {
+            <div class="relative">
+                <button (click)="toggleDropdown('ops', $event)"
+                        [class.bg-[#0b2b5e]]="activeDropdown === 'ops'"
+                        [class.text-white]="activeDropdown === 'ops'"
+                        [class.border-white/20]="activeDropdown === 'ops'"
+                        [class.shadow-md]="activeDropdown === 'ops'"
+                        class="px-3.5 py-2 rounded-xl text-blue-100/90 hover:text-white hover:bg-[#0b2b5e]/70 transition-all flex items-center gap-2 border border-transparent cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px] text-amber-300">local_police</span>
+                    <span>Operaciones</span>
+                    <span class="material-symbols-outlined text-[16px] text-blue-200/70 transition-transform duration-200" [class.rotate-180]="activeDropdown === 'ops'">expand_more</span>
+                </button>
+
+                @if (activeDropdown === 'ops') {
+                <div class="absolute left-0 top-full mt-2 w-[580px] lg:w-[640px] bg-[#00173d] border border-[#0b2b5e] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-4 z-[5010] animate-fade-in flex flex-col gap-2 max-h-[82vh] overflow-y-auto ring-1 ring-white/10"
+                     (click)="$event.stopPropagation()">
+                    <div class="flex items-center justify-between pb-2 border-b border-white/10 shrink-0">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[17px] text-amber-300">local_police</span>
+                            <span class="text-xs font-bold text-white uppercase tracking-wider">Operaciones Tácticas y Despacho CAD</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-blue-200 bg-[#0b2b5e] px-2 py-0.5 rounded border border-white/10 font-bold">
+                            {{ opsItems.length }} Herramientas
+                        </span>
+                    </div>
+
+                    <!-- Cuadrícula de 2 Columnas -->
+                    <div class="grid grid-cols-2 gap-2">
+                        @for (item of opsItems; track item.id) {
+                        <a (click)="navigateTo(item)" class="flex items-start gap-3 p-3 rounded-xl bg-[#0b2b5e]/40 hover:bg-[#0b2b5e] border border-white/10 hover:border-blue-400/40 transition-all cursor-pointer group shadow-sm">
+                            <div class="w-9 h-9 rounded-lg bg-[#001230] border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#0b2b5e] group-hover:scale-105 transition-all">
+                                <span class="material-symbols-outlined text-[20px] {{ item.color }} group-hover:scale-110 transition-transform">{{ item.icon }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-white group-hover:text-blue-100 truncate">{{ item.title }}</span>
+                                    @if (item.badge) {
+                                    <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-rose-500/30 text-rose-200 border border-rose-400/50">{{ item.badge }}</span>
+                                    }
+                                </div>
+                                <span class="text-[11px] text-blue-200/70 group-hover:text-blue-100/90 truncate block mt-0.5">{{ item.subtitle }}</span>
+                            </div>
+                        </a>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+            }
+
+            <!-- 4. Mega-Menú de Inteligencia e Investigaciones -->
+            @if (intelItems.length > 0) {
+            <div class="relative">
+                <button (click)="toggleDropdown('intel', $event)"
+                        [class.bg-[#0b2b5e]]="activeDropdown === 'intel'"
+                        [class.text-white]="activeDropdown === 'intel'"
+                        [class.border-white/20]="activeDropdown === 'intel'"
+                        [class.shadow-md]="activeDropdown === 'intel'"
+                        class="px-3.5 py-2 rounded-xl text-blue-100/90 hover:text-white hover:bg-[#0b2b5e]/70 transition-all flex items-center gap-2 border border-transparent cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px] text-cyan-300">radar</span>
+                    <span>Inteligencia</span>
+                    <span class="material-symbols-outlined text-[16px] text-blue-200/70 transition-transform duration-200" [class.rotate-180]="activeDropdown === 'intel'">expand_more</span>
+                </button>
+
+                @if (activeDropdown === 'intel') {
+                <div class="absolute left-0 top-full mt-2 w-[560px] lg:w-[620px] bg-[#00173d] border border-[#0b2b5e] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-4 z-[5010] animate-fade-in flex flex-col gap-2 ring-1 ring-white/10"
+                     (click)="$event.stopPropagation()">
+                    <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[17px] text-cyan-300">radar</span>
+                            <span class="text-xs font-bold text-white uppercase tracking-wider">Inteligencia Táctica, Flota y Armería</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-blue-200 bg-[#0b2b5e] px-2 py-0.5 rounded border border-white/10 font-bold">
+                            {{ intelItems.length }} Herramientas
+                        </span>
+                    </div>
+
+                    <!-- Cuadrícula de 2 Columnas -->
+                    <div class="grid grid-cols-2 gap-2">
+                        @for (item of intelItems; track item.id) {
+                        <a (click)="navigateTo(item)" class="flex items-start gap-3 p-3 rounded-xl bg-[#0b2b5e]/40 hover:bg-[#0b2b5e] border border-white/10 hover:border-blue-400/40 transition-all cursor-pointer group shadow-sm">
+                            <div class="w-9 h-9 rounded-lg bg-[#001230] border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#0b2b5e] group-hover:scale-105 transition-all">
+                                <span class="material-symbols-outlined text-[20px] {{ item.color }} group-hover:scale-110 transition-transform">{{ item.icon }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-white group-hover:text-blue-100 truncate">{{ item.title }}</span>
+                                    @if (item.badge) {
+                                    <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-rose-500/30 text-rose-200 border border-rose-400/50">{{ item.badge }}</span>
+                                    }
+                                </div>
+                                <span class="text-[11px] text-blue-200/70 group-hover:text-blue-100/90 truncate block mt-0.5">{{ item.subtitle }}</span>
+                            </div>
+                        </a>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+            }
+
+            <!-- 5. Mega-Menú Judicial y Transparencia -->
+            @if (legalItems.length > 0) {
+            <div class="relative">
+                <button (click)="toggleDropdown('legal', $event)"
+                        [class.bg-[#0b2b5e]]="activeDropdown === 'legal'"
+                        [class.text-white]="activeDropdown === 'legal'"
+                        [class.border-white/20]="activeDropdown === 'legal'"
+                        [class.shadow-md]="activeDropdown === 'legal'"
+                        class="px-3.5 py-2 rounded-xl text-blue-100/90 hover:text-white hover:bg-[#0b2b5e]/70 transition-all flex items-center gap-2 border border-transparent cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px] text-amber-300">gavel</span>
+                    <span>Judicial y Transparencia</span>
+                    <span class="material-symbols-outlined text-[16px] text-blue-200/70 transition-transform duration-200" [class.rotate-180]="activeDropdown === 'legal'">expand_more</span>
+                </button>
+
+                @if (activeDropdown === 'legal') {
+                <div class="absolute left-0 top-full mt-2 w-[540px] lg:w-[580px] bg-[#00173d] border border-[#0b2b5e] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-4 z-[5010] animate-fade-in flex flex-col gap-2 ring-1 ring-white/10"
+                     (click)="$event.stopPropagation()">
+                    <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[17px] text-amber-300">gavel</span>
+                            <span class="text-xs font-bold text-white uppercase tracking-wider">Órdenes Judiciales y Transparencia</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-blue-200 bg-[#0b2b5e] px-2 py-0.5 rounded border border-white/10 font-bold">
+                            {{ legalItems.length }} Herramientas
+                        </span>
+                    </div>
+
+                    <!-- Cuadrícula de 2 Columnas -->
+                    <div class="grid grid-cols-2 gap-2">
+                        @for (item of legalItems; track item.id) {
+                        <a (click)="navigateTo(item)" class="flex items-start gap-3 p-3 rounded-xl bg-[#0b2b5e]/40 hover:bg-[#0b2b5e] border border-white/10 hover:border-blue-400/40 transition-all cursor-pointer group shadow-sm">
+                            <div class="w-9 h-9 rounded-lg bg-[#001230] border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#0b2b5e] group-hover:scale-105 transition-all">
+                                <span class="material-symbols-outlined text-[20px] {{ item.color }} group-hover:scale-110 transition-transform">{{ item.icon }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <span class="text-xs font-bold text-white group-hover:text-blue-100 truncate block">{{ item.title }}</span>
+                                <span class="text-[11px] text-blue-200/70 group-hover:text-blue-100/90 truncate block mt-0.5">{{ item.subtitle }}</span>
+                            </div>
+                        </a>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+            }
+
+            <!-- 6. Mega-Menú de Administración del Sistema (Exclusivo Admin) -->
+            @if (adminItems.length > 0) {
+            <div class="relative">
+                <button (click)="toggleDropdown('admin', $event)"
+                        [class.bg-[#0b2b5e]]="activeDropdown === 'admin'"
+                        [class.text-white]="activeDropdown === 'admin'"
+                        [class.border-white/20]="activeDropdown === 'admin'"
+                        [class.shadow-md]="activeDropdown === 'admin'"
+                        class="px-3.5 py-2 rounded-xl text-blue-100/90 hover:text-white hover:bg-[#0b2b5e]/70 transition-all flex items-center gap-2 border border-transparent cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px] text-indigo-300">settings</span>
+                    <span>Administración</span>
+                    <span class="material-symbols-outlined text-[16px] text-blue-200/70 transition-transform duration-200" [class.rotate-180]="activeDropdown === 'admin'">expand_more</span>
+                </button>
+
+                @if (activeDropdown === 'admin') {
+                <div class="absolute left-0 top-full mt-2 w-[540px] lg:w-[580px] bg-[#00173d] border border-[#0b2b5e] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-4 z-[5010] animate-fade-in flex flex-col gap-2 ring-1 ring-white/10"
+                     (click)="$event.stopPropagation()">
+                    <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[17px] text-indigo-300">settings</span>
+                            <span class="text-xs font-bold text-white uppercase tracking-wider">Administración de Sistema y RBAC</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-blue-200 bg-[#0b2b5e] px-2 py-0.5 rounded border border-white/10 font-bold">
+                            {{ adminItems.length }} Herramientas
+                        </span>
+                    </div>
+
+                    <!-- Cuadrícula de 2 Columnas -->
+                    <div class="grid grid-cols-2 gap-2">
+                        @for (item of adminItems; track item.id) {
+                        <a (click)="navigateTo(item)" class="flex items-start gap-3 p-3 rounded-xl bg-[#0b2b5e]/40 hover:bg-[#0b2b5e] border border-white/10 hover:border-blue-400/40 transition-all cursor-pointer group shadow-sm">
+                            <div class="w-9 h-9 rounded-lg bg-[#001230] border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#0b2b5e] group-hover:scale-105 transition-all">
+                                <span class="material-symbols-outlined text-[20px] {{ item.color }} group-hover:scale-110 transition-transform">{{ item.icon }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <span class="text-xs font-bold text-white group-hover:text-blue-100 truncate block">{{ item.title }}</span>
+                                <span class="text-[11px] text-blue-200/70 group-hover:text-blue-100/90 truncate block mt-0.5">{{ item.subtitle }}</span>
+                            </div>
+                        </a>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+            }
+
+        </nav>
     </div>
 
-    <!-- Navigation Links -->
-    <nav class="flex flex-col flex-1 py-4 overflow-y-auto">
-
-        <!-- Operations Section -->
-        <div class="px-6 pt-2 pb-1 select-none">
-            <span class="font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold">Operations</span>
-        </div>
-
-        <a routerLink="/dashboard" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}"
-           class="nav-link">
-            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">dashboard</span>
-            <span>Dashboard</span>
-        </a>
-
-        <a routerLink="/incidents" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}"
-           class="nav-link">
-            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">folder</span>
-            <span>Active Cases</span>
-            <span class="ml-auto bg-white/10 text-white text-[10.5px] font-semibold py-0.5 px-2 rounded-full border border-white/5">12</span>
-        </a>
-
-        @if (profile === 'administrador') {
-        <a routerLink="/logistics" routerLinkActive="active-link"
-           class="nav-link">
-            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">local_shipping</span>
-            <span>Logistics</span>
-        </a>
-        }
-
-        <!-- Field Intelligence Section -->
-        <div class="px-6 pt-5 pb-1 select-none">
-            <span class="font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold">Field Intelligence</span>
-        </div>
-
-        <a routerLink="/tactical-map" routerLinkActive="active-link"
-           class="nav-link">
-            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">explore</span>
-            <span>Tactical Map</span>
-        </a>
-
-        @if (profile === 'administrador') {
-        <a routerLink="/criminal-intel" routerLinkActive="active-link"
-           class="nav-link">
-            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">group</span>
-            <span>Criminal Intel</span>
-        </a>
-        }
-
-        <a class="nav-link cursor-not-allowed opacity-35">
-            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">shield</span>
-            <span>Domestic Threats</span>
-        </a>
-
-        <a class="nav-link cursor-not-allowed opacity-35">
-            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">error</span>
-            <span>B.O.L.O. Alerts</span>
-            <span class="ml-auto w-1.5 h-1.5 rounded-full bg-error shrink-0"></span>
-        </a>
-
-        <!-- Records Section -->
-        <div class="px-6 pt-5 pb-1 select-none">
-            <span class="font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold">Records</span>
-        </div>
-
-        <a class="nav-link cursor-not-allowed opacity-35">
-            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">check_circle</span>
-            <span>Arrests Log</span>
-        </a>
-
-        <!-- Bottom User Card & Sign Out -->
-        <div class="mt-auto flex flex-col gap-2.5 p-4 border-t border-white/5 bg-white/[0.01]">
-            
-            <!-- User Profile Card -->
-            <div class="flex items-center gap-3 p-2.5 rounded-xl border border-white/5 bg-white/[0.02] select-none hover:bg-white/[0.04] transition-colors">
-                <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-bold text-xs text-white uppercase tracking-wider relative shrink-0">
-                    {{ authService.getOfficerName().substring(0,2) }}
-                    <span class="absolute -right-0.5 -bottom-0.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-[#0b0f19]"></span>
-                </div>
-                <div class="flex flex-col overflow-hidden">
-                    <span class="text-[13px] font-medium text-white leading-none truncate">{{ authService.getOfficerName() }}</span>
-                    <span class="text-[9px] font-bold text-slate-400 mt-1.5 select-none uppercase tracking-wider">{{ profile === 'administrador' ? 'COMMANDER' : 'OFFICER' }}</span>
-                </div>
+    <!-- DERECHA: Búsqueda Rápida Global, Reloj Digital y Perfil del Oficial -->
+    <div class="flex items-center gap-3 shrink-0">
+        
+        <!-- Búsqueda Rápida Global -->
+        <div class="relative hidden sm:block">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-blue-200/60 text-[18px] pointer-events-none">search</span>
+                <input type="text" 
+                       [(ngModel)]="searchQuery" 
+                       (focus)="activeDropdown = 'search'"
+                       placeholder="Buscar módulo, caso, registro..." 
+                       class="w-52 lg:w-64 bg-[#001230] border border-[#0b2b5e] rounded-xl pl-9 pr-8 py-2 text-white text-xs focus:outline-none focus:border-blue-400 focus:w-80 transition-all placeholder:text-blue-200/40 shadow-inner" />
+                @if (searchQuery) {
+                <button (click)="searchQuery = ''" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-200/60 hover:text-white p-0.5 bg-transparent border-0 cursor-pointer flex items-center">
+                    <span class="material-symbols-outlined text-[15px]">close</span>
+                </button>
+                }
             </div>
 
-            <!-- Sign Out Button -->
-            <button (click)="logout()" class="w-full border border-white/10 hover:border-error/30 hover:bg-error/10 hover:text-error text-[#94a3b8] font-semibold py-2 px-3 rounded-lg transition-all text-[12px] flex items-center justify-center gap-2 cursor-pointer">
-                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">logout</span>
-                Sign Out
-            </button>
+            <!-- Menú Desplegable de Resultados de Búsqueda -->
+            @if (activeDropdown === 'search' && searchQuery.trim().length > 0) {
+            <div class="absolute right-0 top-full mt-2 w-96 bg-[#00173d] border border-[#0b2b5e] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-3 z-[5010] max-h-84 overflow-y-auto flex flex-col gap-1 animate-fade-in ring-1 ring-white/10"
+                 (click)="$event.stopPropagation()">
+                <div class="px-2.5 py-1 text-[11px] font-bold text-white uppercase tracking-wider border-b border-white/10 mb-1 flex items-center justify-between">
+                    <span>Módulos Coincidentes</span>
+                    <span class="font-mono text-blue-200">({{ searchResults.length }})</span>
+                </div>
+                @if (searchResults.length === 0) {
+                <div class="p-4 text-center text-blue-200/70 text-xs">
+                    No se encontraron módulos autorizados para "{{ searchQuery }}"
+                </div>
+                } @else {
+                @for (item of searchResults; track item.id) {
+                <a (click)="navigateTo(item)" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#0b2b5e] text-blue-100 hover:text-white transition-colors cursor-pointer group">
+                    <div class="w-8 h-8 rounded-lg bg-[#001230] flex items-center justify-center shrink-0 border border-white/10">
+                        <span class="material-symbols-outlined text-[18px] {{ item.color }}">{{ item.icon }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-xs font-bold truncate block">{{ item.title }}</span>
+                        <span class="text-[11px] text-blue-200/70 truncate block">{{ item.subtitle }}</span>
+                    </div>
+                </a>
+                }
+                }
+            </div>
+            }
         </div>
-    </nav>
-</aside>
+
+        <!-- Reloj Digital -->
+        <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#001230] border border-[#0b2b5e] text-blue-100 text-xs font-mono font-bold tracking-wider">
+            <span class="material-symbols-outlined text-[16px] text-blue-300">schedule</span>
+            <span>{{ currentTime || '00:00:00' }}</span>
+            <span class="text-[10px] text-blue-300/70 font-sans font-normal">UTC-5</span>
+        </div>
+
+        <!-- Menú Desplegable del Perfil del Oficial -->
+        <div class="relative">
+            <button (click)="toggleDropdown('profile', $event)"
+                    [class.bg-[#0b2b5e]]="activeDropdown === 'profile'"
+                    [class.border-blue-400/50]="activeDropdown === 'profile'"
+                    class="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-[#0b2b5e]/80 border border-[#0b2b5e] transition-all cursor-pointer shadow-sm">
+                <div class="w-8 h-8 rounded-lg bg-[#0b2b5e] border border-white/20 flex items-center justify-center font-bold text-white text-xs shadow-sm">
+                    {{ (authService.getOfficerName() || 'OF').substring(0, 2).toUpperCase() }}
+                </div>
+                <div class="hidden sm:flex flex-col text-left">
+                    <span class="text-xs font-bold text-white leading-tight truncate max-w-[130px]">{{ authService.getOfficerName() || 'Oficial' }}</span>
+                    <span class="text-[9px] font-bold text-blue-200 font-mono leading-tight uppercase">{{ getRoleLabel() }}</span>
+                </div>
+                <span class="material-symbols-outlined text-[16px] text-blue-200 transition-transform duration-200" [class.rotate-180]="activeDropdown === 'profile'">expand_more</span>
+            </button>
+
+            <!-- Menú Emergente del Perfil -->
+            @if (activeDropdown === 'profile') {
+            <div class="absolute right-0 top-full mt-2 w-60 bg-[#00173d] border border-[#0b2b5e] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-2.5 z-[5010] animate-fade-in flex flex-col gap-1 ring-1 ring-white/10"
+                 (click)="$event.stopPropagation()">
+                <div class="px-3 py-2 border-b border-white/10">
+                    <p class="text-xs font-bold text-white truncate">{{ authService.getOfficerName() || 'Oficial Activo' }}</p>
+                    <p class="text-[10px] text-blue-200 font-mono font-bold">{{ getRoleLabel() }}</p>
+                </div>
+
+                <a routerLink="/profile" (click)="closeAll()" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-[#0b2b5e] text-xs font-medium transition-colors no-underline">
+                    <span class="material-symbols-outlined text-[18px] text-blue-300">account_circle</span>
+                    <span>Mi Perfil de Oficial</span>
+                </a>
+
+                <div class="border-t border-white/10 my-1"></div>
+
+                <button (click)="logout()" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-300 hover:text-rose-100 hover:bg-rose-500/20 text-xs font-bold transition-colors w-full text-left cursor-pointer border-0 bg-transparent">
+                    <span class="material-symbols-outlined text-[17px] text-rose-300">logout</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+            }
+        </div>
+
+    </div>
+</header>
+
+
+
+

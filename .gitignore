@@ -35,3 +35,33 @@ repomix-output.xml
 .idea/
 .DS_Store
 Thumbs.db
+
+# Media, Backups & Binaries
+django_app/media/
+django_app/backups_data/
+*.jar
+*.pdf
+
+# Temporary & Scratch Files
+scratch/
+**/scratch/
+recovered_views_*
+views_*.txt
+transcript_*.txt
+schema_eraser.txt
+extracted_template.txt
+output*.jsonl
+clean*.py
+clean2_*.py
+clean3_*.py
+found_*.py
+fix_views.py
+fix_ui.py
+restore.py
+append_views.py
+check_row_len.py
+replace_comandante.*
+reconstructed.html
+recovered.html
+logistics_head.html
+

@@ -1,0 +1,67 @@
+@startuml Módulo 07 - Gestión de Personal Policial y Accesos
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam actorStyle helio
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam package {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor White
+  BorderColor Black
+}
+
+title Módulo 07: Gestión de Personal Policial y Accesos\n(Gestión de Personal Policial y Accesos)
+
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "Sistema SafeCity Intelligence Ops" {
+
+  actor "Administrador de\nSistema" as Admin
+  actor "Oficial de Patrulla" as Officer
+  actor "Sheriff" as Commander
+
+  package "Módulo: Personal y Accesos" as mod7 {
+    usecase "CU-O32: Actualizar Récord de\nCertificaciones" as UC32
+    usecase "CU-O33: Rastrear Inicio de\nSesión Web/Móvil" as UC33
+    usecase "CU-O34: Modificar Permisos\nde Acceso (RBAC)" as UC34
+    usecase "CU-T08: Administrar Fichas\nde Personal Policial" as UC_T08
+  }
+
+  Admin --> UC32
+  Admin --> UC33
+  Admin --> UC34
+  Admin --> UC_T08
+
+  Officer --> UC33 : <<genera logs>>
+
+  Commander --> UC34 : <<solicita>>
+}
+
+note right of mod7
+  <b>Actor principal:</b> Administrador de Sistema
+  <b>Objetivo:</b> Control de roles, fichas
+  de personal y permisos
+  <b>Técnicas:</b> RBAC, Monitoreo de seguridad
+  <b>Tablas Dim:</b> Dim_Oficial_Policia,
+  Dim_Rol_Oficial, Dim_Usuario_Sistema
+end note
+
+@enduml

@@ -1,0 +1,1679 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+        <!-- Main Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-4 w-full pb-16">
+            
+            <!-- Search and Filter Toolbar -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-wrap sm:flex-nowrap gap-4 items-end shadow-sm shrink-0">
+                <div class="w-full" [ngClass]="activeTab === 'permisos' ? 'sm:w-1/3' : 'sm:w-1/2'">
+                    <label class="block font-label-caps text-label-caps text-secondary mb-2">Buscar</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-lg notranslate" translate="no">search</span>
+                        <input [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright placeholder:text-slate-400 transition-all min-h-[38px]" placeholder="Buscar por ID, oficial, detalles..." type="text"/>
+                    </div>
+                </div>
+                <div class="w-full" [ngClass]="activeTab === 'permisos' ? 'sm:w-1/3' : 'sm:w-1/2'" *ngIf="activeTab === 'asistencias' || activeTab === 'permisos' || activeTab === 'handovers' || activeTab === 'amonestaciones'">
+                    <label class="block font-label-caps text-label-caps text-secondary mb-2">Filtrar por Estado</label>
+                    <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright transition-all min-h-[38px] appearance-none">
+                        <option value="All">Todos</option>
+                        <ng-container *ngIf="activeTab === 'asistencias'">
+                            <option value="Actives">En Turno Activo</option>
+                            <option value="Completados">Turnos Completados</option>
+                        </ng-container>
+                        <ng-container *ngIf="activeTab === 'permisos'">
+                            <option value="Pending">Pendientes</option>
+                            <option value="Approved">Aprobados</option>
+                            <option value="Rejected">Rechazados</option>
+                        </ng-container>
+                        <ng-container *ngIf="activeTab === 'handovers'">
+                            <option value="Pendings">Pendiente de Firma</option>
+                            <option value="Leidos">Leído / Confirmado</option>
+                        </ng-container>
+                        <ng-container *ngIf="activeTab === 'amonestaciones'">
+                            <option value="Amonestacion">Amonestaciones (Sanción)</option>
+                            <option value="Felicitacion">Felicitaciones</option>
+                        </ng-container>
+                    </select>
+                </div>
+                
+                <!-- Action Button specifically for Permisos moved to Top Right instead -->
+            </div>
+
+
+            <!-- Loader -->
+            <div *ngIf="isLoading" class="flex-1 flex flex-col items-center justify-center min-h-[300px]">
+                <span class="animate-spin border-4 border-primary border-t-transparent rounded-full w-12 h-12 mb-4"></span>
+                <p class="text-secondary font-medium">Cargando registros de personal...</p>
+            </div>
+
+            <!-- Content Area (Split Grid for Forms + History Logs) -->
+            <div *ngIf="!isLoading" class="grid grid-cols-1 xl:grid-cols-12 gap-lg items-start min-h-0">
+                
+                 <!-- LEFT SIDEBAR: Forms / Directory (4 cols) -->
+                <div class="xl:col-span-4 flex flex-col gap-lg" *ngIf="(!selectedOfficer || activeTab === 'hojas_vida') && activeTab !== 'permisos'">
+
+                    
+                    <!-- TAB 1 Form: Attendance Manual Registration -->
+                    <div *ngIf="activeTab === 'asistencias'" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+                        <h3 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2 border-b border-outline-variant pb-2">
+                            <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">edit_calendar</span>
+                            Registrar Asistencia Manual
+                        </h3>
+                        <form (ngSubmit)="submitManualClock()" class="flex flex-col gap-4">
+                            <div class="relative">
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">ID, Placa o Nombre del Oficial</label>
+                                <input type="text" [(ngModel)]="searchTerms.manualClock" name="clockId" placeholder="Buscar por ID, placa o nombre..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required
+                                       (input)="searchOfficer(searchTerms.manualClock, 'manualClock')"
+                                       (focus)="searchOfficer(searchTerms.manualClock, 'manualClock')"
+                                       (blur)="hideOfficerSuggestions()"/>
+                                
+                                <!-- Floating suggestions dropdown -->
+                                @if (activeSuggestionField === 'manualClock' && officerSuggestions.length > 0) {
+                                    <div class="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                        @for (sug of officerSuggestions; track sug.id_oficial) {
+                                            <div (mousedown)="selectOfficerSuggestion(sug, 'manualClock'); $event.preventDefault()" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <img [src]="sug.url_fotografia || getAvatarUrl(sug.nombres, sug.apellidos)" (error)="onAvatarError($event, sug.nombres, sug.apellidos)" class="w-7 h-7 rounded-full object-cover border border-outline-variant"/>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-xs font-bold text-primary">{{ sug.nombres }} {{ sug.apellidos }}</span>
+                                                        <span class="text-[10px] text-slate-500 font-mono">ID: {{ sug.id_oficial }} | Plate: {{ sug.placa_policial }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Operación</label>
+                                <select [(ngModel)]="manualClockForm.action" name="clockAction" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface">
+                                    <option value="clock-in">Registrar Entrada</option>
+                                    <option value="clock-out">Registrar Salida</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="mt-2 w-full bg-primary-container text-white py-2 px-4 rounded-lg font-headline-sm text-[13px] hover:bg-primary transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">how_to_reg</span>
+                                Registrar Marcaje
+                            </button>
+                        </form>
+                    </div>
+
+
+
+
+                    <!-- TAB 3 Form: Register Roll Call Briefing -->
+                    <div *ngIf="activeTab === 'briefings'" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+                        <h3 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2 border-b border-outline-variant pb-2">
+                            <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">assignment_ind</span>
+                            Registrar Pase de Lista (Briefing)
+                        </h3>
+                        <form (ngSubmit)="submitBriefing()" class="flex flex-col gap-4">
+                            <div class="relative">
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Supervisor / Comandante</label>
+                                <input type="text" [(ngModel)]="searchTerms.briefingSupervisor" name="bSup" placeholder="Buscar por ID, placa o nombre..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required
+                                       (input)="searchOfficer(searchTerms.briefingSupervisor, 'briefingSupervisor')"
+                                       (focus)="searchOfficer(searchTerms.briefingSupervisor, 'briefingSupervisor')"
+                                       (blur)="hideOfficerSuggestions()"/>
+                                
+                                <!-- Floating suggestions dropdown -->
+                                @if (activeSuggestionField === 'briefingSupervisor' && officerSuggestions.length > 0) {
+                                    <div class="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                        @for (sug of officerSuggestions; track sug.id_oficial) {
+                                            <div (mousedown)="selectOfficerSuggestion(sug, 'briefingSupervisor'); $event.preventDefault()" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <img [src]="sug.url_fotografia || getAvatarUrl(sug.nombres, sug.apellidos)" (error)="onAvatarError($event, sug.nombres, sug.apellidos)" class="w-7 h-7 rounded-full object-cover border border-outline-variant"/>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-xs font-bold text-primary">{{ sug.nombres }} {{ sug.apellidos }}</span>
+                                                        <span class="text-[10px] text-slate-500 font-mono">ID: {{ sug.id_oficial }} | Plate: {{ sug.placa_policial }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">BOLO / Alertas de Seguridad</label>
+                                <textarea rows="3" [(ngModel)]="briefingForm.bolo_details" name="bBolo" placeholder="Vehículos sospechosos, alertas activas..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface"></textarea>
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Asignaciones Especiales</label>
+                                <textarea rows="3" [(ngModel)]="briefingForm.special_assignments" name="bAsig" placeholder="Patrullas asignadas, cuadrantes, puntos de control..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required></textarea>
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Oficiales Asistentes (Nombres/Placas)</label>
+                                <input type="text" [(ngModel)]="briefingForm.asistentes" name="bAsis" placeholder="Ej. Gómez (7482), Rivas (9122)" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface"/>
+                            </div>
+                            <button type="submit" class="mt-2 w-full bg-primary-container text-white py-2 px-4 rounded-lg font-headline-sm text-[13px] hover:bg-primary transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">save</span>
+                                Guardar Pase de Lista
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- TAB 4 Form: Shift Handover -->
+                    <div *ngIf="activeTab === 'handovers'" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+                        <h3 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2 border-b border-outline-variant pb-2">
+                            <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">compare_arrows</span>
+                            Registrar Traspaso de Guardia
+                        </h3>
+                        <form (ngSubmit)="submitHandover()" class="flex flex-col gap-4">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="relative">
+                                    <label class="block font-label-caps text-label-caps text-secondary mb-1">Oficial Saliente</label>
+                                    <input type="text" [(ngModel)]="searchTerms.handoverSaliente" name="hSal" placeholder="Buscar saliente..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required
+                                           (input)="searchOfficer(searchTerms.handoverSaliente, 'handoverSaliente')"
+                                           (focus)="searchOfficer(searchTerms.handoverSaliente, 'handoverSaliente')"
+                                           (blur)="hideOfficerSuggestions()"/>
+                                    
+                                    <!-- Floating suggestions dropdown -->
+                                    @if (activeSuggestionField === 'handoverSaliente' && officerSuggestions.length > 0) {
+                                        <div class="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                            @for (sug of officerSuggestions; track sug.id_oficial) {
+                                                <div (mousedown)="selectOfficerSuggestion(sug, 'handoverSaliente'); $event.preventDefault()" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <img [src]="sug.url_fotografia || getAvatarUrl(sug.nombres, sug.apellidos)" (error)="onAvatarError($event, sug.nombres, sug.apellidos)" class="w-7 h-7 rounded-full object-cover border border-outline-variant"/>
+                                                        <div class="flex flex-col">
+                                                            <span class="text-xs font-bold text-primary">{{ sug.nombres }} {{ sug.apellidos }}</span>
+                                                            <span class="text-[10px] text-slate-500 font-mono">ID: {{ sug.id_oficial }} | Plate: {{ sug.placa_policial }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="relative">
+                                    <label class="block font-label-caps text-label-caps text-secondary mb-1">Oficial Entrante</label>
+                                    <input type="text" [(ngModel)]="searchTerms.handoverEntrante" name="hEnt" placeholder="Buscar entrante..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required
+                                           (input)="searchOfficer(searchTerms.handoverEntrante, 'handoverEntrante')"
+                                           (focus)="searchOfficer(searchTerms.handoverEntrante, 'handoverEntrante')"
+                                           (blur)="hideOfficerSuggestions()"/>
+                                    
+                                    <!-- Floating suggestions dropdown -->
+                                    @if (activeSuggestionField === 'handoverEntrante' && officerSuggestions.length > 0) {
+                                        <div class="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                            @for (sug of officerSuggestions; track sug.id_oficial) {
+                                                <div (mousedown)="selectOfficerSuggestion(sug, 'handoverEntrante'); $event.preventDefault()" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <img [src]="sug.url_fotografia || getAvatarUrl(sug.nombres, sug.apellidos)" (error)="onAvatarError($event, sug.nombres, sug.apellidos)" class="w-7 h-7 rounded-full object-cover border border-outline-variant"/>
+                                                        <div class="flex flex-col">
+                                                            <span class="text-xs font-bold text-primary">{{ sug.nombres }} {{ sug.apellidos }}</span>
+                                                            <span class="text-[10px] text-slate-500 font-mono">ID: {{ sug.id_oficial }} | Plate: {{ sug.placa_policial }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            
+                            <div class="bg-surface p-3 rounded-lg border border-outline-variant flex flex-col gap-2.5">
+                                <span class="font-label-caps text-[10px] text-secondary font-bold uppercase tracking-wider block">Verificación de Traspaso</span>
+                                
+                                <label class="flex items-center gap-3 cursor-pointer text-xs font-semibold text-on-surface">
+                                    <input type="checkbox" [(ngModel)]="handoverForm.checklist_detenidos" name="chkDet" class="accent-primary"/>
+                                    Celdas y Detenidos sin novedad
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer text-xs font-semibold text-on-surface">
+                                    <input type="checkbox" [(ngModel)]="handoverForm.checklist_equipos" name="chkEqu" class="accent-primary"/>
+                                    Armamento y Radios entregados
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer text-xs font-semibold text-on-surface">
+                                    <input type="checkbox" [(ngModel)]="handoverForm.checklist_incidentes" name="chkInc" class="accent-primary"/>
+                                    Incidentes del turno notificados
+                                </label>
+                            </div>
+
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Observaciones y Novedades</label>
+                                <textarea rows="3" [(ngModel)]="handoverForm.novedades" name="hNov" placeholder="Comentarios y novedades del traspaso..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface"></textarea>
+                            </div>
+                            <button type="submit" class="mt-2 w-full bg-primary-container text-white py-2 px-4 rounded-lg font-headline-sm text-[13px] hover:bg-primary transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">verified_user</span>
+                                Guardar Traspaso de Turno
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- TAB 5 Form: Certifications -->
+                    <div *ngIf="activeTab === 'certificaciones'" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+                        <h3 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2 border-b border-outline-variant pb-2">
+                            <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">school</span>
+                            Registrar Curso / Capacitación
+                        </h3>
+                        <form (ngSubmit)="submitCertification()" class="flex flex-col gap-4">
+                            <div class="relative">
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Oficial Capacitado</label>
+                                <input type="text" [(ngModel)]="searchTerms.certOfficer" name="cOfi" placeholder="Buscar por ID, placa o nombre..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required
+                                       (input)="searchOfficer(searchTerms.certOfficer, 'certOfficer')"
+                                       (focus)="searchOfficer(searchTerms.certOfficer, 'certOfficer')"
+                                       (blur)="hideOfficerSuggestions()"/>
+                                
+                                <!-- Floating suggestions dropdown -->
+                                @if (activeSuggestionField === 'certOfficer' && officerSuggestions.length > 0) {
+                                    <div class="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                        @for (sug of officerSuggestions; track sug.id_oficial) {
+                                            <div (mousedown)="selectOfficerSuggestion(sug, 'certOfficer'); $event.preventDefault()" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <img [src]="sug.url_fotografia || getAvatarUrl(sug.nombres, sug.apellidos)" (error)="onAvatarError($event, sug.nombres, sug.apellidos)" class="w-7 h-7 rounded-full object-cover border border-outline-variant"/>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-xs font-bold text-primary">{{ sug.nombres }} {{ sug.apellidos }}</span>
+                                                        <span class="text-[10px] text-slate-500 font-mono">ID: {{ sug.id_oficial }} | Plate: {{ sug.placa_policial }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Nombre del Curso / Capacitación</label>
+                                <input type="text" [(ngModel)]="certForm.nombre_curso" name="cCur" placeholder="Ej. Tácticas de Negociación de Rehenes" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required/>
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Institución Emisora</label>
+                                <input type="text" [(ngModel)]="certForm.institucion" name="cInst" placeholder="Ej. Academia de Policía SafeCity" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required/>
+                            </div>
+                             <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Fecha de Culminación</label>
+                                <input type="date" [(ngModel)]="certForm.fecha_completado" name="cFec" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required/>
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Documento de Respaldo / PDF</label>
+                                <div class="flex items-center gap-2">
+                                    <label for="certFile" class="flex items-center justify-center gap-2 px-3 py-2 border border-outline-variant rounded-lg hover:border-primary cursor-pointer bg-surface-bright text-primary hover:bg-slate-50 transition-colors shadow-sm font-body-sm text-body-sm">
+                                        <span class="material-symbols-outlined text-[18px] notranslate" translate="no">upload_file</span>
+                                        <span>{{ selectedCertFile ? selectedCertFile.name : 'Seleccionar Archivo' }}</span>
+                                    </label>
+                                    <input id="certFile" type="file" class="hidden" (change)="onCertFileSelected($event)" accept=".pdf,image/*"/>
+                                    <button *ngIf="selectedCertFile" type="button" (click)="clearCertFile()" class="p-1.5 text-[#dc2626] hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 flex items-center justify-center cursor-pointer" title="Eliminar archivo">
+                                        <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="submit" class="mt-2 w-full bg-primary-container text-white py-2 px-4 rounded-lg font-headline-sm text-[13px] hover:bg-primary transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">workspace_premium</span>
+                                Guardar Certificado
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- TAB 6 Form: Complaints and warning -->
+                    <div *ngIf="activeTab === 'amonestaciones'" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+                        <h3 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2 border-b border-outline-variant pb-2">
+                            <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">gavel</span>
+                            Registrar Reporte Disciplinario
+                        </h3>
+                        <form (ngSubmit)="submitAmonestacion()" class="flex flex-col gap-4">
+                            <div class="relative">
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Oficial Reportado</label>
+                                <input type="text" [(ngModel)]="searchTerms.amonOfficer" name="aOfi" placeholder="Buscar por ID, placa o nombre..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required
+                                       (input)="searchOfficer(searchTerms.amonOfficer, 'amonOfficer')"
+                                       (focus)="searchOfficer(searchTerms.amonOfficer, 'amonOfficer')"
+                                       (blur)="hideOfficerSuggestions()"/>
+                                
+                                <!-- Floating suggestions dropdown -->
+                                @if (activeSuggestionField === 'amonOfficer' && officerSuggestions.length > 0) {
+                                    <div class="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                        @for (sug of officerSuggestions; track sug.id_oficial) {
+                                            <div (mousedown)="selectOfficerSuggestion(sug, 'amonOfficer'); $event.preventDefault()" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <img [src]="sug.url_fotografia || getAvatarUrl(sug.nombres, sug.apellidos)" (error)="onAvatarError($event, sug.nombres, sug.apellidos)" class="w-7 h-7 rounded-full object-cover border border-outline-variant"/>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-xs font-bold text-primary">{{ sug.nombres }} {{ sug.apellidos }}</span>
+                                                        <span class="text-[10px] text-slate-500 font-mono">ID: {{ sug.id_oficial }} | Plate: {{ sug.placa_policial }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Tipo de Reporte</label>
+                                <select [(ngModel)]="amonForm.tipo" name="aTipo" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface">
+                                    <option value="Amonestacion">Amonestación (Sanción/Queja)</option>
+                                    <option value="Felicitacion">Felicitación por Servicio</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Detalles del Incidente / Justificación</label>
+                                <textarea rows="4" [(ngModel)]="amonForm.descripcion" name="aDesc" placeholder="Detalle la queja ciudadana o mérito del oficial..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required></textarea>
+                            </div>
+                            <div class="relative">
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Comandante / Instructor Autorizante</label>
+                                <input type="text" [(ngModel)]="searchTerms.amonComandante" name="aCom" placeholder="Buscar por ID, placa o nombre..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required
+                                       (input)="searchOfficer(searchTerms.amonComandante, 'amonComandante')"
+                                       (focus)="searchOfficer(searchTerms.amonComandante, 'amonComandante')"
+                                       (blur)="hideOfficerSuggestions()"/>
+                                
+                                <!-- Floating suggestions dropdown -->
+                                @if (activeSuggestionField === 'amonComandante' && officerSuggestions.length > 0) {
+                                    <div class="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                        @for (sug of officerSuggestions; track sug.id_oficial) {
+                                            <div (mousedown)="selectOfficerSuggestion(sug, 'amonComandante'); $event.preventDefault()" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <img [src]="sug.url_fotografia || getAvatarUrl(sug.nombres, sug.apellidos)" (error)="onAvatarError($event, sug.nombres, sug.apellidos)" class="w-7 h-7 rounded-full object-cover border border-outline-variant"/>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-xs font-bold text-primary">{{ sug.nombres }} {{ sug.apellidos }}</span>
+                                                        <span class="text-[10px] text-slate-500 font-mono">ID: {{ sug.id_oficial }} | Plate: {{ sug.placa_policial }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <button type="submit" class="mt-2 w-full bg-primary-container text-white py-2 px-4 rounded-lg font-headline-sm text-[13px] hover:bg-primary transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">report_problem</span>
+                                Guardar Reporte
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- TAB 9 Form: Registrar Reunión Comunitaria -->
+                    <div *ngIf="activeTab === 'comunidad'" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+                        <h3 class="font-headline-sm text-headline-sm text-primary mb-4 flex items-center gap-2 border-b border-outline-variant pb-2">
+                            <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">groups</span>
+                            Registrar Reunión Comunitaria
+                        </h3>
+                        <form (ngSubmit)="submitMeeting()" #formMeeting="ngForm" class="flex flex-col gap-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Ubicación de la Reunión / Sector *</label>
+                                <div class="flex gap-2">
+                                    <div class="relative flex-1">
+                                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-md notranslate" translate="no">location_on</span>
+                                        <input type="text" [(ngModel)]="newMeeting.ubicacion" name="ubicacion" required 
+                                               class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" 
+                                               placeholder="Ej.: Calle 10 con Carrera 5, Sector Centro">
+                                    </div>
+                                    <button type="button" (click)="openMapModal()" 
+                                            class="bg-slate-100 hover:bg-slate-200 border border-outline-variant p-2 rounded-lg text-secondary flex items-center justify-center cursor-pointer transition-colors shadow-2xs" 
+                                            title="Seleccionar en el Mapa">
+                                        <span class="material-symbols-outlined notranslate text-[20px]" translate="no">map</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label class="block font-label-caps text-label-caps text-secondary mb-1">Comentarios y Minuta de la Reunión *</label>
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-3 top-3 text-on-surface-variant text-md notranslate" translate="no">chat</span>
+                                    <textarea [(ngModel)]="newMeeting.comentarios_vecinales" name="comentarios_vecinales" required rows="6" 
+                                              class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" 
+                                              placeholder="Describa inquietudes de los vecinos, acuerdos alcanzados o temas tratados..."></textarea>
+                                </div>
+                            </div>
+
+                            <button type="submit" [disabled]="!formMeeting.valid || isLoading"
+                                    class="mt-2 w-full bg-primary-container text-white py-2.5 px-4 rounded-lg font-headline-sm text-[13px] hover:bg-primary transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50">
+                                <span class="material-symbols-outlined text-xs notranslate font-black" translate="no">save</span>
+                                Guardar Reporte
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- TAB 7: Officer Directory List -->
+                    <div *ngIf="activeTab === 'hojas_vida'" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col min-h-[450px]">
+                        <h3 class="font-headline-sm text-headline-sm text-primary mb-3 flex items-center gap-2 border-b border-outline-variant pb-2 justify-between">
+                            <span class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">contact_phone</span>
+                                Directorio Policial
+                            </span>
+                        </h3>
+                        <button (click)="openCreateOfficerModal()" class="mb-3 w-full bg-primary hover:bg-primary/95 text-white text-xs font-bold py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-all shadow-sm">
+                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">person_add</span>
+                            Registrar Nuevo Oficial
+                        </button>
+                        <div class="overflow-y-auto flex-1 flex flex-col divide-y divide-outline-variant max-h-[500px] pr-1">
+                            <div *ngFor="let o of filteredOfficers" (click)="selectOfficerForCv(o)" [ngClass]="selectedOfficer?.id_oficial === o.id_oficial ? 'bg-primary-container/10 border-l-4 border-[#00173d] pl-3' : 'hover:bg-surface-container-low pl-2'" class="py-3 pr-2 cursor-pointer transition-all flex items-center gap-3">
+                                <img [src]="o.url_fotografia || getAvatarUrl(o.nombres, o.apellidos)" (error)="onAvatarError($event, o.nombres, o.apellidos)" class="w-9 h-9 rounded-full object-cover border border-outline-variant"/>
+                                <div class="flex flex-col min-w-0">
+                                    <span class="text-xs font-bold text-primary truncate">{{ o.nombres }} {{ o.apellidos }}</span>
+                                    <span class="text-[10px] text-slate-500 font-mono mt-0.5">{{ o.placa_policial }} (ID: {{ o.id_oficial }})</span>
+                                </div>
+                            </div>
+                            <div *ngIf="filteredOfficers.length === 0" class="py-8 text-center text-secondary italic text-xs">No se encontraron oficiales.</div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 10: Officer Performance Scorecard KPIs -->
+                    <div *ngIf="activeTab === 'rendimiento'" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+                        <h3 class="text-sm font-bold text-on-surface flex items-center gap-2 mb-4">
+                            <span class="material-symbols-outlined text-blue-500 text-[20px] notranslate" translate="no">analytics</span>
+                            Resumen de Rendimiento
+                        </h3>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="bg-slate-50 border border-slate-200/60 p-3 rounded-lg">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Puntaje Promedio</span>
+                                <span class="text-xl font-black text-blue-600 block mt-1">{{ performanceData?.average_score || 0 }}</span>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200/60 p-3 rounded-lg">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Total Oficiales Evaluados</span>
+                                <span class="text-xl font-black text-[#00173d] block mt-1">{{ performanceData?.total_officers || 0 }}</span>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200/60 p-3 rounded-lg">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Requieren Atención</span>
+                                <span class="text-xl font-black text-red-600 block mt-1">{{ performanceData?.officers_needing_attention || 0 }}</span>
+                            </div>
+                            <div *ngIf="performanceData?.top_performer" class="bg-emerald-50 border border-emerald-200/60 p-3 rounded-lg">
+                                <span class="text-[10px] font-bold text-emerald-600 uppercase">Mejor Desempeño</span>
+                                <span class="text-sm font-black text-emerald-700 block mt-1">{{ performanceData?.top_performer?.name }}</span>
+                                <span class="text-xs text-emerald-600">Puntaje: {{ performanceData?.top_performer?.performance_score }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT SIDEBAR: History Tables -->
+                <div [ngClass]="activeTab === 'permisos' ? 'xl:col-span-12' : 'xl:col-span-8'" class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col min-h-[450px]">
+
+                    
+                    <!-- TAB 1: Attendance Table -->
+                    <div *ngIf="activeTab === 'asistencias'" class="overflow-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container border-b border-outline-variant sticky top-0 z-10">
+                                <tr>
+                                    <th (click)="sortAsistencias('id_oficial')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-32 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            ID Oficial
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAsistencia === 'id_oficial' ? (sortAscendingAsistencia ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortAsistencias('oficial_nombre')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Nombre Completo
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAsistencia === 'oficial_nombre' ? (sortAscendingAsistencia ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortAsistencias('timestamp_entrada')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Hora de Entrada
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAsistencia === 'timestamp_entrada' ? (sortAscendingAsistencia ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortAsistencias('timestamp_salida')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Hora de Salida
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAsistencia === 'timestamp_salida' ? (sortAscendingAsistencia ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-28">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant">
+                                <tr *ngFor="let item of filteredAsistencias" class="hover:bg-surface-container-low transition-colors">
+                                    <td class="py-3 px-4 font-data-mono text-data-mono text-[#00173d] font-semibold">#{{ item.id_oficial }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-bold">{{ item.oficial_nombre }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ item.timestamp_entrada | date:'MMM d, y' }} <span class="text-primary font-bold ml-1">{{ item.timestamp_entrada | date:'HH:mm:ss' }}</span></td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">
+                                        <span *ngIf="item.timestamp_salida">{{ item.timestamp_salida | date:'MMM d, y' }} <span class="text-primary font-bold ml-1">{{ item.timestamp_salida | date:'HH:mm:ss' }}</span></span>
+                                        <span *ngIf="!item.timestamp_salida" class="text-slate-400 italic">On Shift</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span *ngIf="!item.timestamp_salida" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] bg-green-50 text-[#2e7d32] border border-green-200">
+                                            Active
+                                        </span>
+                                        <span *ngIf="item.timestamp_salida" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] bg-slate-100 text-slate-500 border border-slate-200">
+                                            Completed
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="filteredAsistencias.length === 0">
+                                    <td colspan="5" class="py-12 text-center text-secondary italic">No se encontraron registros de asistencia.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAB 2: Leave Permits Table (Full Width) -->
+                    <div *ngIf="activeTab === 'permisos'" class="overflow-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container border-b border-outline-variant sticky top-0 z-10">
+                                <tr>
+                                    <th (click)="sortPermisos('id_oficial')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-32 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            ID Oficial
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldPermiso === 'id_oficial' ? (sortAscendingPermiso ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortPermisos('oficial_nombre')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Nombre Completo
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldPermiso === 'oficial_nombre' ? (sortAscendingPermiso ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortPermisos('tipo_permiso')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Tipo de Permiso
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldPermiso === 'tipo_permiso' ? (sortAscendingPermiso ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortPermisos('fecha_inicio')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Fecha de Inicio
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldPermiso === 'fecha_inicio' ? (sortAscendingPermiso ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortPermisos('fecha_fin')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Fecha de Fin
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldPermiso === 'fecha_fin' ? (sortAscendingPermiso ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-28 text-center">Documento</th>
+                                    <th (click)="sortPermisos('estado')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-28 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Status
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldPermiso === 'estado' ? (sortAscendingPermiso ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-28 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant">
+                                <tr *ngFor="let item of filteredPermisos" class="hover:bg-surface-container-low transition-colors">
+                                    <td class="py-3 px-4 font-data-mono text-data-mono text-[#00173d] font-semibold">#{{ item.id_oficial }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-bold">{{ item.oficial_nombre }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-medium">{{ item.tipo_permiso }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ item.fecha_inicio | date:'MMM d, y' }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ item.fecha_fin | date:'MMM d, y' }}</td>
+                                    <td class="py-3 px-4 text-center">
+                                        <a *ngIf="item.documento_respaldo" [href]="item.documento_respaldo" target="_blank" class="text-primary hover:text-primary-container inline-flex items-center gap-1 cursor-pointer font-body-sm text-body-sm font-semibold" title="Ver documento de respaldo">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">description</span>
+                                            <span>Ver</span>
+                                        </a>
+                                        <span *ngIf="!item.documento_respaldo" class="text-slate-400 italic text-[11px]">--</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span *ngIf="item.estado === 'Pending'" class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-[9px] bg-amber-50 text-[#d97706] border border-amber-200 animate-pulse">
+                                            Pending
+                                        </span>
+                                        <span *ngIf="item.estado === 'Approved'" class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-[9px] bg-green-50 text-[#2e7d32] border border-green-200">
+                                            Approved
+                                        </span>
+                                        <span *ngIf="item.estado === 'Rejected'" class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-[9px] bg-red-50 text-[#dc2626] border border-red-200">
+                                            Rejected
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        <div class="flex items-center justify-center gap-2" *ngIf="item.estado === 'Pending'">
+                                            <button (click)="approvePermit(item.id)" class="p-1 text-[#2e7d32] hover:text-white hover:bg-[#2e7d32] rounded-md border border-green-200 hover:border-transparent transition-all flex items-center justify-center cursor-pointer shadow-sm" title="Aprobar Permiso">
+                                                <span class="material-symbols-outlined text-[15px] notranslate" translate="no">check</span>
+                                            </button>
+                                            <button (click)="rejectPermit(item.id)" class="p-1 text-[#dc2626] hover:text-white hover:bg-[#dc2626] rounded-md border border-red-200 hover:border-transparent transition-all flex items-center justify-center cursor-pointer shadow-sm" title="Rechazar Permiso">
+                                                <span class="material-symbols-outlined text-[15px] notranslate" translate="no">close</span>
+                                            </button>
+                                        </div>
+                                        <span *ngIf="item.estado !== 'Pending'" class="text-slate-400 italic text-xs font-semibold">Resuelto</span>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="filteredPermisos.length === 0">
+                                    <td colspan="8" class="py-12 text-center text-secondary italic">No se encontraron solicitudes de permiso.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAB 3: Briefings (Roll Call) Table -->
+                    <div *ngIf="activeTab === 'briefings'" class="overflow-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container border-b border-outline-variant sticky top-0 z-10">
+                                <tr>
+                                    <th (click)="sortBriefings('timestamp')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-40 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Fecha / Hora
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldBriefing === 'timestamp' ? (sortAscendingBriefing ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortBriefings('supervisor_nombre')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-48 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Supervisor
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldBriefing === 'supervisor_nombre' ? (sortAscendingBriefing ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortBriefings('special_assignments')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Asignaciones Especiales
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldBriefing === 'special_assignments' ? (sortAscendingBriefing ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortBriefings('bolo_details')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            BOLO
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldBriefing === 'bolo_details' ? (sortAscendingBriefing ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortBriefings('asistentes')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-40 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Asistentes
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldBriefing === 'asistentes' ? (sortAscendingBriefing ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant">
+                                <tr *ngFor="let item of filteredBriefings" class="hover:bg-surface-container-low transition-colors">
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-medium">{{ item.timestamp | date:'MMM d, y HH:mm' }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-bold">{{ item.supervisor_nombre }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary max-w-[200px] truncate" [title]="item.special_assignments">{{ item.special_assignments }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary max-w-[150px] truncate" [title]="item.bolo_details">{{ item.bolo_details || '--' }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary max-w-[150px] truncate" [title]="item.asistentes">{{ item.asistentes || '--' }}</td>
+                                </tr>
+                                <tr *ngIf="filteredBriefings.length === 0">
+                                    <td colspan="5" class="py-12 text-center text-secondary italic">No se encontraron pases de lista.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAB 4: Shift Handovers Table -->
+                    <div *ngIf="activeTab === 'handovers'" class="overflow-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container border-b border-outline-variant sticky top-0 z-10">
+                                <tr>
+                                    <th (click)="sortHandovers('timestamp')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-36 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Fecha / Hora
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldHandover === 'timestamp' ? (sortAscendingHandover ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortHandovers('saliente_nombre')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+Saliente
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldHandover === 'saliente_nombre' ? (sortAscendingHandover ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortHandovers('entrante_nombre')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+Entrante
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldHandover === 'entrante_nombre' ? (sortAscendingHandover ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 text-center">Verificaciones</th>
+                                    <th (click)="sortHandovers('novedades')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+Novedades
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldHandover === 'novedades' ? (sortAscendingHandover ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortHandovers('leido')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-28 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Status
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldHandover === 'leido' ? (sortAscendingHandover ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant">
+                                <tr *ngFor="let item of filteredHandovers" class="hover:bg-surface-container-low transition-colors">
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-medium">{{ item.timestamp | date:'MMM d, y HH:mm' }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-bold">{{ item.saliente_nombre }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-bold">{{ item.entrante_nombre }}</td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <span [ngClass]="item.checklist_detenidos ? 'text-green-600 bg-green-50 border-green-200' : 'text-slate-400 bg-slate-50 border-slate-200'" class="text-[9px] font-bold px-1.5 py-0.5 rounded border" title="Detainee Cells">CEL</span>
+                                            <span [ngClass]="item.checklist_equipos ? 'text-green-600 bg-green-50 border-green-200' : 'text-slate-400 bg-slate-50 border-slate-200'" class="text-[9px] font-bold px-1.5 py-0.5 rounded border" title="Weapons Equipment">EQP</span>
+                                            <span [ngClass]="item.checklist_incidentes ? 'text-green-600 bg-green-50 border-green-200' : 'text-slate-400 bg-slate-50 border-slate-200'" class="text-[9px] font-bold px-1.5 py-0.5 rounded border" title="Reported Incidents">INC</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary max-w-[150px] truncate" [title]="item.novedades">{{ item.novedades || 'None' }}</td>
+                                    <td class="py-3 px-4">
+                                        <span *ngIf="item.leido" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] bg-green-50 text-[#2e7d32] border border-green-200">
+                                            Confirmado
+                                        </span>
+                                        <div *ngIf="!item.leido">
+                                            <!-- If incoming officer matches currently logged in officer, allow confirmation -->
+                                            <button *ngIf="item.id_oficial_entrante === authService.getOfficerId()" (click)="confirmHandover(item.id)" class="px-2 py-1 bg-primary-container hover:bg-primary text-white text-[10px] rounded border border-outline-variant font-bold transition-all cursor-pointer shadow-sm">
+                                                Firmar Recepción
+                                            </button>
+                                            <span *ngIf="item.id_oficial_entrante !== authService.getOfficerId()" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] bg-amber-50 text-[#d97706] border border-amber-200 animate-pulse">
+                                                Pendiente de Firma
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="filteredHandovers.length === 0">
+                                    <td colspan="6" class="py-12 text-center text-secondary italic">No se encontraron traspasos de turno.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAB 5: Certifications Table -->
+                    <div *ngIf="activeTab === 'certificaciones'" class="overflow-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container border-b border-outline-variant sticky top-0 z-10">
+                                <tr>
+                                    <th (click)="sortCertificaciones('id_oficial')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-32 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            ID Oficial
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldCertificacion === 'id_oficial' ? (sortAscendingCertificacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortCertificaciones('oficial_nombre')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Nombre Completo
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldCertificacion === 'oficial_nombre' ? (sortAscendingCertificacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortCertificaciones('nombre_curso')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Curso / Capacitación
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldCertificacion === 'nombre_curso' ? (sortAscendingCertificacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortCertificaciones('institucion')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Institución
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldCertificacion === 'institucion' ? (sortAscendingCertificacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortCertificaciones('fecha_completado')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-40 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Fecha de Registro
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldCertificacion === 'fecha_completado' ? (sortAscendingCertificacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-28 text-center">Documento</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant">
+                                <tr *ngFor="let item of filteredCertificaciones" class="hover:bg-surface-container-low transition-colors">
+                                    <td class="py-3 px-4 font-data-mono text-data-mono text-[#00173d] font-semibold">#{{ item.id_oficial }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-bold">{{ item.oficial_nombre }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-medium">{{ item.nombre_curso }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ item.institucion }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ item.fecha_completado | date:'MMM d, y' }}</td>
+                                    <td class="py-3 px-4 text-center">
+                                        <a *ngIf="item.documento_respaldo" [href]="item.documento_respaldo" target="_blank" class="text-primary hover:text-primary-container inline-flex items-center gap-1 cursor-pointer font-body-sm text-body-sm font-semibold" title="Ver documento de respaldo">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">description</span>
+                                            <span>Ver</span>
+                                        </a>
+                                        <span *ngIf="!item.documento_respaldo" class="text-slate-400 italic text-[11px]">--</span>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="filteredCertificaciones.length === 0">
+                                    <td colspan="6" class="py-12 text-center text-secondary italic">No se encontraron registros de capacitación.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                    <!-- TAB 6: Warnings / Complaints Table -->
+                    <div *ngIf="activeTab === 'amonestaciones'" class="overflow-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container border-b border-outline-variant sticky top-0 z-10">
+                                <tr>
+                                    <th (click)="sortAmonestaciones('id_oficial')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-32 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            ID Oficial
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAmonestacion === 'id_oficial' ? (sortAscendingAmonestacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortAmonestaciones('oficial_nombre')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Nombre Completo
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAmonestacion === 'oficial_nombre' ? (sortAscendingAmonestacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortAmonestaciones('tipo')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-32 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Tipo
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAmonestacion === 'tipo' ? (sortAscendingAmonestacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortAmonestaciones('descripcion')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Descripción / Justificación
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAmonestacion === 'descripcion' ? (sortAscendingAmonestacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortAmonestaciones('comandante_nombre')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Autorizado por
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAmonestacion === 'comandante_nombre' ? (sortAscendingAmonestacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortAmonestaciones('timestamp')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-36 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Date
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldAmonestacion === 'timestamp' ? (sortAscendingAmonestacion ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant">
+                                <tr *ngFor="let item of filteredAmonestaciones" class="hover:bg-surface-container-low transition-colors">
+                                    <td class="py-3 px-4 font-data-mono text-data-mono text-[#00173d] font-semibold">#{{ item.id_oficial }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-bold">{{ item.oficial_nombre }}</td>
+                                    <td class="py-3 px-4">
+                                        <span *ngIf="item.tipo === 'Amonestacion'" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] bg-red-50 text-[#dc2626] border border-red-200">
+                                            Reprimand
+                                        </span>
+                                        <span *ngIf="item.tipo === 'Felicitacion'" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] bg-green-50 text-[#2e7d32] border border-green-200">
+                                            Commendation
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary max-w-[250px] whitespace-normal break-words" [title]="item.descripcion">{{ item.descripcion }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ item.comandante_nombre }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ item.timestamp | date:'MMM d, y HH:mm' }}</td>
+                                </tr>
+                                <tr *ngIf="filteredAmonestaciones.length === 0">
+                                    <td colspan="6" class="py-12 text-center text-secondary italic">No se encontraron registros disciplinarios ni felicitaciones.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAB 9: Community Meetings History List -->
+                    <div *ngIf="activeTab === 'comunidad'" class="overflow-auto flex-1 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm animate-fade-in">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container border-b border-outline-variant sticky top-0 z-10">
+                                <tr>
+                                    <th (click)="sortMeetings('id_oficial')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-32 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            ID Oficial
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldMeeting === 'id_oficial' ? (sortAscendingMeeting ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortMeetings('id_oficial')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Nombre del Oficial
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldMeeting === 'id_oficial' ? (sortAscendingMeeting ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortMeetings('ubicacion')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Ubicación / Sector
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldMeeting === 'ubicacion' ? (sortAscendingMeeting ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortMeetings('comentarios_vecinales')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Comentarios y Acuerdos
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldMeeting === 'comentarios_vecinales' ? (sortAscendingMeeting ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortMeetings('sentimiento_nlp')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-32 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none text-center">
+                                        <div class="flex items-center gap-1 justify-center">
+                                            Sentimiento NLP
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldMeeting === 'sentimiento_nlp' ? (sortAscendingMeeting ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortMeetings('fecha_hora')" class="font-label-caps text-label-caps text-secondary uppercase py-3 px-4 w-36 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Fecha / Hora
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                                {{ sortFieldMeeting === 'fecha_hora' ? (sortAscendingMeeting ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant">
+                                <tr *ngFor="let item of filteredMeetings" class="hover:bg-surface-container-low transition-colors">
+                                    <td class="py-3 px-4 font-data-mono text-data-mono text-[#00173d] font-semibold">#{{ item.id_oficial }}</td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-bold">
+                                        {{ getOfficerDisplayName(item.id_oficial) || 'Officer #' + item.id_oficial }}
+                                    </td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary max-w-[200px] whitespace-normal break-words" [title]="item.ubicacion">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-primary text-xs notranslate" translate="no">location_on</span>
+                                            <span>{{ item.ubicacion }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary max-w-[300px] whitespace-normal break-words animate-fade-in" [title]="item.comentarios_vecinales">
+                                        {{ item.comentarios_vecinales }}
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1"
+                                              [ngClass]="{
+                                                'bg-emerald-100 text-emerald-800 border border-emerald-200': item.sentimiento_nlp >= 0.6,
+                                                'bg-slate-100 text-slate-700 border border-slate-200': item.sentimiento_nlp >= 0.4 && item.sentimiento_nlp < 0.6,
+                                                'bg-rose-100 text-rose-800 border border-rose-200': item.sentimiento_nlp < 0.4
+                                              }">
+                                            <span class="w-1.5 h-1.5 rounded-full" 
+                                                  [ngClass]="{
+                                                    'bg-emerald-600': item.sentimiento_nlp >= 0.6,
+                                                    'bg-slate-500': item.sentimiento_nlp >= 0.4 && item.sentimiento_nlp < 0.6,
+                                                    'bg-rose-600': item.sentimiento_nlp < 0.4
+                                                  }"></span>
+                                            {{ item.sentimiento_nlp >= 0.6 ? 'Positivo' : (item.sentimiento_nlp >= 0.4 ? 'Neutral' : 'Crítico') }}
+                                            <span class="text-[9px] opacity-75 font-normal">({{ Math.round(item.sentimiento_nlp * 100) }}%)</span>
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ item.fecha_hora | date:'MMM d, y HH:mm' }}</td>
+                                </tr>
+                                <tr *ngIf="filteredMeetings.length === 0">
+                                    <td colspan="6" class="py-12 text-center text-secondary italic">No se encontraron registros de reuniones comunitarias.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAB 7: Hojas de Vida (Selected Officer Profile Details) -->
+                    <div *ngIf="activeTab === 'hojas_vida'" class="flex-1 flex flex-col p-6 overflow-y-auto">
+                        <!-- Placeholder -->
+                        <div *ngIf="!selectedOfficer" class="flex-1 flex flex-col items-center justify-center text-center py-12">
+                            <span class="material-symbols-outlined text-[64px] text-slate-300 notranslate mb-4" translate="no">account_box</span>
+                            <h4 class="font-headline-sm text-slate-400">Hoja de Vida Policial</h4>
+                            <p class="text-secondary text-xs max-w-sm mt-1">Seleccione un oficial del directorio de la izquierda para ver su perfil, datos personales e historial consolidado de servicio.</p>
+                        </div>
+
+                        <!-- Officer CV View -->
+                        <div *ngIf="selectedOfficer" class="flex flex-col gap-6">
+                            
+                            <!-- Profile Header Card -->
+                            <div class="flex flex-col md:flex-row gap-5 items-center md:items-start border-b border-outline-variant pb-6">
+                                <img [src]="selectedOfficer.url_fotografia || getAvatarUrl(selectedOfficer.nombres, selectedOfficer.apellidos)" (error)="onAvatarError($event, selectedOfficer.nombres, selectedOfficer.apellidos)" class="w-24 h-24 rounded-2xl object-cover border border-outline-variant shadow-sm"/>
+                                <div class="flex-1 text-center md:text-left flex flex-col">
+                                    <div class="flex flex-col md:flex-row items-center md:items-baseline gap-2.5">
+                                        <h3 class="font-display-lg text-display-lg text-primary">{{ selectedOfficer.nombres }} {{ selectedOfficer.apellidos }}</h3>
+                                        <span class="font-data-mono text-data-mono bg-[#00173d]/10 text-[#00173d] px-2 py-0.5 rounded border border-[#00173d]/20">{{ selectedOfficer.placa_policial }}</span>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Oficial de Policía (ID: {{ selectedOfficer.id_oficial }})</p>
+                                    <div class="flex flex-wrap gap-2 mt-3 justify-center md:justify-start">
+                                        <button (click)="openEditOfficerModal(selectedOfficer)" class="border border-[#00173d]/20 hover:bg-[#00173d]/10 text-[#00173d] text-xs font-semibold py-1.5 px-3 rounded-lg cursor-pointer transition-all flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">edit</span>
+                                            Editar Perfil
+                                        </button>
+                                        <button (click)="deleteOfficer(selectedOfficer.id_oficial, $event)" class="border border-error/20 hover:bg-error/10 text-error text-xs font-semibold py-1.5 px-3 rounded-lg cursor-pointer transition-all flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">person_remove</span>
+                                            Dar de Baja
+                                        </button>
+                                        <button *ngIf="selectedOfficer.url_hoja_vida" (click)="viewCv(selectedOfficer.url_hoja_vida)" class="bg-[#00173d]/10 hover:bg-[#00173d]/20 text-[#00173d] border border-[#00173d]/30 text-xs font-semibold py-1.5 px-3 rounded-lg cursor-pointer transition-all flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">description</span>
+                                            Ver Hoja de Vida
+                                        </button>
+                                        <span *ngIf="!selectedOfficer.url_hoja_vida" class="bg-slate-100 text-slate-400 border border-slate-200 text-xs font-semibold py-1.5 px-3 rounded-lg inline-flex items-center gap-1 cursor-not-allowed select-none" title="No se ha subido una hoja de vida para este oficial">
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">description</span>
+                                            Sin Hoja de Vida
+                                        </span>
+                                        <label class="bg-slate-100 hover:bg-slate-200 text-secondary border border-slate-300 text-xs font-semibold py-1.5 px-3 rounded-lg cursor-pointer transition-all flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">upload</span>
+                                            Subir Hoja de Vida
+                                            <input type="file" (change)="uploadOfficerCv($event, selectedOfficer.id_oficial)" class="hidden" accept=".pdf">
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4 text-xs font-semibold text-slate-600">
+                                        <div class="flex items-center justify-center md:justify-start gap-2">
+                                            <span class="material-symbols-outlined text-[16px] text-slate-400 notranslate" translate="no">mail</span>
+                                            <span>{{ selectedOfficer.correo_electronico }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-center md:justify-start gap-2">
+                                            <span class="material-symbols-outlined text-[16px] text-slate-400 notranslate" translate="no">call</span>
+                                            <span>{{ selectedOfficer.telefono_contacto || 'Sin teléfono' }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-center md:justify-start gap-2">
+                                            <span class="material-symbols-outlined text-[16px] text-slate-400 notranslate" translate="no">calendar_today</span>
+                                            <span>Ingreso: {{ selectedOfficer.fecha_ingreso | date:'MMM d, y' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button (click)="selectedOfficer = null" class="self-end md:self-start bg-slate-100 hover:bg-slate-200 border border-outline-variant px-3 py-1.5 rounded-lg text-xs font-bold text-secondary cursor-pointer shadow-xs">
+                                    Cerrar Hoja de Vida
+                                </button>
+                            </div>
+
+                            <!-- Integrated Consolidate Tabs -->
+                            <div class="flex flex-col gap-5">
+                                <h4 class="font-headline-sm text-primary flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">history_edu</span>
+                                    Historial Consolidado del Oficial
+                                </h4>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                                    
+                                    <!-- History Card: Attendance -->
+                                    <div class="border border-outline-variant rounded-xl p-4 bg-surface-bright shadow-2xs">
+                                        <span class="font-label-caps text-label-caps text-[#00173d] font-bold block border-b border-outline-variant pb-2 mb-2 flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">schedule</span>
+                                            Asistencias Recientes
+                                        </span>
+                                        <ul class="flex flex-col divide-y divide-outline-variant/60 max-h-[160px] overflow-y-auto pr-1">
+                                            <li *ngFor="let a of officerHistory.asistencias" class="py-2 text-xs flex justify-between">
+                                                <span class="font-semibold text-primary">{{ a.timestamp_entrada | date:'MMM d, y' }}</span>
+                                                <span class="text-secondary">
+                                                    {{ a.timestamp_entrada | date:'HH:mm' }} - 
+                                                    <span *ngIf="a.timestamp_salida">{{ a.timestamp_salida | date:'HH:mm' }}</span>
+                                                    <span *ngIf="!a.timestamp_salida" class="text-[#2e7d32] font-bold">On Shift</span>
+                                                </span>
+                                            </li>
+                                            <li *ngIf="officerHistory.asistencias.length === 0" class="py-4 text-center text-slate-400 italic">No hay asistencias registradas.</li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- History Card: Permits -->
+                                    <div class="border border-outline-variant rounded-xl p-4 bg-surface-bright shadow-2xs">
+                                        <span class="font-label-caps text-label-caps text-[#00173d] font-bold block border-b border-outline-variant pb-2 mb-2 flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">assignment_turned_in</span>
+                                            Solicitudes de Permiso
+                                        </span>
+                                        <ul class="flex flex-col divide-y divide-outline-variant/60 max-h-[160px] overflow-y-auto pr-1">
+                                            <li *ngFor="let p of officerHistory.permisos" class="py-2 text-xs flex justify-between items-center">
+                                                <div class="flex flex-col">
+                                                    <span class="font-bold text-primary">{{ p.tipo_permiso }}</span>
+                                                    <span class="text-[10px] text-secondary mt-0.5">{{ p.fecha_inicio | date:'MMM d' }} al {{ p.fecha_fin | date:'MMM d, y' }}</span>
+                                                </div>
+                                                <span [ngClass]="p.estado === 'Approved' ? 'text-[#2e7d32] bg-green-50 border-green-200' : (p.estado === 'Rejected' ? 'text-[#dc2626] bg-red-50 border-red-200' : 'text-[#d97706] bg-amber-50 border-amber-200')" class="px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-wider">
+                                                    {{ p.estado }}
+                                                </span>
+                                            </li>
+                                            <li *ngIf="officerHistory.permisos.length === 0" class="py-4 text-center text-slate-400 italic">No hay permisos registrados.</li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- History Card: Certifications -->
+                                    <div class="border border-outline-variant rounded-xl p-4 bg-surface-bright shadow-2xs">
+                                        <span class="font-label-caps text-label-caps text-[#00173d] font-bold block border-b border-outline-variant pb-2 mb-2 flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">school</span>
+                                            Cursos y Capacitaciones
+                                        </span>
+                                        <ul class="flex flex-col divide-y divide-outline-variant/60 max-h-[160px] overflow-y-auto pr-1">
+                                            <li *ngFor="let c of officerHistory.certificaciones" class="py-2 text-xs flex flex-col">
+                                                <div class="flex justify-between items-start">
+                                                    <span class="font-bold text-primary">{{ c.nombre_curso }}</span>
+                                                    <a *ngIf="c.documento_respaldo" [href]="c.documento_respaldo" target="_blank" class="text-primary hover:text-primary-container inline-flex items-center gap-0.5 font-semibold text-[10px] cursor-pointer" title="Ver documento de respaldo">
+                                                        <span class="material-symbols-outlined text-[12px] notranslate" translate="no">description</span>
+                                                        <span>Ver PDF</span>
+                                                    </a>
+                                                </div>
+                                                <div class="flex justify-between text-[10px] text-secondary mt-0.5">
+                                                    <span>{{ c.institucion }}</span>
+                                                    <span class="font-semibold">{{ c.fecha_completado | date:'MMM d, y' }}</span>
+                                                </div>
+                                            </li>
+
+                                            <li *ngIf="officerHistory.certificaciones.length === 0" class="py-4 text-center text-slate-400 italic">No hay capacitaciones registradas.</li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- History Card: Sanciones/Warning -->
+                                    <div class="border border-outline-variant rounded-xl p-4 bg-surface-bright shadow-2xs">
+                                        <span class="font-label-caps text-label-caps text-[#00173d] font-bold block border-b border-outline-variant pb-2 mb-2 flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">gavel</span>
+                                            Historial Disciplinario
+                                        </span>
+                                        <ul class="flex flex-col divide-y divide-outline-variant/60 max-h-[160px] overflow-y-auto pr-1">
+                                            <li *ngFor="let am of officerHistory.amonestaciones" class="py-2 text-xs flex flex-col gap-1">
+                                                <div class="flex justify-between items-center">
+                                                    <span [ngClass]="am.tipo === 'Amonestacion' ? 'text-[#dc2626] bg-red-50 border-red-200' : 'text-[#2e7d32] bg-green-50 border-green-200'" class="px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-wider">
+                                                        {{ am.tipo === 'Amonestacion' ? 'Reprimand' : 'Commendation' }}
+                                                    </span>
+                                                    <span class="text-[10px] text-secondary">{{ am.timestamp | date:'MMM d, y' }}</span>
+                                                </div>
+                                                <p class="text-secondary italic pl-1 leading-normal text-[11px]">{{ am.descripcion }}</p>
+                                            </li>
+                                            <li *ngIf="officerHistory.amonestaciones.length === 0" class="py-4 text-center text-slate-400 italic">No hay sanciones ni felicitaciones registradas.</li>
+                                        </ul>
+                                    </div>
+
+                                </div>
+
+                                <!-- History Card: Guard Handovers (Full Width inside details) -->
+                                <div class="border border-outline-variant rounded-xl p-4 bg-surface-bright shadow-2xs">
+                                    <span class="font-label-caps text-label-caps text-[#00173d] font-bold block border-b border-outline-variant pb-2 mb-2 flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">compare_arrows</span>
+                                        Historial de Traspasos y Recepción de Turno
+                                    </span>
+                                    <ul class="flex flex-col divide-y divide-outline-variant/60 max-h-[160px] overflow-y-auto pr-1">
+                                        <li *ngFor="let h of officerHistory.handovers" class="py-2 text-xs flex justify-between items-center">
+                                            <div class="flex flex-col gap-0.5">
+                                                <span class="font-semibold text-primary">
+                                                    {{ h.timestamp | date:'MMM d, y HH:mm' }} - 
+                                                    <span *ngIf="h.id_oficial_saliente === selectedOfficer.id_oficial" class="text-red-500 font-bold uppercase text-[9px]">Turno Entregado</span>
+                                                    <span *ngIf="h.id_oficial_entrante === selectedOfficer.id_oficial" class="text-green-600 font-bold uppercase text-[9px]">Turno Recibido</span>
+                                                </span>
+                                                <span class="text-[10px] text-secondary font-semibold">Novedades: {{ h.novedades || 'None' }}</span>
+                                            </div>
+                                            <span [ngClass]="h.leido ? 'text-[#2e7d32] bg-green-50 border-green-200' : 'text-[#d97706] bg-amber-50 border-amber-200'" class="px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-wider">
+                                                {{ h.leido ? 'FIRMADO' : 'PENDIENTE DE FIRMA' }}
+                                            </span>
+                                        </li>
+                                        <li *ngIf="officerHistory.handovers.length === 0" class="py-4 text-center text-slate-400 italic">El oficial no ha participado en traspasos de turno registrados.</li>
+                                    </ul>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- TAB 10: Officer Performance Ranking Table -->
+                    <div *ngIf="activeTab === 'rendimiento'" class="overflow-auto flex-1">
+                        <table class="w-full text-xs">
+                            <thead class="bg-surface-container text-on-surface-variant sticky top-0 z-10">
+                                <tr>
+                                    <th class="p-3 text-left font-label-caps text-label-caps">#</th>
+                                    <th class="p-3 text-left font-label-caps text-label-caps">Oficial</th>
+                                    <th class="p-3 text-center font-label-caps text-label-caps">Puntaje</th>
+                                    <th class="p-3 text-center font-label-caps text-label-caps">Certificaciones</th>
+                                    <th class="p-3 text-center font-label-caps text-label-caps">Amonestaciones</th>
+                                    <th class="p-3 text-center font-label-caps text-label-caps">Asistencia</th>
+                                    <th class="p-3 text-center font-label-caps text-label-caps">Turnos de Patrulla</th>
+                                    <th class="p-3 text-left font-label-caps text-label-caps">Rendimiento</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let officer of performanceRanking; let i = index" 
+                                    class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors">
+                                    <td class="p-3 font-bold text-slate-400">{{ i + 1 }}</td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-2">
+                                            <img [src]="getAvatarUrl(officer.name?.split(' ')[0] || 'O', officer.name?.split(' ')[1] || 'P')" 
+                                                 class="w-7 h-7 rounded-full border border-outline-variant" />
+                                            <div class="flex flex-col">
+                                                <span class="font-semibold text-on-surface">{{ officer.name }}</span>
+                                                <span class="text-[10px] text-slate-500">ID: {{ officer.id_oficial }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <span class="text-sm font-black" [ngClass]="getScoreColor(officer.performance_score)">{{ officer.performance_score }}</span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold border border-blue-100">
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">school</span>
+                                            {{ officer.certifications }}
+                                        </span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <span [ngClass]="officer.total_warnings > 0 ? 'bg-red-50 text-red-700 border-red-100' : 'bg-slate-50 text-slate-600 border-slate-200'" 
+                                              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold border">
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">warning</span>
+                                            {{ officer.total_warnings }}
+                                        </span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <span class="font-bold" [ngClass]="officer.attendance_rate >= 80 ? 'text-emerald-600' : 'text-amber-600'">{{ officer.attendance_rate }}%</span>
+                                    </td>
+                                    <td class="p-3 text-center font-semibold text-slate-700">{{ officer.patrol_shifts }}</td>
+                                    <td class="p-3">
+                                        <div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+                                            <div [ngClass]="getScoreBgColor(officer.performance_score)" 
+                                                 class="h-full rounded-full transition-all" 
+                                                 [style.width.%]="getScoreBarWidth(officer.performance_score, performanceRanking[0]?.performance_score || 100)"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="performanceRanking.length === 0">
+                                    <td colspan="8" class="p-6 text-center text-slate-400">
+                                        <span class="material-symbols-outlined text-3xl mb-2 block notranslate" translate="no">assessment</span>
+                                        No hay datos de rendimiento disponibles
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Banner Messages (Micro-Animations & Clean Alerts) -->
+    <div *ngIf="message" class="fixed bottom-6 right-6 z-50 p-4 rounded-xl border flex items-start gap-3 shadow-2xl animate-fade-in transition-all" 
+         [ngClass]="isError ? 'bg-[#ffdad6] border-[#ba1a1a] text-[#93000a]' : 'bg-[#e8f5e9] border-[#2e7d32] text-[#1b5e20]'">
+        <span class="material-symbols-outlined mt-0.5 notranslate" translate="no">{{ isError ? 'error' : 'check_circle' }}</span>
+        <p class="font-body-sm font-bold">{{ message }}</p>
+    </div>
+
+    <!-- Modal for leave permit request -->
+    <div *ngIf="showPermitModal" class="fixed inset-0 z-[250] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+        <div class="premium-modal-container w-full max-w-lg bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl flex flex-col overflow-hidden transform scale-100 transition-all text-on-surface">
+            <!-- Modal Header -->
+            <div class="px-5 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low shrink-0">
+                <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2 font-bold">
+                    <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">edit_document</span>
+                    Registrar Solicitud de Permiso
+                </h3>
+                <button (click)="closePermitModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                    <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <div class="p-5 flex-1 overflow-y-auto">
+                <form (ngSubmit)="submitKioscoPermit()" class="flex flex-col gap-4">
+                    <div class="relative">
+                        <label class="block font-label-caps text-label-caps text-secondary mb-1">ID, Placa o Nombre del Oficial</label>
+                        <input type="text" [(ngModel)]="searchTerms.kioscoPermitOfficer" name="kPermitOfi" placeholder="Buscar por ID, placa o nombre..." class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required
+                               (input)="searchOfficer(searchTerms.kioscoPermitOfficer, 'kioscoPermitOfficer')"
+                               (focus)="searchOfficer(searchTerms.kioscoPermitOfficer, 'kioscoPermitOfficer')"
+                               (blur)="hideOfficerSuggestions()"/>
+                        
+                        <!-- Floating suggestions dropdown -->
+                        @if (activeSuggestionField === 'kioscoPermitOfficer' && officerSuggestions.length > 0) {
+                            <div class="absolute z-55 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                @for (sug of officerSuggestions; track sug.id_oficial) {
+                                    <div (mousedown)="selectOfficerSuggestion(sug, 'kioscoPermitOfficer'); $event.preventDefault()" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <img [src]="sug.url_fotografia || getAvatarUrl(sug.nombres, sug.apellidos)" (error)="onAvatarError($event, sug.nombres, sug.apellidos)" class="w-7 h-7 rounded-full object-cover border border-outline-variant"/>
+                                            <div class="flex flex-col">
+                                                <span class="text-xs font-bold text-primary">{{ sug.nombres }} {{ sug.apellidos }}</span>
+                                                <span class="text-[10px] text-slate-500 font-mono">ID: {{ sug.id_oficial }} | Plate: {{ sug.placa_policial }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div>
+                        <label class="block font-label-caps text-label-caps text-secondary mb-1">Tipo de Permiso</label>
+                        <select [(ngModel)]="kioscoPermitForm.tipo_permiso" name="kPermitTipo" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required>
+                            <option value="" disabled selected>Select...</option>
+                            <option value="Vacaciones">Vacaciones Anuales</option>
+                            <option value="Baja Médica">Baja Médica / Permiso de Salud</option>
+                            <option value="Asunto Personal">Asunto Personal / Familiar</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-label-caps text-label-caps text-secondary mb-1">Fecha de Inicio</label>
+                            <input type="date" [(ngModel)]="kioscoPermitForm.fecha_inicio" name="kPermitStart" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required/>
+                        </div>
+                        <div>
+                            <label class="block font-label-caps text-label-caps text-secondary mb-1">Fecha de Culminación</label>
+                            <input type="date" [(ngModel)]="kioscoPermitForm.fecha_fin" name="kPermitEnd" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary outline-none bg-surface-bright text-on-surface" required/>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-label-caps text-label-caps text-secondary mb-1">Documento de Justificación</label>
+                        <div class="flex items-center gap-2">
+                            <label for="permitFile" class="flex items-center justify-center gap-2 px-3 py-2 border border-outline-variant rounded-lg hover:border-primary cursor-pointer bg-surface-bright text-primary hover:bg-slate-50 transition-colors shadow-sm font-body-sm text-body-sm w-full">
+                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">upload_file</span>
+                                <span class="truncate">{{ selectedPermitFile ? selectedPermitFile.name : 'Seleccionar archivo PDF o Imagen' }}</span>
+                            </label>
+                            <input id="permitFile" type="file" class="hidden" (change)="onPermitFileSelected($event)"/>
+                            <button *ngIf="selectedPermitFile" type="button" (click)="clearPermitFile()" class="p-1.5 text-[#dc2626] hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 flex items-center justify-center cursor-pointer shrink-0" title="Eliminar archivo">
+                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-5 py-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3 shrink-0">
+                <button type="button" (click)="closePermitModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button" (click)="submitKioscoPermit()" class="bg-primary hover:bg-primary/95 text-on-primary px-5 py-2 rounded-lg font-label-lg text-label-lg font-bold flex items-center justify-center min-w-[120px] transition-all cursor-pointer">
+                    Register Permit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Registrar / Edit Officer (Ciberseguridad & RRHH Admin) -->
+@if (showOfficerModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-full transition-all scale-100 text-on-surface">
+        <div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-[#00173d] notranslate" translate="no">{{ isEditingOfficer ? 'edit' : 'person_add' }}</span>
+                {{ isEditingOfficer ? 'Edit Officer' : 'Registrar Nuevo Oficial' }}
+            </h3>
+            <button (click)="closeOfficerModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                
+                <!-- Left Column: Personal and Instituciónal Information -->
+                <div class="flex flex-col gap-3.5">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-1 border-b border-outline-variant/30">
+                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">badge</span>
+Personal and Instituciónal Information
+                    </h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Nombres</label>
+                            <input type="text" [(ngModel)]="currentOfficer.nombres" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. John" />
+                        </div>
+                        <div>
+                            <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Apellidos</label>
+                            <input type="text" [(ngModel)]="currentOfficer.apellidos" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. Doe" />
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Placa Policial</label>
+                            <input type="text" [(ngModel)]="currentOfficer.placa_policial" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. SC-9841" />
+                        </div>
+                        <div>
+                            <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Teléfono de Contacto</label>
+                            <input type="text" [(ngModel)]="currentOfficer.telefono_contacto" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. 555-0145" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Correo Electrónico</label>
+                        <input type="email" [(ngModel)]="currentOfficer.correo_electronico" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. jdoe@safecity.gov" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Rol en el Sistema</label>
+                            <select [(ngModel)]="currentOfficer.id_rol" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm">
+                                <option [value]="1">Comandante / Sheriff</option>
+                                <option [value]="2">Oficial de Patrullaje</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Fecha de Ingreso</label>
+                            <input type="date" [(ngModel)]="currentOfficer.fecha_ingreso" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" />
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column: Medical, Emergency & Badges -->
+                <div class="flex flex-col gap-3.5">
+                    <!-- Datos Médicos y de Emergencia -->
+                    <div class="flex flex-col gap-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-1 border-b border-outline-variant/30">
+                            <span class="material-symbols-outlined text-[16px] text-error notranslate" translate="no">medical_services</span>
+                            Datos Médicos y de Emergencia
+                        </h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Blood Tipo</label>
+                                <select [(ngModel)]="currentOfficer.grupo_sanguineo" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm">
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Contacto de Emergencia (Nombre)</label>
+                                <input type="text" [(ngModel)]="currentOfficer.contacto_emergencia_nombre" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. Sarah Stevens (Esposa)" />
+                            </div>
+                            <div>
+                                <label class="block font-label-sm text-label-sm font-semibold mb-1.5">Teléfono de Contacto</label>
+                                <input type="text" [(ngModel)]="currentOfficer.contacto_emergencia_telefono" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. 555-0199" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Insignias y Certificaciones -->
+                    <div class="flex flex-col gap-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-1 border-b border-outline-variant/30">
+                            <span class="material-symbols-outlined text-[16px] text-warning notranslate" translate="no">verified</span>
+Insignias y Certificaciones
+                        </h4>
+                        <div class="grid grid-cols-2 gap-2 bg-surface-bright border border-outline-variant p-2.5 rounded-lg text-xs">
+                            <label class="flex items-center gap-2.5 cursor-pointer select-none py-0.5">
+                                <input type="checkbox" [checked]="hasInsignia('tacticas_urbanas')" (change)="toggleInsignia('tacticas_urbanas')" class="rounded border-outline-variant text-primary focus:ring-primary" />
+                                <span class="font-semibold text-on-surface">Tácticas Urbanas</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 cursor-pointer select-none py-0.5">
+                                <input type="checkbox" [checked]="hasInsignia('primer_respondiente')" (change)="toggleInsignia('primer_respondiente')" class="rounded border-outline-variant text-primary focus:ring-primary" />
+                                <span class="font-semibold text-on-surface">Primer Respondiente</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 cursor-pointer select-none py-0.5">
+                                <input type="checkbox" [checked]="hasInsignia('conduccion_tactica')" (change)="toggleInsignia('conduccion_tactica')" class="rounded border-outline-variant text-primary focus:ring-primary" />
+                                <span class="font-semibold text-on-surface">Conducción Táctica</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 cursor-pointer select-none py-0.5">
+                                <input type="checkbox" [checked]="hasInsignia('operacion_segura')" (change)="toggleInsignia('operacion_segura')" class="rounded border-outline-variant text-primary focus:ring-primary" />
+                                <span class="font-semibold text-on-surface">Operación Segura</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Photograph -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="block font-label-sm text-label-sm font-semibold">Fotografía del Oficial</label>
+                        <div class="flex items-center gap-4 bg-surface-bright border border-outline-variant p-2 rounded-lg">
+                            <img [src]="currentOfficer.url_fotografia || getAvatarUrl(currentOfficer.nombres || '', currentOfficer.apellidos || '')" (error)="onAvatarError($event, currentOfficer.nombres || '', currentOfficer.apellidos || '')" alt="Preview" class="w-9 h-9 rounded-full object-cover border border-outline-variant shadow-inner"/>
+                            <div class="relative flex-1">
+                                <input type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden" #fileInputHR />
+                                <button type="button" (click)="fileInputHR.click()" class="bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-on-surface py-1 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-xs font-bold w-full cursor-pointer">
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">photo_library</span>
+                                    Select Image
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hoja de Vida (PDF) -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="block font-label-sm text-label-sm font-semibold">Hoja de Vida (PDF)</label>
+                        <div class="flex items-center gap-2 bg-surface-bright border border-outline-variant p-2 rounded-lg">
+                            <label for="cvFileHR" class="flex-1 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-on-surface py-1.5 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-xs font-bold cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">upload_file</span>
+                                <span class="truncate">{{ currentOfficer.url_hoja_vida ? 'Hoja de Vida PDF Cargada' : 'Subir Hoja de Vida (PDF)' }}</span>
+                            </label>
+                            <input id="cvFileHR" type="file" (change)="onCvFileSelected($event)" accept=".pdf" class="hidden" />
+                            <button *ngIf="currentOfficer.url_hoja_vida" type="button" (click)="clearCvFile(); $event.stopPropagation()" class="p-1.5 text-[#dc2626] hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 flex items-center justify-center cursor-pointer shrink-0" title="Remove resume">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeOfficerModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancel</button>            <button (click)="saveOfficer()" [disabled]="isSavingOfficer" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-primary hover:bg-primary/90 text-white shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-semibold">
+                @if (isSavingOfficer) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Guardar Oficial
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- TAB 9: Leaflet Map Modal for Community Meetings -->
+@if (showMapModal) {
+    <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                        <span class="material-symbols-outlined text-[24px] notranslate" translate="no">groups</span>
+                    </div>
+                    <div>
+                        <h3 class="font-headline-sm text-on-surface font-bold text-base leading-tight">Seleccionar Ubicación de la Reunión</h3>
+                        <p class="font-body-sm text-secondary text-xs">Busque una calle o haga clic en el mapa para fijar el punto exacto de la reunión.</p>
+                    </div>
+                </div>
+                <button type="button" (click)="closeMapModal()" class="text-on-surface-variant hover:text-on-surface p-1.5 rounded-full hover:bg-surface-container-high transition-colors cursor-pointer flex items-center justify-center">
+                    <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Body (Leaflet Map + Search Overlay + Guidance) -->
+            <div class="flex-1 relative bg-surface-container-low flex flex-col">
+                <!-- Search overlay -->
+                <div class="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-md z-[1000] px-4">
+                    <div class="bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant/80 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                        <div class="flex items-center relative">
+                            <span class="material-symbols-outlined absolute left-3.5 text-primary text-[20px] notranslate" translate="no">search</span>
+                            <input type="text" 
+                                   placeholder="Buscar calle, avenida o sector..." 
+                                   class="w-full py-3 pl-11 pr-10 outline-none font-body-sm text-xs text-on-surface bg-transparent placeholder:text-on-surface-variant/50"
+                                   [(ngModel)]="mapSearchQuery"
+                                   (input)="searchStreet()"
+                                   (keydown.enter)="searchStreet()">
+                            
+                            @if (isSearchingMap) {
+                                <div class="absolute right-3.5 w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                            } @else {
+                                @if (mapSearchQuery) {
+                                    <button type="button" 
+                                            class="absolute right-2.5 text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-variant transition-colors cursor-pointer"
+                                            (click)="clearMapSearch()">
+                                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">close</span>
+                                    </button>
+                                }
+                            }
+                        </div>
+
+                        <!-- Suggestions Dropdown -->
+                        @if (mapSearchSuggestions.length > 0) {
+                            <ul class="border-t border-outline-variant/50 max-h-56 overflow-y-auto divide-y divide-outline-variant/20">
+                                @for (sug of mapSearchSuggestions; track sug.display_name) {
+                                    <li class="px-4 py-2.5 hover:bg-primary/5 cursor-pointer flex items-start gap-3 transition-colors group"
+                                        (click)="selectMapSuggestion(sug)">
+                                        <span class="material-symbols-outlined text-primary/60 group-hover:text-primary mt-0.5 text-[18px] shrink-0 notranslate" translate="no">near_me</span>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="font-body-sm text-xs font-bold text-on-surface group-hover:text-primary truncate">{{ sug.display_name.split(',')[0] }}</div>
+                                            <div class="text-[10px] text-secondary truncate">{{ sug.display_name }}</div>
+                                        </div>
+                                        <span class="text-[10px] text-primary font-bold shrink-0 self-center">Ir a la Calle</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+
+                        @if (mapSearchError) {
+                            <div class="p-2 text-center text-xs text-error font-medium border-t border-outline-variant/50 bg-error/5">
+                                {{ mapSearchError }}
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Floating Guidance Pill -->
+                @if (isPinningLocation || newMeeting.ubicacion) {
+                    <div class="absolute top-20 left-1/2 -translate-x-1/2 z-[1000] bg-surface-container-lowest/95 backdrop-blur-md border border-primary/40 text-on-surface px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 text-xs select-none animate-fade-in pointer-events-none">
+                        <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                        <span class="font-medium text-primary">¡Calle centrada! Haga clic en cualquier punto del mapa para fijar la ubicación exacta.</span>
+                    </div>
+                }
+
+                <div id="modal-meeting-map" class="w-full h-full"></div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3.5 border-t border-outline-variant bg-surface-container-low flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+                <div class="flex items-center gap-2.5 max-w-md w-full min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                        <span class="material-symbols-outlined text-[18px] notranslate" translate="no">pin_drop</span>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-secondary">Ubicación Seleccionada</span>
+                        <span class="text-xs font-bold text-on-surface truncate">
+                            {{ newMeeting.ubicacion || 'Haga clic en el mapa para fijar un punto o busque una calle' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
+                    <button type="button" 
+                            (click)="closeMapModal()" 
+                            class="px-4 py-2 rounded-xl border border-outline-variant hover:bg-surface-variant text-on-surface transition-colors cursor-pointer text-xs font-semibold">
+                        Cancelar
+                    </button>
+                    <button type="button" 
+                            (click)="confirmMapLocation()" 
+                            [disabled]="!newMeeting.ubicacion"
+                            class="px-5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                        <span class="material-symbols-outlined text-[17px] notranslate" translate="no">check_circle</span>
+                        Confirmar Ubicación
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+}

@@ -1,0 +1,306 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-w-0 bg-background overflow-y-auto">
+        <!-- Main Canvas with Balanced Breathing Room (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-4 w-full pb-16">
+            
+            <!-- Dynamic Header with Actions -->
+            <div class="flex justify-between items-center gap-4 shrink-0">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h2 class="font-display-lg text-xl lg:text-2xl font-bold text-primary flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-[26px] text-primary notranslate" translate="no">verified_user</span>
+                            Auditoría de Transparencia Policial
+                        </h2>
+                        <button (click)="toggleKpis()" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 transition-all font-semibold text-xs cursor-pointer select-none" title="Toggle KPI Summary">
+                            <span class="material-symbols-outlined text-[15px] transition-transform duration-300 notranslate" [ngClass]="{'rotate-180': !showKpis}" translate="no">expand_less</span>
+                            <span>{{ showKpis ? 'Ocultar Resumen' : 'Mostrar Resumen' }}</span>
+                        </button>
+                    </div>
+                    <!-- Contextual Tab Subtitle -->
+                    <p class="text-xs text-secondary font-medium mt-1 flex items-center gap-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary/60"></span>
+                        @if (activeTab === 'all') {
+                            <span>Supervisión en tiempo real de interacciones ciudadanas, seguimiento de quejas y uso de fuerza.</span>
+                        } @else if (activeTab === 'complaints') {
+                            <span>Registro de quejas ciudadanas, investigaciones de asuntos internos y resoluciones.</span>
+                        } @else if (activeTab === 'force') {
+                            <span>Libro de registro de despliegue de fuerza autorizada, justificaciones legales y auditoría.</span>
+                        }
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <a routerLink="/transparencia/queja" class="bg-surface-container hover:bg-surface-container-high text-on-surface font-bold py-2 px-3.5 rounded-lg border border-outline-variant/60 flex items-center gap-2 transition-all shadow-xs cursor-pointer text-xs no-underline">
+                        <span class="material-symbols-outlined text-[16px] text-primary notranslate" translate="no">gavel</span>
+                        Registrar Queja
+                    </a>
+                    <a routerLink="/transparencia/uso-fuerza" class="bg-error hover:bg-error/90 text-on-error font-bold py-2 px-3.5 rounded-lg flex items-center gap-2 transition-all shadow-xs cursor-pointer text-xs no-underline">
+                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">warning</span>
+                        Reportar Uso de Fuerza
+                    </a>
+                </div>
+            </div>
+
+            <!-- Modern Collapsible KPI Ribbon -->
+            <div class="collapsible-grid shrink-0" [ngClass]="{'expanded': showKpis}">
+                <div class="collapsible-content">
+                    <section class="grid grid-cols-2 sm:grid-cols-4 gap-3 pb-1 animate-fade-in">
+                        <!-- Quejas Activas -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-3 px-4 shadow-xs flex items-center gap-3 hover:border-primary/30 transition-all group">
+                            <div class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">rate_review</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1 mb-0.5">
+                                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Quejas Activas</span>
+                                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-primary-container text-on-primary-container inline-flex items-center shrink-0">EN INVESTIGACIÓN</span>
+                                </div>
+                                <span class="text-lg font-black text-on-surface block leading-tight">{{ activeQuejasCount }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Resolved Complaints -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-3 px-4 shadow-xs flex items-center gap-3 hover:border-success/30 transition-all group">
+                            <div class="w-9 h-9 rounded-lg bg-success-container text-on-success-container flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[20px] notranslate text-success" translate="no">task_alt</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1 mb-0.5">
+                                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Resueltas</span>
+                                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-success-container text-on-success-container inline-flex items-center shrink-0">RESUELTAS</span>
+                                </div>
+                                <span class="text-lg font-black text-on-surface block leading-tight">{{ resolvedQuejasCount }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Uso de Fuerza Incidents -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-3 px-4 shadow-xs flex items-center gap-3 hover:border-error/30 transition-all group">
+                            <div class="w-9 h-9 rounded-lg bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[20px] notranslate text-error" translate="no">local_police</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1 mb-0.5">
+                                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Uso de Fuerza</span>
+                                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-error-container text-on-error-container inline-flex items-center shrink-0">AUDITADO</span>
+                                </div>
+                                <span class="text-lg font-black text-on-surface block leading-tight">{{ usoFuerza.length }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Officers Supervised -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-3 px-4 shadow-xs flex items-center gap-3 hover:border-secondary/30 transition-all group">
+                            <div class="w-9 h-9 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center group-hover:bg-secondary group-hover:text-on-secondary transition-all shrink-0">
+                                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">badge</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1 mb-0.5">
+                                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Oficiales Supervisados</span>
+                                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-secondary-container text-on-secondary-container inline-flex items-center shrink-0">CONTROL</span>
+                                </div>
+                                <span class="text-lg font-black text-on-surface block leading-tight">{{ uniqueOfficersInvolved }}</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Segmented Navigation Bar & Live Search -->
+            <div class="flex flex-wrap items-center justify-between bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-1.5 shadow-xs shrink-0 gap-3">
+                <div class="flex items-center gap-1.5">
+                    <button (click)="activeTab = 'all'" 
+                            [ngClass]="activeTab === 'all' ? 'bg-primary text-on-primary shadow-xs' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'"
+                            class="px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition-all cursor-pointer text-xs font-semibold select-none border-0">
+                        <span class="material-symbols-outlined text-[17px] notranslate" translate="no">dashboard</span>
+                        Todos los Registros (Vista Dividida)
+                    </button>
+                    <button (click)="activeTab = 'complaints'" 
+                            [ngClass]="activeTab === 'complaints' ? 'bg-primary text-on-primary shadow-xs' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'"
+                            class="px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition-all cursor-pointer text-xs font-semibold select-none border-0">
+                        <span class="material-symbols-outlined text-[17px] notranslate" translate="no">rate_review</span>
+                        Quejas Ciudadanas ({{ filteredQuejas.length }})
+                    </button>
+                    <button (click)="activeTab = 'force'" 
+                            [ngClass]="activeTab === 'force' ? 'bg-primary text-on-primary shadow-xs' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'"
+                            class="px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition-all cursor-pointer text-xs font-semibold select-none border-0">
+                        <span class="material-symbols-outlined text-[17px] notranslate" translate="no">local_police</span>
+                        Uso de Fuerza Log ({{ filteredUsoFuerza.length }})
+                    </button>
+                </div>
+
+                <div class="relative min-w-[280px]">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+                    <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar ciudadano, ID oficial, caso, palabras clave..." 
+                           class="w-full bg-surface-container border border-outline-variant rounded-lg py-1.5 pl-9 pr-8 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none transition-all">
+                    <button *ngIf="searchTerm" (click)="searchTerm = ''" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface flex items-center justify-center p-0.5 bg-transparent border-0 cursor-pointer">
+                        <span class="material-symbols-outlined text-[15px] notranslate" translate="no">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="flex flex-col justify-center items-center py-20 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-xs">
+                <span class="material-symbols-outlined animate-spin text-[40px] text-primary notranslate mb-2.5" translate="no">progress_activity</span>
+                <span class="text-on-surface-variant text-xs font-medium animate-pulse">Sincronizando base de datos de auditoría de transparencia...</span>
+            </div>
+
+            <!-- Main Content Grid with Spacious Layout -->
+            <div *ngIf="!isLoading" class="grid gap-3.5 flex-1 min-h-0 animate-fade-in"
+                 [ngClass]="{
+                   'grid-cols-1 xl:grid-cols-2': activeTab === 'all',
+                   'grid-cols-1': activeTab !== 'all'
+                 }">
+                
+                <!-- Panel 1: Citizen Complaints -->
+                <div *ngIf="activeTab === 'all' || activeTab === 'complaints'" 
+                     class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-3.5 lg:p-4 min-h-0">
+                    <div class="flex justify-between items-center mb-3 shrink-0">
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2.5 font-bold text-sm">
+                            <span class="material-symbols-outlined text-primary text-[22px] notranslate" translate="no">rate_review</span>
+                            Registro de Quejas Ciudadanas
+                        </h3>
+                        <span class="text-xs text-on-surface-variant font-semibold bg-surface-container px-2.5 py-0.5 rounded-full border border-outline-variant/60">
+                            {{ filteredQuejas.length }} Records
+                        </span>
+                    </div>
+
+                    <div class="overflow-y-auto flex-1 min-h-0 border border-outline-variant/60 rounded-xl p-2.5 space-y-2.5">
+                        @for (queja of filteredQuejas; track queja.id_queja || queja.id || $index) {
+                        <div class="relative bg-surface-container hover:bg-surface-container-high/80 border border-outline-variant/50 rounded-xl p-3.5 transition-all group overflow-hidden shadow-xs hover:shadow-sm">
+                            <!-- Status Border Indicator -->
+                            <div class="absolute left-0 top-0 bottom-0 w-1.5"
+                                 [ngClass]="{
+                                   'bg-outline-variant': queja.estado === 'Recibida',
+                                   'bg-primary': queja.estado === 'En Investigacion',
+                                   'bg-success': queja.estado === 'Resuelta',
+                                   'bg-error': queja.estado === 'Desestimada'
+                                 }"></div>
+
+                            <div class="flex justify-between items-start gap-3 ml-2">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2.5 flex-wrap mb-1.5">
+                                        <div class="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-[11px] flex items-center justify-center shrink-0 uppercase">
+                                            {{ (queja.nombre_ciudadano || 'C').charAt(0) }}
+                                        </div>
+                                        <h4 class="font-bold text-on-surface text-sm capitalize">{{ queja.nombre_ciudadano }}</h4>
+                                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">
+                                            Contra Oficial #{{ queja.id_oficial_implicado || 'N/A' }}
+                                        </span>
+                                        <span class="text-xs text-secondary flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[13px] notranslate" translate="no">calendar_month</span>
+                                            {{ queja.fecha_incidente }}
+                                        </span>
+                                    </div>
+                                    <p class="text-on-surface-variant text-xs mt-1 leading-relaxed">{{ queja.descripcion }}</p>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div class="shrink-0">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase border flex items-center gap-1.5 shadow-xs"
+                                          [ngClass]="{
+                                            'bg-surface-variant/50 text-on-surface border-outline-variant/50': queja.estado === 'Recibida',
+                                            'bg-primary-container text-on-primary-container border-primary/20': queja.estado === 'En Investigacion',
+                                            'bg-success-container text-on-success-container border-success/20': queja.estado === 'Resuelta',
+                                            'bg-error-container text-on-error-container border-error/20': queja.estado === 'Desestimada'
+                                          }">
+                                        <span class="material-symbols-outlined text-[13px] notranslate" translate="no">
+                                            {{ queja.estado === 'Recibida' ? 'mark_email_unread' : queja.estado === 'En Investigacion' ? 'search' : queja.estado === 'Resuelta' ? 'check_circle' : 'cancel' }}
+                                        </span>
+                                        {{ queja.estado === 'Recibida' ? 'Recibida' : queja.estado === 'En Investigacion' ? 'En Investigación' : queja.estado === 'Resuelta' ? 'Resuelta' : 'Desestimada' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        } @empty {
+                            <div class="flex flex-col items-center justify-center py-16 text-on-surface-variant opacity-60">
+                                <span class="material-symbols-outlined text-[40px] mb-1.5 notranslate" translate="no">search_off</span>
+                                <p class="text-xs font-medium">No se encontraron quejas ciudadanas</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Panel 2: Uso de Fuerza -->
+                <div *ngIf="activeTab === 'all' || activeTab === 'force'" 
+                     class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-3.5 lg:p-4 min-h-0">
+                    <div class="flex justify-between items-center mb-3 shrink-0">
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2.5 font-bold text-sm">
+                            <span class="material-symbols-outlined text-error text-[22px] notranslate" translate="no">local_police</span>
+                            Uso de Fuerza Deployment Log
+                        </h3>
+                        <span class="text-xs text-error font-semibold bg-error-container text-on-error-container px-2.5 py-0.5 rounded-full border border-error/20">
+                            {{ filteredUsoFuerza.length }} Reports
+                        </span>
+                    </div>
+
+                    <div class="overflow-y-auto flex-1 min-h-0 border border-outline-variant/60 rounded-xl p-2.5 space-y-2.5">
+                        @for (reporte of filteredUsoFuerza; track reporte.id_reporte || reporte.id || $index) {
+                        <div class="relative bg-surface-container hover:bg-error/5 border border-outline-variant/50 hover:border-error/30 rounded-xl p-3.5 transition-all group overflow-hidden shadow-xs hover:shadow-sm">
+                            <!-- Type Border Indicator -->
+                            <div class="absolute left-0 top-0 bottom-0 w-1.5"
+                                 [ngClass]="{
+                                   'bg-tertiary': reporte.tipo_fuerza && reporte.tipo_fuerza.includes('Fisica'),
+                                   'bg-orange-500': reporte.tipo_fuerza && (reporte.tipo_fuerza.includes('Taser') || reporte.tipo_fuerza.includes('Gas')),
+                                   'bg-error': reporte.tipo_fuerza && reporte.tipo_fuerza.includes('Fuego')
+                                 }"></div>
+
+                            <div class="flex justify-between items-start gap-3 ml-2">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2.5 flex-wrap mb-1.5">
+                                        <h4 class="font-bold text-on-surface text-sm">Oficial #{{ reporte.id_oficial }}</h4>
+                                        <span *ngIf="reporte.id_incidente" class="text-[11px] font-data-mono text-primary font-bold px-2 py-0.5 rounded bg-primary/10">
+                                            Caso: {{ reporte.id_incidente }}
+                                        </span>
+                                        <span class="text-xs text-secondary flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[13px] notranslate" translate="no">schedule</span>
+                                            {{ reporte.fecha_hora | date:'short' }}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex items-center gap-1.5 text-xs text-on-surface-variant font-medium mb-2">
+                                        <span class="material-symbols-outlined text-[15px] text-secondary notranslate" translate="no">location_on</span>
+                                        <span class="truncate">{{ reporte.ubicacion || 'Ubicación no registrada' }}</span>
+                                    </div>
+
+                                    <div class="bg-surface-container-lowest p-2.5 rounded-lg border border-outline-variant/40">
+                                        <span class="text-[10px] font-bold tracking-wider text-secondary uppercase block mb-0.5">Justificación Legal / Detalles</span>
+                                        <p class="text-on-surface text-xs leading-relaxed">{{ reporte.justificacion_legal }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Type & Injuries Badges -->
+                                <div class="shrink-0 flex flex-col items-end gap-2">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide uppercase border flex items-center gap-1.5 shadow-xs"
+                                          [ngClass]="{
+                                            'bg-tertiary/10 text-tertiary border-tertiary/30': reporte.tipo_fuerza && reporte.tipo_fuerza.includes('Fisica'),
+                                            'bg-orange-500/10 text-orange-500 border-orange-500/30': reporte.tipo_fuerza && (reporte.tipo_fuerza.includes('Taser') || reporte.tipo_fuerza.includes('Gas')),
+                                            'bg-error text-on-error border-error shadow-error/20': reporte.tipo_fuerza && reporte.tipo_fuerza.includes('Fuego')
+                                          }">
+                                        <span class="material-symbols-outlined text-[13px] notranslate" translate="no">
+                                            {{ reporte.tipo_fuerza && reporte.tipo_fuerza.includes('Fisica') ? 'front_hand' : (reporte.tipo_fuerza && reporte.tipo_fuerza.includes('Taser') ? 'electric_bolt' : (reporte.tipo_fuerza && reporte.tipo_fuerza.includes('Gas') ? 'science' : 'crisis_alert')) }}
+                                        </span>
+                                        {{ reporte.tipo_fuerza && reporte.tipo_fuerza.includes('Fisica') ? 'Física (No Letal)' : (reporte.tipo_fuerza && (reporte.tipo_fuerza.includes('Taser') || reporte.tipo_fuerza.includes('Electrica')) ? 'Arma Eléctrica (Taser)' : (reporte.tipo_fuerza && reporte.tipo_fuerza.includes('Gas') ? 'Arma Química (Gas)' : 'Fuerza Letal (Arma de Fuego)')) }}
+                                    </span>
+
+                                    <span *ngIf="reporte.hubo_heridos" class="flex items-center gap-1 text-[10px] font-bold text-error bg-error/10 px-2 py-0.5 rounded border border-error/20">
+                                        <span class="material-symbols-outlined text-[12px] notranslate" translate="no">medical_services</span>
+                                        Lesionados Reportados
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        } @empty {
+                            <div class="flex flex-col items-center justify-center py-16 text-on-surface-variant opacity-60">
+                                <span class="material-symbols-outlined text-[40px] mb-1.5 notranslate" translate="no">search_off</span>
+                                <p class="text-xs font-medium">No se encontraron reportes de uso de fuerza</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>

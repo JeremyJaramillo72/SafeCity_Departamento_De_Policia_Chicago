@@ -1,0 +1,79 @@
+@startuml Módulo 04 - Gestión de Logística y Flota Vehicular
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam actorStyle helio
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam package {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor White
+  BorderColor Black
+}
+
+title Módulo 04: Gestión de Logística y Flota Vehicular\n(Gestión de Logística y Flota Vehicular)
+
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "Sistema SafeCity Intelligence Ops" {
+
+  actor "Jefe de Logística" as Logistics
+  actor "Oficial de Patrulla" as Officer
+
+  package "Módulo: Logística y Flota" as mod4 {
+    usecase "CU-O19: Registrar Kilometraje\nde Patrulla" as UC19
+    usecase "CU-O20: Reportar Daños Físicos\nen Carrocería" as UC20
+    usecase "CU-O21: Informar Niveles\nde Combustible" as UC21
+    usecase "CU-O22: Registrar Entrega\nde Radio" as UC22
+    usecase "CU-O23: Escanear Código de\nBarras de Bodycam" as UC23
+    usecase "CU-O24: Reportar Munición\nAsignada" as UC24
+    usecase "CU-O25: Levantar Ticket por\nFalla Mecánica" as UC25
+    usecase "CU-O26: Registrar Descarga\nde Taser" as UC26
+    usecase "CU-O27: Informar Presión\nde Neumáticos" as UC27
+    usecase "CU-T06: Administrar Inventario\nde Flota Vehicular" as UC_T06
+  }
+
+  Officer --> UC19
+  Officer --> UC20
+  Officer --> UC21
+  Officer --> UC22
+  Officer --> UC23
+  Officer --> UC24
+  Officer --> UC25
+  Officer --> UC26
+  Officer --> UC27
+
+  Logistics --> UC_T06
+
+  UC_T06 ..> UC19 : <<monitorea>>
+  UC_T06 ..> UC25 : <<recibe tickets>>
+}
+
+note right of mod4
+  <b>Actor principal:</b> Jefe de Logística
+  <b>Objetivo:</b> Inventario y control de flota
+  <b>Técnicas:</b> Análisis de disponibilidad
+  mecánica, IoT sensores
+  <b>Tablas Fact:</b> Fact_Turno_Patrullaje
+  <b>Tablas Dim:</b> Dim_Vehiculo_Patrulla,
+  Dim_Equipamiento_Oficial
+end note
+
+@enduml

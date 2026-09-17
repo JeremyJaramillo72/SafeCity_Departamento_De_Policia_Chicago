@@ -1,0 +1,107 @@
+@startuml
+skinparam roundcorner 10
+skinparam classBackgroundColor White
+skinparam classArrowColor #666666
+skinparam classBorderColor #333333
+
+package "administracion_seguridad" {
+  class ForceLogout {
+    + id_usuario : IntegerField
+    + logout_timestamp : DateTimeField
+  }
+  class UserSession {
+    + id_usuario : IntegerField
+    + ultimo_acceso : DateTimeField
+    + is_online : BooleanField
+  }
+}
+
+package "operativo_rrhh" {
+  class AsistenciaRegistro {
+    + id_oficial : IntegerField
+    + timestamp_entrada : DateTimeField
+    + timestamp_salida : DateTimeField
+  }
+  class AsignacionCuadrante {
+    + id_oficial : IntegerField
+    + id_cuadrante : CharField
+    + turno : CharField
+    + fecha : DateField
+    + timestamp_asignacion : DateTimeField
+  }
+  class SolicitudPermiso {
+    + ESTADOS : Field
+    + id_oficial : IntegerField
+    + tipo_permiso : CharField
+    + fecha_inicio : DateField
+    + fecha_fin : DateField
+    + estado : CharField
+    + id_comandante_aprobador : IntegerField
+    + timestamp_solicitud : DateTimeField
+    + timestamp_resolucion : DateTimeField
+    + documento_respaldo : FileField
+  }
+  class Amonestacion {
+    + TIPOS : Field
+    + id_oficial : IntegerField
+    + tipo : CharField
+    + descripcion : TextField
+    + id_comandante : IntegerField
+    + timestamp : DateTimeField
+  }
+  class Certificacion {
+    + id_oficial : IntegerField
+    + nombre_curso : CharField
+    + institucion : CharField
+    + fecha_completado : DateField
+    + timestamp_registro : DateTimeField
+    + documento_respaldo : FileField
+  }
+  class RollCallBriefing {
+    + id_supervisor : IntegerField
+    + bolo_details : TextField
+    + special_assignments : TextField
+    + asistentes : TextField
+    + timestamp : DateTimeField
+  }
+  class ShiftHandover {
+    + id_oficial_saliente : IntegerField
+    + id_oficial_entrante : IntegerField
+    + checklist_detenidos : BooleanField
+    + checklist_equipos : BooleanField
+    + checklist_incidentes : BooleanField
+    + novedades : TextField
+    + leido : BooleanField
+    + timestamp : DateTimeField
+  }
+}
+
+package "ordenes_judiciales" {
+  class OrdenJudicial {
+    + TIPOS_ORDEN : Field
+    + ESTADOS : Field
+    + tipo_orden : CharField
+    + juez_emisor : CharField
+    + tribunal : CharField
+    + cargos : TextField
+    + fecha_emision : DateField
+    + fecha_vencimiento : DateField
+    + sospechoso_nombre : CharField
+    + sospechoso_identificacion : CharField
+    + expediente_vinculado : CharField
+    + documento_pdf : FileField
+    + estado : CharField
+    + fecha_creacion : DateTimeField
+  }
+  class EjecucionOrden {
+    + RESULTADOS : Field
+    + orden : ForeignKey
+    + fecha_hora_ejecucion : DateTimeField
+    + ubicacion : CharField
+    + oficial_ejecutor : CharField
+    + resultado : CharField
+    + observaciones : TextField
+    + fecha_registro : DateTimeField
+  }
+}
+@enduml

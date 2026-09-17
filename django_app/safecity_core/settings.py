@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-a2yn97u01(erj()f&a7k^37hj%39n!+txd*^ctz%t&uee)21f_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -39,11 +39,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'storages',
     'gestion_operativa',
     'inteligencia_geografica',
     'inteligencia_criminal',
     'logistica_patrullaje',
     'administracion_seguridad',
+    'investigacion_especial',
+    'operativo_rrhh',
+    'ordenes_judiciales',
+    'policia_comunitaria',
 ]
 
 MIDDLEWARE = [
@@ -55,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'administracion_seguridad.middleware.CurrentRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'safecity_core.urls'
@@ -123,6 +129,64 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'administracion_seguridad.auth.SafeCityJWTAuthentication',
+    ),
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
+
+import os
+
+# Configuración de Supabase Storage (S3 Compatibility)
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '46316e8f907aef45c473236917c6de51')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '19078c91b43718e9da4b6ff2c31c4098089ff725b53955fbd92fb1b008813a97')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', 'Documentos-PDF')
+AWS_S3_ENDPOINT_URL = 'https://wockcwvfxhxjhulsshpa.supabase.co/storage/v1/s3'
+AWS_S3_REGION_NAME = 'us-east-1'
+
+# Evitar firmar URLs y mantener URLs públicas limpias
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = False
+
+# Dominio personalizado de Supabase para retornar URLs limpias del bucket público
+AWS_S3_CUSTOM_DOMAIN = f"wockcwvfxhxjhulsshpa.supabase.co/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}"
+
+# Configuración de almacenamiento de Django 5.0
+STORAGES = {
+    "default": {
+        "BACKEND": "safecity_core.custom_storage.AlmacenamientoSafeCity",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+# Configuración para envío de correos reales vía Gmail SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'jeremyjaramillo156@gmail.com'
+EMAIL_HOST_PASSWORD = 'hywibpnzeuixszwt'
+DEFAULT_FROM_EMAIL = 'SafeCity Intelligence <jeremyjaramillo156@gmail.com>'

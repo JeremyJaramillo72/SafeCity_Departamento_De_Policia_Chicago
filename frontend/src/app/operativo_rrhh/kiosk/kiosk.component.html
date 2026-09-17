@@ -1,0 +1,83 @@
+<div class="bg-[#0A1128] font-body-md text-white min-h-screen w-full flex flex-col">
+    <!-- TopNavBar Component -->
+    <header class="sticky top-0 bg-[#0A1128]/95 border-b border-[#0066FF]/30 flex justify-between items-center h-16 w-full px-lg z-40 shadow-md backdrop-blur-sm">
+        <div class="flex items-center gap-4">
+            <!-- Back to operations -->
+            <a routerLink="/login" class="p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center">
+                <span class="material-symbols-outlined notranslate" translate="no">arrow_back</span>
+            </a>
+            <div class="h-8 w-8 bg-[#0066FF]/20 rounded-md flex items-center justify-center border border-[#0066FF]/50">
+                <span class="material-symbols-outlined text-[#0066FF] text-lg notranslate" translate="no">badge</span>
+            </div>
+            <span class="font-headline-md text-headline-md font-black tracking-tight text-white">SafeCity <span class="text-[#0066FF]">Kiosco RRHH</span></span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden sm:block">
+                <p class="text-sm font-bold text-gray-300">{{ clockStr }}</p>
+                <p class="text-xs text-gray-500 uppercase tracking-widest">Hora Local</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Portal Content -->
+    <main class="flex-1 overflow-y-auto p-lg lg:p-xl flex flex-col items-center justify-center relative">
+        <!-- Background decoration -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[400px] text-[#0066FF]/10 notranslate" translate="no">local_police</span>
+        </div>
+
+        <div class="w-full max-w-xl z-10">
+            <!-- Header -->
+            <div class="text-center mb-10">
+                <h1 class="font-display-lg text-display-lg font-bold text-white mb-2">Portal de Oficiales</h1>
+                <p class="font-body-md text-gray-400">Ingrese su ID para registrar asistencia o solicitar permisos.</p>
+            </div>
+
+            <!-- Card -->
+            <div class="bg-[#111836] border border-[#0066FF]/30 rounded-2xl p-8 shadow-2xl backdrop-blur-md">
+                
+                <div class="mb-8">
+                    <label class="block font-label-caps text-label-caps text-gray-400 mb-3 tracking-widest">ID DE OFICIAL</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl notranslate" translate="no">pin</span>
+                        <input type="number" [(ngModel)]="idOfficer" 
+                                class="w-full bg-[#0A1128] border border-[#0066FF]/50 rounded-xl py-4 pl-12 pr-4 font-headline-sm text-headline-sm focus:border-[#0066FF] focus:ring-2 focus:ring-[#0066FF]/50 outline-none text-white placeholder:text-gray-600 transition-all min-h-[48px]"
+                                placeholder="Ej. 1042">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <button (click)="clockIn()" [disabled]="loadingClockIn"
+                            class="group relative w-full bg-[#0066FF]/10 border border-[#0066FF] hover:bg-[#0066FF] text-[#0066FF] hover:text-white font-bold rounded-xl py-4 flex flex-col items-center justify-center transition-all overflow-hidden min-h-[100px] cursor-pointer">
+                        <span *ngIf="!loadingClockIn" class="material-symbols-outlined text-3xl mb-1 notranslate" translate="no">login</span>
+                        <span *ngIf="loadingClockIn" class="animate-spin border-4 border-white border-t-transparent rounded-full w-8 h-8 mb-1"></span>
+                        <span class="font-label-caps tracking-widest text-xs">REGISTRAR ENTRADA</span>
+                    </button>
+                    
+                    <button (click)="clockOut()" [disabled]="loadingClockOut"
+                            class="group relative w-full bg-[#D32F2F]/10 border border-[#D32F2F] hover:bg-[#D32F2F] text-[#D32F2F] hover:text-white font-bold rounded-xl py-4 flex flex-col items-center justify-center transition-all overflow-hidden min-h-[100px] cursor-pointer">
+                        <span *ngIf="!loadingClockOut" class="material-symbols-outlined text-3xl mb-1 notranslate" translate="no">logout</span>
+                        <span *ngIf="loadingClockOut" class="animate-spin border-4 border-white border-t-transparent rounded-full w-8 h-8 mb-1"></span>
+                        <span class="font-label-caps tracking-widest text-xs">REGISTRAR SALIDA</span>
+                    </button>
+                </div>
+
+                <!-- Secondary Actions -->
+                <div class="pt-6 border-t border-white/5">
+                    <a routerLink="/kiosco/permisos" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white font-semibold rounded-xl py-3 flex items-center justify-center gap-2 transition-all min-h-[48px] cursor-pointer">
+                        <span class="material-symbols-outlined text-lg notranslate" translate="no">edit_document</span>
+                        Solicitar Permiso
+                    </a>
+                </div>
+
+                <!-- Messages -->
+                <div *ngIf="message" class="mt-6 p-4 rounded-xl border flex items-start gap-3 animate-fade-in" 
+                     [ngClass]="isError ? 'bg-[#D32F2F]/10 border-[#D32F2F] text-red-200' : 'bg-[#2E7D32]/10 border-[#2E7D32] text-green-200'">
+                    <span class="material-symbols-outlined mt-0.5 notranslate" translate="no">{{ isError ? 'error' : 'check_circle' }}</span>
+                    <p class="font-body-sm">{{ message }}</p>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>

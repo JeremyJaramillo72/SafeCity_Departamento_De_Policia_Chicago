@@ -1,0 +1,71 @@
+@startuml Módulo 09 - Reportes e Indicadores BSC
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam actorStyle helio
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam package {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor White
+  BorderColor Black
+}
+
+title Módulo 09: Reportes e Indicadores BSC\n(Reportes e Indicadores Balanced Scorecard)
+
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "Sistema SafeCity Intelligence Ops" {
+
+  actor "Sheriff" as Commander
+  actor "Analista de Inteligencia\nCriminal" as Analyst
+
+  package "Módulo: Reportes e Indicadores" as mod9 {
+    usecase "CU-E01: Consultar Dashboard\nde KPIs Policiales" as UC_E01
+    usecase "CU-E03: Generar Reportes\nEstadísticos Mensuales\ny Anuales" as UC_E03
+    usecase "CU-T01: Consultar Historial\nFiltrado de Delitos" as UC_T01
+    usecase "CU-T02: Visualizar Expediente\ndel Incidente" as UC_T02
+    usecase "CU-T06: Administrar Inventario\nde Flota Vehicular" as UC_T06
+    usecase "CU-T13: Monitorear Estado y\nTiempos de Respuesta en\nEmergencias" as UC_T13
+  }
+
+  Commander --> UC_E01
+  Commander --> UC_T01
+  Commander --> UC_T02
+
+  Analyst --> UC_E03
+  Analyst --> UC_T06
+  Analyst --> UC_T13
+
+  UC_E03 ..> UC_E01 : <<alimenta>>
+  UC_T13 ..> UC_E01 : <<alimenta>>
+}
+
+note right of mod9
+  <b>Actor principal:</b> Sheriff
+  <b>Objetivo:</b> Analítica de rendimiento
+  operativo e indicadores clave
+  <b>Técnicas:</b> BI, Agregaciones OLAP,
+  ML Predictivo, Detección de Anomalías
+  <b>Tablas Fact:</b> Todas las tablas Fact
+  <b>Tablas Dim:</b> Todas las tablas Dim
+end note
+
+@enduml

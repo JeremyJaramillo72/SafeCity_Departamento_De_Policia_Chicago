@@ -1,0 +1,819 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full relative">
+  <app-sidebar></app-sidebar>
+
+  <div class="flex-1 w-full flex flex-col relative">
+
+    <!-- Main Canvas (Fluid Full Width) -->
+    <main class="p-4 lg:p-6 flex flex-col gap-4 w-full relative pb-16">
+      
+      <!-- Unified Header -->
+      <div *ngIf="activeTab !== 'booking'" class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 pb-3 border-b border-outline-variant/30">
+        <div class="flex items-center gap-3">
+          <div>
+            <h2 class="font-display-lg text-display-lg text-primary flex items-center gap-2">
+              <span class="material-symbols-outlined text-[28px] text-primary notranslate" translate="no">
+                {{ activeTab === 'list' ? 'gavel' : 'grid_view' }}
+              </span>
+              {{ activeTab === 'list' ? 'Registros de Arresto' : 'Gestión de Celdas' }}
+            </h2>
+            <p class="font-body-sm text-body-sm text-secondary mt-0.5">
+              {{ activeTab === 'list' ? 'Busque, edite, libere y revise bitácoras de custodia de detenidos.' : 'Monitoree la ocupación de celdas y registre rondas obligatorias de supervisión.' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 shrink-0 w-full md:w-auto justify-end">
+          <div class="bg-surface-container-low border border-outline-variant/65 p-1 rounded-xl flex gap-1 shadow-sm shrink-0 z-10">
+            <button (click)="switchTab('cells')" 
+                    class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" 
+                    [ngClass]="activeTab === 'cells' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+              <span class="material-symbols-outlined text-[18px] notranslate" translate="no">grid_view</span>
+              Gestión de Celdas
+            </button>
+            <button (click)="switchTab('list')" 
+                    class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" 
+                    [ngClass]="activeTab === 'list' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+              <span class="material-symbols-outlined text-[18px] notranslate" translate="no">badge</span>
+              Detenidos
+            </button>
+            <button (click)="switchTab('visits')" 
+                    class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" 
+                    [ngClass]="activeTab === 'visits' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+              <span class="material-symbols-outlined text-[18px] notranslate" translate="no">contact_phone</span>
+              Visitas y Llamadas
+            </button>
+          </div>
+          <button (click)="openNewForm()" class="bg-primary-container text-on-primary font-headline-sm text-headline-sm px-5 py-2.5 rounded-lg hover:bg-primary transition-colors flex items-center gap-2 shadow-sm inline-flex h-[40px] text-xs font-bold cursor-pointer">
+            <span class="material-symbols-outlined text-lg notranslate" translate="no">add</span>
+            Nuevo Ingreso
+          </button>
+        </div>
+      </div>
+
+      <!-- CELLS VIEW -->
+      <div class="animate-fade-in" *ngIf="activeTab === 'cells'">
+        <div class="flex flex-col gap-6">
+          <div *ngFor="let block of cellBlocks" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface mb-4 flex items-center gap-2 font-bold">
+              <span class="material-symbols-outlined text-primary notranslate" translate="no">domain</span>
+              Bloque {{ block.block }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              <ng-container *ngFor="let cellId of block.cells">
+                <ng-container *ngIf="getCellData(cellId) as cData; else emptyCell">
+                  <div class="border rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden transition-all shadow-sm"
+                       [ngClass]="getMinutesSinceRound(cData.ultima_ronda) > 60 ? 'border-error bg-error/5' : 'border-outline-variant bg-surface-bright'">
+                    
+                    <div *ngIf="getMinutesSinceRound(cData.ultima_ronda) > 60" class="absolute top-0 right-0 left-0 h-1 bg-error animate-pulse"></div>
+
+                    <div class="flex justify-between items-start">
+                      <span class="font-bold text-lg text-on-surface">{{ cellId }}</span>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-error/10 text-error">Ocupada</span>
+                    </div>
+
+                    <div class="flex flex-col gap-1 mt-1">
+                      <span class="text-xs text-on-surface-variant font-medium">Detenido:</span>
+                      <span class="text-sm font-bold text-on-surface line-clamp-1">{{ cData.nombre_detenido }}</span>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                      <span class="text-xs text-on-surface-variant font-medium">Última Ronda:</span>
+                      <div class="flex items-center gap-1.5" [ngClass]="getMinutesSinceRound(cData.ultima_ronda) > 60 ? 'text-error font-bold' : 'text-primary'">
+                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">schedule</span>
+                        <span class="text-sm">hace {{ getMinutesSinceRound(cData.ultima_ronda) }} min</span>
+                      </div>
+                    </div>
+
+                    <div class="mt-auto pt-3">
+                      <button (click)="registrarRonda(cData.id_ingreso)" class="w-full py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                              [ngClass]="getMinutesSinceRound(cData.ultima_ronda) > 60 ? 'bg-error text-on-error hover:bg-error/90' : 'bg-primary-container text-on-primary-container hover:bg-primary-container/80'">
+                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">check_circle</span>
+                        Ronda OK
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <ng-template #emptyCell>
+                  <div class="border border-outline-variant border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-2 bg-surface-container-lowest opacity-60 hover:opacity-100 transition-opacity min-h-[180px]">
+                    <span class="font-bold text-lg text-on-surface-variant">{{ cellId }}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success">Disponible</span>
+                    <span class="material-symbols-outlined text-[32px] text-outline-variant mt-2 notranslate" translate="no">meeting_room</span>
+                  </div>
+                </ng-template>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIST VIEW -->
+      <div class="animate-fade-in flex flex-col gap-md" *ngIf="activeTab === 'list'">
+        <!-- Bento Filters Toolbar -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-wrap lg:flex-nowrap gap-md items-end shadow-sm shrink-0">
+          <div class="w-full lg:w-1/3 min-w-[180px]">
+            <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Detenido</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg notranslate" translate="no">person</span>
+              <input [ngModel]="filters.search_nombre" (ngModelChange)="onSearchNombreChange($event)" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="Nombre del detenido..." type="text"/>
+            </div>
+          </div>
+          <div class="w-full lg:w-1/3 min-w-[180px]">
+            <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">ID del Sospechoso</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg notranslate" translate="no">fingerprint</span>
+              <input [ngModel]="filters.search_sospechoso" (ngModelChange)="onSearchSospechosoChange($event)" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="ID del sospechoso..." type="text"/>
+            </div>
+          </div>
+          <div class="w-full lg:w-1/3 flex gap-md">
+            <div class="flex-1">
+              <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Rango de Fechas</label>
+              <select [(ngModel)]="filters.date_range" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+                <option value="All Time">Todo el Tiempo</option>
+                <option value="24h">Últimas 24 Horas</option>
+                <option value="7d">Últimos 7 Días</option>
+                <option value="30d">Últimos 30 Días</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Table Card -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse whitespace-nowrap">
+              <thead class="bg-surface-container-low border-b border-outline-variant">
+                <tr>
+                  <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Ingreso</th>
+                  <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Detenido</th>
+                  <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">ID Sospechoso</th>
+                  <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Celda</th>
+                  <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Cargo Principal</th>
+                  <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4 text-center">Estado</th>
+                  <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-variant">
+                <tr *ngFor="let b of bookings" class="hover:bg-surface-bright transition-colors group">
+                  <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface">
+                    <div class="flex flex-col">
+                      <span class="font-medium">{{b.hora_ingreso | date:'d MMM, y HH:mm'}}</span>
+                    </div>
+                  </td>
+                  <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-medium">
+                    {{b.nombre_detenido || 'Desconocido'}}
+                  </td>
+                  <td class="py-3 px-4 font-data-mono text-data-mono text-secondary font-medium">#{{b.id_sospechoso || 'N/A'}}</td>
+                  <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium">{{b.numero_celda || 'N/A'}}</td>
+                  <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface">
+                    {{b.cargo_principal || 'Sin cargos'}}
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success border border-success/30">
+                      Activo
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 font-body-sm flex justify-center gap-2">
+                    <button (click)="editBooking(b)" class="p-1.5 text-on-surface-variant hover:bg-surface-container hover:text-primary rounded transition-colors cursor-pointer" title="Editar Registro">
+                      <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
+                    </button>
+                    <button (click)="openReleaseModal(b)" class="p-1.5 text-success hover:bg-success/10 rounded transition-colors cursor-pointer" title="Liberar Detenido">
+                      <span class="material-symbols-outlined text-[18px] notranslate" translate="no">logout</span>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="bookings.length === 0">
+                  <td colspan="7" class="p-8 text-center text-on-surface-variant italic">No se encontraron registros de detenidos.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Pagination -->
+          <div class="border-t border-outline-variant bg-surface-container-lowest px-4 py-3 flex items-center justify-between shrink-0">
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              Mostrando {{ bookings.length > 0 ? (pagination.page - 1) * pagination.per_page + 1 : 0 }} a {{ Math.min(pagination.page * pagination.per_page, pagination.total) }} de {{ pagination.total }}
+            </p>
+            <nav class="inline-flex -space-x-px rounded-md shadow-sm">
+              <button (click)="prevPage()" [disabled]="pagination.page === 1" class="px-2 py-1.5 border border-outline-variant rounded-l-md hover:bg-surface-container-low disabled:opacity-50 cursor-pointer">
+                <span class="material-symbols-outlined text-sm notranslate" translate="no">chevron_left</span>
+              </button>
+              <button class="px-3 py-1.5 border border-outline-variant bg-primary text-on-primary font-bold text-sm cursor-pointer">{{ pagination.page }}</button>
+              <button (click)="nextPage()" [disabled]="pagination.page === pagination.total_pages" class="px-2 py-1.5 border border-outline-variant rounded-r-md hover:bg-surface-container-low disabled:opacity-50 cursor-pointer">
+                <span class="material-symbols-outlined text-sm notranslate" translate="no">chevron_right</span>
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW / EDIT BOOKING VIEW -->
+      <div *ngIf="activeTab === 'booking'" class="animate-fade-in w-full pb-xl">
+        <div class="flex items-center justify-between mb-8 mt-2">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                    <span class="material-symbols-outlined text-[28px] notranslate" translate="no">how_to_reg</span>
+                </div>
+                <div>
+                    <h1 class="font-display-sm text-display-sm font-bold text-on-surface m-0 tracking-tight leading-tight">
+                        {{ editingId ? 'Actualizar Ingreso de Detenido' : 'Procesar Ingreso de Detenido' }}
+                    </h1>
+                    <p class="text-secondary text-sm m-0 mt-1">Complete el formulario para registrar un nuevo detenido o actualizar un registro existente.</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" (click)="activeTab = 'list'" class="px-5 py-2.5 rounded-lg border border-outline hover:bg-surface-container-low text-on-surface font-body-sm font-bold transition-all text-xs cursor-pointer">
+                    Cancelar
+                </button>
+                <button type="submit" form="bookingForm" [disabled]="isLoading" class="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-on-primary font-body-sm font-bold shadow-md transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer text-xs">
+                    <span class="material-symbols-outlined text-sm notranslate" *ngIf="!isLoading" translate="no">save</span>
+                    <span class="material-symbols-outlined text-sm animate-spin notranslate" *ngIf="isLoading" translate="no">progress_activity</span>
+                    {{ editingId ? 'Actualizar Registro' : 'Registrar Ingreso' }}
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                <!-- FORM -->
+                <form id="bookingForm" (submit)="submitBooking()" class="bg-surface-container-lowest border border-outline-variant shadow-sm rounded-xl p-lg flex flex-col gap-xl">
+                    
+                    <div class="flex flex-col gap-lg">
+                      <div class="flex items-center gap-2 text-primary border-b border-outline-variant/30 pb-2">
+                        <span class="material-symbols-outlined text-md notranslate" translate="no">badge</span>
+                        <span class="font-headline-sm font-bold text-xs uppercase tracking-wider">Detalles del Detenido</span>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                        <!-- Linked Incident (Case #) -->
+                        <div class="flex flex-col gap-1.5 relative">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Incidente Vinculado (Caso #)</label>
+                          <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg notranslate" translate="no">search</span>
+                            <input type="text" [ngModel]="newBooking.id_incidente_asociado" (ngModelChange)="newBooking.id_incidente_asociado = $event; searchCases($event)" name="id_incidente_asociado" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="Buscar caso por ID, título o descripción..." autocomplete="off">
+                            <!-- Case Suggestions Dropdown -->
+                            <div *ngIf="showCaseSuggestions && caseSuggestions.length > 0" class="absolute z-50 w-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                <div *ngFor="let c of caseSuggestions" (click)="selectCase(c)" class="px-4 py-2 hover:bg-surface-container-low cursor-pointer border-b border-outline-variant/30 last:border-0 transition-colors">
+                                    <div class="font-bold text-sm text-primary">{{c.case_number}} - {{c.primary_type}}</div>
+                                    <div class="text-xs text-on-surface-variant line-clamp-1">{{c.description}}</div>
+                                </div>
+                            </div>
+                            <div *ngIf="showCaseSuggestions && caseSuggestions.length === 0 && newBooking.id_incidente_asociado" class="absolute z-50 w-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg px-4 py-3 text-sm text-on-surface-variant italic">
+                                No se encontraron casos que coincidan con "{{newBooking.id_incidente_asociado}}"
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Suspect ID (System) -->
+                        <div class="flex flex-col gap-1.5 relative">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">ID del Sospechoso (Sistema)</label>
+                          <div class="relative">
+                            <input type="text" [ngModel]="newBooking.id_sospechoso" (ngModelChange)="newBooking.id_sospechoso = $event; searchSuspects($event)" name="id_sospechoso" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="ej. 83921" autocomplete="off">
+                            <div *ngIf="showSuspectSuggestions && suspectSuggestions.length > 0" class="absolute z-50 w-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                              <div *ngFor="let s of suspectSuggestions" (click)="selectSuspect(s)" class="px-4 py-2 hover:bg-surface-container-low cursor-pointer border-b border-outline-variant/30 last:border-0 transition-colors">
+                                <div class="font-bold text-sm text-primary">{{s.nombres}}</div>
+                                <div class="text-xs text-on-surface-variant flex flex-wrap gap-x-3 gap-y-1 items-center mt-1 select-none">
+                                  <span>ID: <strong class="text-on-surface font-semibold">{{s.id_sospechoso}}</strong></span>
+                                  <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                                  <span>Caso: <strong class="text-primary font-data-mono font-bold">{{s.case_number || 'N/A'}}</strong></span>
+                                  <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                                  <span>Alias: <strong class="text-on-surface font-semibold">{{s.alias_conocido || 'N/A'}}</strong></span>
+                                </div>
+                              </div>
+                            </div>
+                            <div *ngIf="showSuspectSuggestions && suspectSuggestions.length === 0 && newBooking.id_sospechoso" class="absolute z-50 w-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg px-4 py-3 text-sm text-on-surface-variant italic">
+                              No se encontraron sospechosos que coincidan con "{{newBooking.id_sospechoso}}"
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Multiple Suspect Cases Picker -->
+                        <div class="md:col-span-2 flex flex-col gap-2" *ngIf="suspectCases.length > 1">
+                            <label class="font-body-sm text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wide">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">info</span>
+                                Sospechoso vinculado a múltiples casos. Seleccione el caso correspondiente:
+                            </label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-primary-container/10 border border-primary/15 p-3 rounded-xl">
+                                <div *ngFor="let c of suspectCases" (click)="selectSuspectCase(c)" class="border border-outline-variant/60 bg-surface-container-lowest rounded-lg p-3 cursor-pointer hover:border-primary hover:bg-primary-container/10 transition-all">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-data-mono font-bold text-xs text-primary">{{c.case_number}}</span>
+                                        <span class="text-[10px] font-bold text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full uppercase">{{c.primary_type}}</span>
+                                    </div>
+                                    <div class="text-xs text-on-surface-variant mt-1.5 line-clamp-1">{{c.description || 'Sin descripción'}}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Associated Suspects (if any) from selected case -->
+                        <div class="md:col-span-2 flex flex-col gap-2" *ngIf="associatedSuspects.length > 0">
+                            <label class="font-body-sm text-xs font-bold text-on-surface-variant text-primary">Sospechosos vinculados al caso {{newBooking.id_incidente_asociado}} (Seleccione uno para arrestar)</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div *ngFor="let s of associatedSuspects" (click)="selectSuspect(s)" class="border border-outline-variant rounded-lg p-3 cursor-pointer hover:border-primary hover:bg-surface-container-low transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-bold">
+                                            {{ s.nombres ? s.nombres.charAt(0) : '?' }}
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-sm text-on-surface">{{s.nombres || 'Desconocido'}}</div>
+                                            <div class="text-xs text-on-surface-variant">ID: {{s.id_sospechoso || 'N/A'}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Nombre Completo *</label>
+                          <input type="text" [(ngModel)]="newBooking.nombre_detenido" name="nombre_detenido" required class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="ej. John Anthony Doe">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Alias</label>
+                          <input type="text" [(ngModel)]="newBooking.alias" name="alias" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="ej. El Chino">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Fecha de Nacimiento</label>
+                          <input type="date" [(ngModel)]="newBooking.fecha_nacimiento" name="fecha_nacimiento" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Género</label>
+                          <select [(ngModel)]="newBooking.genero" name="genero" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                            <option value="">Seleccione género...</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                            <option value="O">Otro</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col gap-lg">
+                      <div class="flex items-center gap-2 text-primary border-b border-outline-variant/30 pb-2">
+                        <span class="material-symbols-outlined text-md notranslate" translate="no">cell_tower</span>
+                        <span class="font-headline-sm font-bold text-xs uppercase tracking-wider">Detalles del Arresto y Celda</span>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                        <!-- Linked Incident (Moved up) -->
+
+                        <div class="flex flex-col gap-1.5 md:col-span-2 relative">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Celda Asignada *</label>
+                          <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg notranslate" translate="no">domain</span>
+                            <!-- Combobox implementation for cells! -->
+                            <select [(ngModel)]="newBooking.numero_celda" name="numero_celda" required class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+                              <option value="">Seleccionar celda disponible...</option>
+                              <ng-container *ngFor="let block of cellBlocks">
+                                <optgroup [label]="'Bloque ' + block.block">
+                                  <ng-container *ngFor="let cell of block.cells">
+                                      <option [value]="cell" [disabled]="!availableCells.includes(cell) && cell !== newBooking.numero_celda">
+                                          {{ cell }} {{ cell === newBooking.numero_celda ? '(Actual)' : (availableCells.includes(cell) ? '(Disponible)' : '(Ocupada - ' + (getCellData(cell)?.nombre_detenido || 'Bajo Custodia') + ')') }}
+                                      </option>
+                                  </ng-container>
+                                </optgroup>
+                              </ng-container>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Cargo Penal Principal *</label>
+                          <input type="text" [(ngModel)]="newBooking.cargo_principal" name="cargo_principal" required class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="ej. Robo agravado">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Gravedad del Cargo</label>
+                          <select [(ngModel)]="newBooking.gravedad_cargo" name="gravedad_cargo" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                            <option value="Delito Menor">Delito Menor</option>
+                            <option value="Delito Mayor">Delito Mayor</option>
+                            <option value="Infracción">Infracción</option>
+                          </select>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Fecha/Hora de Ingreso *</label>
+                          <input type="datetime-local" [(ngModel)]="newBooking.hora_ingreso" name="hora_ingreso" required class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Nivel de Intoxicación</label>
+                          <select [(ngModel)]="newBooking.nivel_intoxicacion" name="nivel_intoxicacion" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                            <option value="Sobrio">Sobrio</option>
+                            <option value="Leve">Intoxicación Leve</option>
+                            <option value="Grave">Intoxicación Grave</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col gap-lg">
+                      <div class="flex items-center gap-2 text-primary border-b border-outline-variant/30 pb-2">
+                        <span class="material-symbols-outlined text-md notranslate" translate="no">verified_user</span>
+                        <span class="font-headline-sm font-bold text-xs uppercase tracking-wider">Privilegios y Permisos</span>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Permiso de Visitas</label>
+                          <select [(ngModel)]="newBooking.permiso_visitas" name="permiso_visitas" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                            <option value="No especificado">No especificado</option>
+                            <option value="Sí, familiares directos">Sí, familiares directos</option>
+                            <option value="Sí, general">Sí, general</option>
+                            <option value="Con supervisión">Con supervisión</option>
+                            <option value="No">No</option>
+                          </select>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Permiso de Llamadas</label>
+                          <select [(ngModel)]="newBooking.permiso_llamadas" name="permiso_llamadas" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                            <option value="No especificado">No especificado</option>
+                            <option value="Ilimitadas">Ilimitadas</option>
+                            <option value="1 por día">1 por día</option>
+                            <option value="Sólo abogado">Sólo abogado</option>
+                            <option value="Restringido">Restringido</option>
+                          </select>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                          <label class="font-body-sm text-xs font-bold text-on-surface-variant">Acceso a Patio / Recreación</label>
+                          <select [(ngModel)]="newBooking.permiso_patio" name="permiso_patio" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                            <option value="No especificado">No especificado</option>
+                            <option value="Sí, regular">Sí, regular</option>
+                            <option value="Sí, solitario">Sí, solitario</option>
+                            <option value="No (Aislamiento)">No (Aislamiento)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                </form>
+            </div>
+            
+            <!-- RIGHT SIDEBAR (Operational Audit) -->
+            <div class="lg:col-span-4 flex flex-col gap-6 sticky top-6">
+                <!-- Operational Audit Card -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary notranslate" translate="no">analytics</span>
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Auditoría Operativa</h3>
+                        </div>
+                        <div class="w-2 h-2 rounded-full bg-success animate-pulse"></div>
+                    </div>
+                    <div class="p-5">
+                        <div class="bg-surface-container py-6 px-4 rounded-lg flex flex-col items-center justify-center border border-outline-variant border-dashed mb-6">
+                            <span class="material-symbols-outlined text-[32px] text-on-surface-variant mb-2 notranslate" translate="no">how_to_reg</span>
+                            <p class="font-label-caps text-label-caps text-on-surface-variant font-bold tracking-wider mb-1">ID DE CUSTODIA</p>
+                            <h2 class="font-display-sm text-display-sm text-primary font-black tracking-tight" [ngClass]="{'text-on-surface-variant': !editingId}">
+                                {{ editingId ? '#' + editingId : '#ID PENDIENTE' }}
+                            </h2>
+                        </div>
+                        
+                        <div class="space-y-4 font-body-sm text-sm">
+                            <div class="flex justify-between items-center border-b border-outline-variant/50 pb-2">
+                                <span class="text-on-surface-variant">Oficial Procesador:</span>
+                                <span class="font-bold text-on-surface">{{ authService.getOfficerName() || 'Ofc. Autorizado' }}</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-outline-variant/50 pb-2">
+                                <span class="text-on-surface-variant">Estado de Auditoría:</span>
+                                <span class="font-bold font-data-mono tracking-tight" [ngClass]="editingId ? 'text-success' : 'text-error'">
+                                    {{ editingId ? 'INGRESO VERIFICADO' : 'INGRESO PENDIENTE' }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-outline-variant/50 pb-2">
+                                <span class="text-on-surface-variant">Estación de Ingreso:</span>
+                                <span class="font-bold text-on-surface font-data-mono">Área de Ingreso 1</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-1">
+                                <span class="text-on-surface-variant">Sincronización BD:</span>
+                                <span class="font-bold text-on-surface flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[14px] notranslate" translate="no">cloud_done</span> Registro Seguro
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <!-- VISITAS Y LLAMADAS VIEW -->
+      <div class="animate-fade-in flex-1 flex flex-col gap-4 w-full" *ngIf="activeTab === 'visits'">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center border border-tertiary/20 shrink-0">
+              <span class="material-symbols-outlined text-[22px] notranslate" translate="no">contact_phone</span>
+            </div>
+            <div>
+              <h2 class="font-bold text-on-surface text-lg leading-tight">Visitas y Llamadas</h2>
+              <p class="text-on-surface-variant text-xs mt-0.5">Registre y supervise visitas, contactos legales y llamadas de detenidos.</p>
+            </div>
+          </div>
+          <button (click)="openVisitModal()" class="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors inline-flex items-center gap-2 shadow-sm cursor-pointer">
+            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">add</span>
+            Registrar Contacto
+          </button>
+        </div>
+
+        <!-- Type filter pills & Live Search -->
+        <div class="flex flex-wrap justify-between items-center gap-3 select-none">
+          <div class="flex gap-2 flex-wrap items-center">
+            <button type="button" (click)="visitFilterType = 'ALL'"
+                    class="px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border hover:bg-surface-container-high"
+                    [ngClass]="visitFilterType === 'ALL' ? 'bg-on-surface text-surface border-on-surface' : 'bg-transparent text-on-surface-variant border-outline-variant'">
+              Todos los Contactos
+            </button>
+            
+            <button type="button" (click)="visitFilterType = 'VISITA'"
+                    class="px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border hover:bg-tertiary/15 flex items-center gap-1"
+                    [ngClass]="visitFilterType === 'VISITA' ? 'bg-tertiary text-on-tertiary border-tertiary' : 'bg-tertiary/5 text-tertiary border-tertiary/35'">
+              <span class="material-symbols-outlined text-[14px] notranslate" translate="no">group</span>Visita
+            </button>
+            
+            <button type="button" (click)="visitFilterType = 'VISITA_LEGAL'"
+                    class="px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border hover:bg-primary/15 flex items-center gap-1"
+                    [ngClass]="visitFilterType === 'VISITA_LEGAL' ? 'bg-primary text-on-primary border-primary' : 'bg-primary/5 text-primary border-primary/35'">
+              <span class="material-symbols-outlined text-[14px] notranslate" translate="no">gavel</span>Visita Legal
+            </button>
+            
+            <button type="button" (click)="visitFilterType = 'VISITA_FAMILIAR'"
+                    class="px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border hover:bg-success/15 flex items-center gap-1"
+                    [ngClass]="visitFilterType === 'VISITA_FAMILIAR' ? 'bg-success text-on-success border-success' : 'bg-success/5 text-success border-success/35'">
+              <span class="material-symbols-outlined text-[14px] notranslate" translate="no">family_restroom</span>Visita Familiar
+            </button>
+            
+            <button type="button" (click)="visitFilterType = 'LLAMADA_TELEFONICA'"
+                    class="px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border hover:bg-warning/15 flex items-center gap-1"
+                    [ngClass]="visitFilterType === 'LLAMADA_TELEFONICA' ? 'bg-warning text-on-warning border-warning' : 'bg-warning/5 text-warning border-warning/35'">
+              <span class="material-symbols-outlined text-[14px] notranslate" translate="no">call</span>Llamada Telefónica
+            </button>
+          </div>
+
+          <!-- Live Search -->
+          <div class="relative min-w-[200px]">
+            <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[15px] notranslate pointer-events-none" translate="no">search</span>
+            <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar contacto, detenido..." class="w-full bg-surface-container border border-outline-variant rounded-lg pl-8 pr-7 py-1 text-on-surface text-xs focus:outline-none focus:border-primary transition-all placeholder:text-on-surface-variant/60" />
+            @if (searchQuery) {
+              <button (click)="searchQuery = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-error transition-colors p-0.5 bg-transparent border-0 cursor-pointer flex items-center" title="Limpiar">
+                <span class="material-symbols-outlined text-[14px] notranslate" translate="no">close</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- List or Empty State -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl flex-1 overflow-hidden">
+          @if (isLoadingVisits) {
+            <div class="flex items-center justify-center h-48 text-on-surface-variant text-sm">
+              <span class="material-symbols-outlined animate-spin text-primary mr-2 notranslate" translate="no">progress_activity</span>
+              Cargando registros...
+            </div>
+          } @else if (filteredVisits.length === 0) {
+            <div class="flex flex-col items-center justify-center h-56 text-center p-6 select-none">
+              <span class="material-symbols-outlined text-[48px] text-outline mb-3 notranslate" translate="no">contact_phone</span>
+              <p class="text-on-surface font-semibold mb-1">No se encontraron contactos</p>
+              <p class="text-on-surface-variant text-sm max-w-xs">Ningún registro coincide con el filtro seleccionado o aún no hay visitas registradas.</p>
+            </div>
+          } @else {
+            <table class="w-full text-xs text-left">
+              <thead>
+                <tr class="bg-surface-container-low border-b border-outline-variant text-[10px] font-bold text-on-surface-variant uppercase tracking-wider select-none">
+                  <th class="px-4 py-3.5">Fecha / Hora</th>
+                  <th class="px-4 py-3.5">Tipo</th>
+                  <th class="px-4 py-3.5">Detenido</th>
+                  <th class="px-4 py-3.5">Visitante / Contacto</th>
+                  <th class="px-4 py-3.5">Parentesco</th>
+                  <th class="px-4 py-3.5">Teléfono</th>
+                  <th class="px-4 py-3.5">Duración</th>
+                  <th class="px-4 py-3.5">Notas / Detalles</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant">
+                @for (v of filteredVisits; track v.id_log) {
+                  <tr class="hover:bg-surface-container-low transition-colors text-on-surface-variant">
+                    <td class="px-4 py-3 font-mono text-xs">{{ v.fecha_hora | date:'short' }}</td>
+                    <td class="px-4 py-3">
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold border whitespace-nowrap"
+                        [ngClass]="{
+                          'border-tertiary/30 bg-tertiary/10 text-tertiary': v.tipo_accion === 'VISITA',
+                          'border-primary/30 bg-primary/10 text-primary': v.tipo_accion === 'VISITA_LEGAL',
+                          'border-success/30 bg-success/10 text-success': v.tipo_accion === 'VISITA_FAMILIAR',
+                          'border-warning/30 bg-warning/10 text-warning': v.tipo_accion === 'LLAMADA_TELEFONICA'
+                        }">{{ v.tipo_accion }}</span>
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-on-surface">{{ v.nombre_detenido || ('ID: ' + v.id_ingreso) }}</td>
+                    
+                    <td class="px-4 py-3 font-medium text-on-surface">
+                      {{ parseLogDescription(v.descripcion).nombre_visitante || '—' }}
+                    </td>
+                    <td class="px-4 py-3">
+                      {{ parseLogDescription(v.descripcion).relacion || '—' }}
+                    </td>
+                    <td class="px-4 py-3 font-mono">
+                      {{ parseLogDescription(v.descripcion).telefono || '—' }}
+                    </td>
+                    <td class="px-4 py-3">
+                      <span class="px-2 py-0.5 rounded bg-surface-container-high font-semibold text-[10px]" *ngIf="parseLogDescription(v.descripcion).duracion_minutos">
+                        {{ parseLogDescription(v.descripcion).duracion_minutos }} min
+                      </span>
+                      <span *ngIf="!parseLogDescription(v.descripcion).duracion_minutos">—</span>
+                    </td>
+                    <td class="px-4 py-3 max-w-xs truncate" [title]="parseLogDescription(v.descripcion).notas || parseLogDescription(v.descripcion).texto_plano">
+                      {{ parseLogDescription(v.descripcion).notas || parseLogDescription(v.descripcion).texto_plano }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- RELEASE MODAL -->
+<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-md animate-fade-in" *ngIf="showReleaseModal">
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl max-w-[500px] w-full shadow-2xl overflow-hidden flex flex-col animate-scale-up">
+    <div class="px-lg py-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center select-none">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-success notranslate" translate="no">logout</span>
+        <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Procesar Salida / Liberación</h3>
+      </div>
+      <button (click)="closeReleaseModal()" class="p-1 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant cursor-pointer">
+        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+      </button>
+    </div>
+    
+    <div class="p-lg flex flex-col gap-md">
+      <p class="text-sm text-secondary">
+        Registre la salida del sospechoso bajo custodia. Esta acción actualizará su estado a <strong>Liberado</strong> y registrará la hora exacta de salida.
+      </p>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="font-body-sm text-xs font-bold text-on-surface-variant">Motivo de Salida / Destino *</label>
+        <textarea [(ngModel)]="releaseMotivo" name="releaseMotivo" required rows="3" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="ej. Fianza pagada / Orden judicial de liberación / Traslado a prisión central..."></textarea>
+      </div>
+    </div>
+
+    <div class="px-lg py-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3 shrink-0">
+      <button (click)="closeReleaseModal()" class="px-4 py-2 rounded-lg border border-outline hover:bg-surface-container-high text-on-surface font-body-sm font-bold transition-all text-xs cursor-pointer">
+        Cancelar
+      </button>
+      <button (click)="confirmRelease()" [disabled]="!releaseMotivo || isLoading" class="px-4 py-2 rounded-lg bg-success hover:bg-success/95 text-on-success font-body-sm font-bold shadow-md transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer text-xs">
+        <span class="material-symbols-outlined text-sm notranslate" *ngIf="!isLoading" translate="no">done</span>
+        <span class="material-symbols-outlined text-sm animate-spin notranslate" *ngIf="isLoading" translate="no">progress_activity</span>
+        Confirmar Salida
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER VISIT / CALL MODAL -->
+<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-md animate-fade-in" *ngIf="showVisitModal">
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl max-w-[560px] w-full shadow-2xl overflow-hidden flex flex-col animate-scale-up">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center select-none">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-tertiary notranslate" translate="no">contact_phone</span>
+        <h3 class="font-bold text-on-surface text-base">Registrar Visita / Llamada</h3>
+      </div>
+      <button (click)="closeVisitModal()" class="p-1 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant cursor-pointer">
+        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+      </button>
+    </div>
+
+    <div class="p-6 flex flex-col gap-4 overflow-y-auto max-h-[70vh]">
+      <!-- Tipo de contacto -->
+      <div>
+        <label class="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">Tipo de Contacto *</label>
+        <select [(ngModel)]="newVisit.tipo" class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary">
+          <option value="VISITA">Visita General</option>
+          <option value="VISITA_LEGAL">Visita Legal / Abogado</option>
+          <option value="VISITA_FAMILIAR">Visita Familiar</option>
+          <option value="LLAMADA_TELEFONICA">Llamada Telefónica</option>
+        </select>
+      </div>
+
+      <!-- ID Ingreso del detenido (Buscador Inteligente) -->
+      <div class="relative">
+        <label class="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">ID de Ingreso / Nombre del Detenido *</label>
+        <div class="relative">
+          <input type="text" [ngModel]="newVisit.id_ingreso" (ngModelChange)="newVisit.id_ingreso = $event; searchActiveBookings($event)" placeholder="Buscar por ID o Nombre del Detenido..."
+                 class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant/50" autocomplete="off" />
+          
+          <!-- Booking Suggestions Dropdown -->
+          <div *ngIf="showBookingSuggestions && bookingSuggestions.length > 0" class="absolute z-50 w-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div *ngFor="let b of bookingSuggestions" (click)="selectBookingForVisit(b)" class="px-4 py-2.5 hover:bg-surface-container-low cursor-pointer border-b border-outline-variant/30 last:border-0 transition-colors">
+              <div class="font-bold text-sm text-primary">{{b.nombre_detenido}}</div>
+              <div class="text-xs text-on-surface-variant flex flex-wrap gap-x-3 gap-y-1 items-center mt-1 select-none">
+                <span>ID Ingreso: <strong class="text-on-surface font-semibold font-data-mono">{{b.id_ingreso}}</strong></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                <span>Celda: <strong class="text-on-surface font-semibold">{{b.numero_celda || 'N/A'}}</strong></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                <span>Cargo: <strong class="text-on-surface-variant">{{b.cargo_principal}}</strong></span>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="showBookingSuggestions && bookingSuggestions.length === 0 && newVisit.id_ingreso" class="absolute z-50 w-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg px-4 py-3 text-sm text-on-surface-variant italic">
+            No se encontraron detenidos activos que coincidan con "{{newVisit.id_ingreso}}"
+          </div>
+        </div>
+      </div>
+
+      <!-- Nombre visitante / quien llama -->
+      <div>
+        <label class="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+          {{ newVisit.tipo === 'LLAMADA_TELEFONICA' ? 'Persona Contactada / Nombre' : 'Nombre del Visitante' }} *
+        </label>
+        <input type="text" [(ngModel)]="newVisit.nombre_visitante"
+               [placeholder]="newVisit.tipo === 'LLAMADA_TELEFONICA' ? 'Nombre de la persona contactada' : 'Nombre completo del visitante'"
+               class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant/50" />
+      </div>
+
+      <!-- Relacion y Telefono en fila -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">Parentesco / Relación</label>
+          <input type="text" [(ngModel)]="newVisit.relacion" placeholder="ej. Cónyuge, Abogado/a..."
+                 class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant/50" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">Teléfono</label>
+          <input type="tel" [(ngModel)]="newVisit.telefono" placeholder="Número de contacto"
+                 class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant/50" />
+        </div>
+      </div>
+
+      <!-- Duration and Date/Time -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">Duración (minutos)</label>
+          <input type="number" [(ngModel)]="newVisit.duracion_minutos" placeholder="ej. 30"
+                 class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant/50" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">Fecha y Hora</label>
+          <input type="datetime-local" [(ngModel)]="newVisit.fecha_hora"
+                 class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary" />
+        </div>
+      </div>
+
+      <!-- Notas -->
+      <div>
+        <label class="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">Notas Adicionales</label>
+        <textarea [(ngModel)]="newVisit.notas" rows="3" placeholder="Observaciones del oficial..."
+                  class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant/50 resize-none"></textarea>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3 shrink-0">
+      <button (click)="closeVisitModal()" class="px-4 py-2 rounded-lg border border-outline hover:bg-surface-container-high text-on-surface font-bold text-xs transition-all cursor-pointer">
+        Cancelar
+      </button>
+      <button (click)="submitVisit()" [disabled]="isSubmittingVisit || !newVisit.nombre_visitante.trim()"
+              class="px-4 py-2 rounded-lg bg-primary text-on-primary font-bold text-xs shadow-md transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer hover:bg-primary/90">
+        <span class="material-symbols-outlined text-sm notranslate" *ngIf="!isSubmittingVisit" translate="no">save</span>
+        <span class="material-symbols-outlined text-sm animate-spin notranslate" *ngIf="isSubmittingVisit" translate="no">progress_activity</span>
+        Guardar Registro
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Round Registration Modal -->
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4" *ngIf="showRoundModal">
+  <div class="bg-surface-container border border-outline-variant rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center shrink-0">
+      <h3 class="font-headline-md text-lg font-bold text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary notranslate" translate="no">policy</span>
+        Ronda de Supervisión
+      </h3>
+      <button (click)="showRoundModal = false; roundIngresoId = null" class="w-8 h-8 rounded-full hover:bg-surface-variant flex items-center justify-center text-on-surface-variant transition-colors cursor-pointer border-0 bg-transparent">
+        <span class="material-symbols-outlined text-lg notranslate" translate="no">close</span>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 text-sm text-on-surface flex flex-col gap-4">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-primary text-2xl notranslate" translate="no">verified_user</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-on-surface text-base mb-1">Confirmar Ronda de Supervisión</h4>
+          <p class="text-on-surface-variant text-xs leading-relaxed">
+            Está a punto de registrar una ronda de supervisión obligatoria para esta celda. Esta acción quedará registrada permanentemente en la bitácora del detenido con su ID de oficial y marca temporal.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3 shrink-0">
+      <button (click)="showRoundModal = false; roundIngresoId = null" class="px-4 py-2 rounded-lg border border-outline hover:bg-surface-container-high text-on-surface font-bold text-xs transition-all cursor-pointer bg-transparent">
+        Cancelar
+      </button>
+      <button (click)="confirmRegistrarRonda()" [disabled]="isLoading"
+              class="px-4 py-2 rounded-lg bg-primary text-on-primary font-bold text-xs shadow-md transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer hover:bg-primary/90 border-0">
+        <span class="material-symbols-outlined text-sm notranslate" *ngIf="!isLoading" translate="no">check_circle</span>
+        <span class="material-symbols-outlined text-sm animate-spin notranslate" *ngIf="isLoading" translate="no">progress_activity</span>
+        Confirmar Ronda
+      </button>
+    </div>
+  </div>
+</div>

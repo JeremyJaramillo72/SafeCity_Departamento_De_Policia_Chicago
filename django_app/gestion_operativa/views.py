@@ -3,12 +3,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from clickhouse_driver import Client
-from rest_framework.permissions import AllowAny # For now, allow any or use custom auth
+from rest_framework.permissions import AllowAny, IsAuthenticated # For now, allow any or use custom auth
+from administracion_seguridad.auth import SafeCityJWTAuthentication
+
+import os
 
 def get_clickhouse_client():
-    # Connect to the local ClickHouse container in Docker
+    # Connect to the ClickHouse container in Docker or localhost
     return Client(
-        host='localhost',
+        host=os.environ.get('CLICKHOUSE_HOST', 'localhost'),
         port=9000,
         user='default',
         password='password12345',
@@ -119,9 +122,111 @@ def resolve_and_link_crime_code(client, case_number, iucr, primary_type, fbi_cod
         )
     return iucr
 
+class NextCaseNumberView(APIView):
+    authentication_classes = [SafeCityJWTAuthentication]
+
+    def get(self, request):
+        try:
+            primary_type = request.query_params.get('primary_type', '').strip().upper()
+            if not primary_type:
+                return Response({'error': 'primary_type query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            PREFIX_MAP = {
+                'HOMICIDE': 'CS-HM',
+                'BATTERY': 'CS-BT',
+                'THEFT': 'CS-TH',
+                'CRIMINAL DAMAGE': 'CS-CD',
+                'NARCOTICS': 'CS-NT',
+                'ASSAULT': 'CS-AS',
+                'DECEPTIVE PRACTICE': 'CS-DP',
+                'OTHER OFFENSE': 'CS-OO',
+                'BURGLARY': 'CS-BY',
+                'MOTOR VEHICLE THEFT': 'CS-MV',
+                'ROBBERY': 'CS-RB',
+                'CRIMINAL TRESPASS': 'CS-CT',
+                'WEAPONS VIOLATION': 'CS-WV',
+                'PUBLIC PEACE VIOLATION': 'CS-PP',
+                'OFFENSE INVOLVING CHILDREN': 'CS-OC',
+                'SEX OFFENSE': 'CS-SO',
+                'ARSON': 'CS-AR',
+                'KIDNAPPING': 'CS-KD',
+                'STALKING': 'CS-ST',
+                'HUMAN TRAFFICKING': 'CS-HT',
+            }
+            
+            prefix = PREFIX_MAP.get(primary_type, 'CS-' + primary_type[:2])
+            
+            client = get_clickhouse_client()
+            query = "SELECT case_number FROM chicago_crimes WHERE case_number LIKE %(prefix_like)s"
+            results = client.execute(query, {'prefix_like': f"{prefix}%"})
+            
+            max_num = 0
+            for row in results:
+                cn = row[0]
+                num_part = cn[len(prefix):]
+                try:
+                    val = int(num_part)
+                    if val > max_num:
+                        max_num = val
+                except ValueError:
+                    pass
+            
+            next_num = max_num + 1
+            next_case_id = f"{prefix}{next_num:03d}"
+            
+            return Response({'next_case_number': next_case_id}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GeocodeProxyView(APIView):
+    authentication_classes = [SafeCityJWTAuthentication]
+
+    def get(self, request):
+        try:
+            q = request.query_params.get('q', '').strip()
+            if not q:
+                return Response([], status=status.HTTP_200_OK)
+            
+            import urllib.request
+            import urllib.parse
+            import json
+            
+            query = urllib.parse.quote(q)
+            # Try Chicago first
+            url = f"https://nominatim.openstreetmap.org/search?q={query}, Chicago, IL&format=json&limit=5&email=safecity.project@gmail.com"
+            
+            req = urllib.request.Request(
+                url, 
+                headers={'User-Agent': 'SafeCity-Chicago/1.0 (safecity-project@safecity.org)'}
+            )
+            
+            try:
+                with urllib.request.urlopen(req, timeout=5) as response:
+                    data = json.loads(response.read().decode('utf-8'))
+            except Exception:
+                data = []
+                
+            # If no results, try IL wide
+            if not data:
+                url_fallback = f"https://nominatim.openstreetmap.org/search?q={query}, IL&format=json&limit=5&email=safecity.project@gmail.com"
+                req_fallback = urllib.request.Request(
+                    url_fallback, 
+                    headers={'User-Agent': 'SafeCity-Chicago/1.0 (safecity-project@safecity.org)'}
+                )
+                try:
+                    with urllib.request.urlopen(req_fallback, timeout=5) as response:
+                        data = json.loads(response.read().decode('utf-8'))
+                except Exception:
+                    data = []
+            
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class DashboardKPIView(APIView):
-    permission_classes = [AllowAny] # You may want to restrict this later
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
@@ -142,42 +247,24 @@ class DashboardKPIView(APIView):
             # Calculate Arrest Rate
             arrest_rate = round((total_arrests / total_incidents * 100), 1) if total_incidents > 0 else 0
             
-            # Map data: coordinates from the dense 2001 dataset
-            map_res = client.execute("""
-                SELECT c.latitude, c.longitude, cp.gravedad_delito AS primary_type 
-                FROM chicago_crimes c
-                LEFT JOIN incidente_delito id ON c.case_number = id.case_number
-                LEFT JOIN codigo_penal cp ON id.codigo_iucr = cp.codigo_iucr
-                WHERE c.year = 2001 AND c.latitude != 0.0 AND c.longitude != 0.0 
-                LIMIT 3000
-            """)
-            map_points = []
-            for row in map_res:
-                try:
-                    map_points.append({'lat': float(row[0]), 'lng': float(row[1]), 'type': row[2]})
-                except ValueError:
-                    pass
-            
-            # Chart data: top 15 districts by crime count in 2001
+            # Chart data 1: Incidents by Year
+            yearly_res = client.execute("SELECT year, count(*) as c FROM chicago_crimes GROUP BY year ORDER BY year ASC")
+            yearly_data = [{'year': int(row[0]), 'count': int(row[1])} for row in yearly_res]
+
+            # Chart data 2: top 15 districts by crime count in 2001
             chart_res = client.execute("""
                 SELECT e.numero_distrito AS district, count(*) as count 
                 FROM chicago_crimes c 
                 LEFT JOIN estacion_policial e ON c.id_estacion = e.id_estacion
-                WHERE c.year = 2001 AND e.numero_distrito != '' 
+                WHERE e.numero_distrito != '' 
                 GROUP BY district 
                 ORDER BY count DESC 
                 LIMIT 15
             """)
-            # Sort by district name for the chart visually, but we already got the top 15 by count
+            # Sort by district name for the chart visually
             chart_res_sorted = sorted(chart_res, key=lambda x: int(x[0]) if x[0].isdigit() else 999)
             chart_data = [{'district': str(row[0]), 'count': int(row[1])} for row in chart_res_sorted]
-                
-            # Hotspots: Top 5 exact locations with the most crime in 2001
-            hotspot_res = client.execute(
-                "SELECT latitude, longitude, count(*) as c FROM chicago_crimes WHERE year = 2001 AND latitude != 0.0 AND longitude != 0.0 GROUP BY latitude, longitude ORDER BY c DESC LIMIT 5"
-            )
-            hotspots = [{'lat': float(row[0]), 'lng': float(row[1]), 'count': int(row[2])} for row in hotspot_res]
-                
+            
             # Recent Feed: latest 5 incidents overall
             feed_res = client.execute("""
                 SELECT c.date, cp.gravedad_delito AS primary_type, c.block, c.case_number 
@@ -204,10 +291,9 @@ class DashboardKPIView(APIView):
                 'total_domestic': total_domestic,
                 'active_officers': 142, # Mocked since we don't have an active_officers table in cloud
                 'unresolved_cases': total_incidents - total_arrests, # Mock logic
-                'map_points': map_points,
+                'yearly_data': yearly_data,
                 'chart_data': chart_data,
-                'recent_feed': recent_feed,
-                'hotspots': hotspots
+                'recent_feed': recent_feed
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -226,35 +312,53 @@ class IncidentListView(APIView):
             date_range = request.query_params.get('date_range', '')
             district = request.query_params.get('district', '')
             crime_type = request.query_params.get('type', '')
+            patrol = request.query_params.get('patrol', '').strip()
+            status_filter = request.query_params.get('status', 'all').strip().lower()
+            year_filter = request.query_params.get('year', '').strip()
+            month_filter = request.query_params.get('month', '').strip()
             
             client = get_clickhouse_client()
             
             filters = []
             params = {'limit': per_page, 'offset': offset}
             
+            if year_filter:
+                filters.append("c.year = %(year_filter)s")
+                params['year_filter'] = int(year_filter)
+            
+            if month_filter and month_filter != '0':
+                filters.append("toMonth(c.date) = %(month_filter)s")
+                params['month_filter'] = int(month_filter)
+            
             if search:
                 filters.append("(c.case_number ILIKE %(search)s OR c.block ILIKE %(search)s OR cp.gravedad_delito ILIKE %(search)s OR c.description ILIKE %(search)s)")
                 params['search'] = f"%{search}%"
                 
-            if date_range == '24h':
-                filters.append("c.date >= now() - INTERVAL 1 DAY")
-            elif date_range == '7d':
-                filters.append("c.date >= now() - INTERVAL 7 DAY")
-            elif date_range == '30d':
-                filters.append("c.date >= now() - INTERVAL 30 DAY")
+
                 
-            if district and district != 'All Districts':
-                # Map 'District 1 - Central' -> '001', 'District 14' -> '014', etc.
+            if district and district not in ('All Districts', 'Todos los Distritos', 'all', ''):
+                # Map 'District 1 - Central' -> '001', 'Distrito 1 - Central' -> '001', etc.
                 import re
-                match = re.search(r'District (\d+)', district)
+                match = re.search(r'(?:District|Distrito)\s+(\d+)', district, re.IGNORECASE)
                 if match:
                     dist_num = str(int(match.group(1))).zfill(3)
                     filters.append("e.numero_distrito = %(district)s")
                     params['district'] = dist_num
                 
-            if crime_type and crime_type != 'All Types':
+            if crime_type and crime_type not in ('All Types', 'Todos los Tipos', 'all', ''):
                 filters.append("cp.gravedad_delito ILIKE %(crime_type)s")
                 params['crime_type'] = f"%{crime_type}%"
+
+            if patrol and patrol not in ('All Patrols', 'Todas las Patrullas', 'all', ''):
+                filters.append("c.patrol_assigned ILIKE %(patrol)s")
+                params['patrol'] = f"%{patrol}%"
+                
+            if status_filter == 'active':
+                filters.append("c.arrest = 0")
+            elif status_filter == 'closed':
+                filters.append("c.arrest = 1")
+            elif status_filter == 'high_unresolved':
+                filters.append("c.arrest = 0 AND (cp.gravedad_delito IN ('HOMICIDE', 'ROBBERY', 'WEAPONS VIOLATION', 'KIDNAPPING', 'ASSAULT', 'BATTERY', 'ARSON', 'SEX OFFENSE') OR c.domestic = 1)")
                 
             where_clause = "WHERE " + " AND ".join(filters) if filters else ""
             
@@ -272,7 +376,8 @@ class IncidentListView(APIView):
                     c.community_area,
                     e.numero_distrito AS district,
                     c.latitude,
-                    c.longitude
+                    c.longitude,
+                    c.patrol_assigned
                 FROM chicago_crimes c
                 LEFT JOIN incidente_delito id ON c.case_number = id.case_number
                 LEFT JOIN codigo_penal cp ON id.codigo_iucr = cp.codigo_iucr
@@ -317,7 +422,8 @@ class IncidentListView(APIView):
                     'community_area': row[8],
                     'district': row[9],
                     'latitude': row[10],
-                    'longitude': row[11]
+                    'longitude': row[11],
+                    'patrol_assigned': row[12] if len(row) > 12 else ''
                 })
                 
             return Response({
@@ -374,7 +480,11 @@ class IncidentDetailView(APIView):
                     c.year,
                     c.updated_on,
                     c.latitude,
-                    c.longitude
+                    c.longitude,
+                    c.officers_assigned,
+                    c.patrol_assigned,
+                    c.police_report_text,
+                    c.police_report_file
                 FROM chicago_crimes c
                 LEFT JOIN incidente_delito id ON c.case_number = id.case_number
                 LEFT JOIN codigo_penal cp ON id.codigo_iucr = cp.codigo_iucr
@@ -427,6 +537,10 @@ class IncidentDetailView(APIView):
                 'updated_on': normalize_date(row[17]) if row[17] else None,
                 'latitude': row[18],
                 'longitude': row[19],
+                'officers_assigned': row[20] if len(row) > 20 else [],
+                'patrol_assigned': row[21] if len(row) > 21 else '',
+                'police_report_text': row[22] if len(row) > 22 else '',
+                'police_report_file': row[23] if len(row) > 23 else '',
                 'severity': severity,
                 'status_label': status_label,
             }
@@ -445,7 +559,7 @@ class IncidentDetailView(APIView):
                 'alias_conocido': r[2],
                 'antecedentes': bool(r[3]),
                 'declaracion': r[4],
-                'nombre_banda': r[5] or "Ninguna",
+                'nombre_banda': r[5] or "None",
                 'identificacion': r[6],
                 'genero': r[7],
                 'telefono': r[8],
@@ -455,7 +569,7 @@ class IncidentDetailView(APIView):
 
             # Query evidence associated with this case
             evidence_res = client.execute("""
-                SELECT e.id_evidencia, e.tipo_evidencia, e.fecha_recoleccion, o.nombres, o.apellidos
+                SELECT e.id_evidencia, e.tipo_evidencia, e.fecha_recoleccion, o.nombres, o.apellidos, e.url_fotografia
                 FROM evidencia e
                 LEFT JOIN oficial_policia o ON e.id_oficial = o.id_oficial
                 WHERE e.case_number = %(case_number)s
@@ -465,7 +579,8 @@ class IncidentDetailView(APIView):
                 'id_evidencia': r[0],
                 'tipo_evidencia': r[1],
                 'fecha_recoleccion': str(r[2]),
-                'officer_name': f"{r[3]} {r[4]}" if r[3] else "Desconocido"
+                'officer_name': f"{r[3]} {r[4]}" if r[3] else "Unknown",
+                'url_fotografia': r[5] if len(r) > 5 else ''
             } for r in evidence_res]
 
             # Query witnesses associated with this case
@@ -502,10 +617,44 @@ class IncidentDetailView(APIView):
                 'direccion': r[5]
             } for r in victims_res]
 
+            # Query missing persons associated with this case
+            missing_persons_res = client.execute("""
+                SELECT id, nombre_completo, edad, fotografia, estado, timestamp_registro
+                FROM rrhh_persona_desaparecida
+                WHERE case_number = %(case_number)s
+                ORDER BY timestamp_registro DESC
+            """, {'case_number': case_number})
+            missing_persons = [{
+                'id': r[0],
+                'nombre_completo': r[1],
+                'edad': r[2],
+                'fotografia': r[3] or '',
+                'estado': r[4],
+                'timestamp_registro': str(r[5])
+            } for r in missing_persons_res]
+
             incident['suspects'] = suspects
             incident['evidence'] = evidence
             incident['witnesses'] = witnesses
             incident['victims'] = victims
+            incident['missing_persons'] = missing_persons
+
+            # Query suspect vehicles associated with this case
+            vehicles_res = client.execute("""
+                SELECT id_vehiculo_sospechoso, placa, marca, modelo, color, estado_reporte, observaciones
+                FROM vehiculo_sospechoso
+                WHERE case_number = %(case_number)s
+                ORDER BY id_vehiculo_sospechoso ASC
+            """, {'case_number': case_number})
+            incident['vehicles'] = [{
+                'id_vehiculo_sospechoso': r[0],
+                'placa': r[1],
+                'marca': r[2],
+                'modelo': r[3],
+                'color': r[4],
+                'estado_reporte': r[5],
+                'observaciones': r[6]
+            } for r in vehicles_res]
 
             # Query case tracking logs from ClickHouse
             client.execute('''
@@ -518,7 +667,8 @@ class IncidentDetailView(APIView):
                     descripcion_avance String,
                     id_oficial Int32,
                     oficial String
-                ) ENGINE = Log
+                ) ENGINE = MergeTree
+                ORDER BY (case_number, fecha_registro, id_seguimiento)
             ''')
             
             logs_res = client.execute("""
@@ -552,9 +702,9 @@ class IncidentDetailView(APIView):
                 'id_log': 'virtual-create',
                 'case_number': case_number,
                 'fecha': incident['date'],
-                'oficial': 'Sistema SafeCity',
-                'accion': 'Creación de Caso',
-                'comentario': f"Caso reportado y clasificado en sistema bajo el tipo de delito: {incident['primary_type']}."
+                'oficial': 'SafeCity System',
+                'accion': 'Case Creation',
+                'comentario': f"Case reported and classified in the system under crime type: {incident['primary_type']}."
             })
             
             # Milestone: Arrest
@@ -564,9 +714,9 @@ class IncidentDetailView(APIView):
                     'id_log': 'virtual-arrest',
                     'case_number': case_number,
                     'fecha': arrest_date,
-                    'oficial': 'Patrulla del Distrito',
-                    'accion': 'Arresto Realizado',
-                    'comentario': f"Se procedió al arresto del sospechoso implicado. Estatus del caso actualizado a Cerrado por Arresto en el Distrito {incident['district']}."
+                    'oficial': 'District Patrol',
+                    'accion': 'Arrest Made',
+                    'comentario': f"Arrest of the implicated suspect was carried out. Case status updated to Closed by Arrest in District {incident['district']}."
                 })
                 
             # Milestones: Evidence logged
@@ -576,8 +726,8 @@ class IncidentDetailView(APIView):
                     'case_number': case_number,
                     'fecha': ev['fecha_recoleccion'] + 'Z' if ev['fecha_recoleccion'] and 'T' not in ev['fecha_recoleccion'] else ev['fecha_recoleccion'],
                     'oficial': ev['officer_name'],
-                    'accion': 'Evidencia Asegurada',
-                    'comentario': f"Evidencia física rotulada bajo custodia policial: {ev['tipo_evidencia']}."
+                    'accion': 'Evidence Secured',
+                    'comentario': f"Physical evidence labeled under police custody: {ev['tipo_evidencia']}."
                 })
                 
             # Milestones: Suspects linked
@@ -586,9 +736,9 @@ class IncidentDetailView(APIView):
                     'id_log': f"virtual-sus-{sus['id_sospechoso']}",
                     'case_number': case_number,
                     'fecha': incident['date'],
-                    'oficial': 'División de Inteligencia',
-                    'accion': 'Sospechoso Vinculado',
-                    'comentario': f"Sujeto investigado {sus['nombres']} (Alias: \"{sus['alias_conocido']}\") formalmente vinculado y registrado al expediente del caso."
+                    'oficial': 'Intelligence Division',
+                    'accion': 'Suspect Linked',
+                    'comentario': f"Investigated subject {sus['nombres']} (Alias: \"{sus['alias_conocido']}\") formally linked and registered to the case file."
                 })
                 
             # Milestones: Witnesses interviewed
@@ -597,9 +747,9 @@ class IncidentDetailView(APIView):
                     'id_log': f"virtual-wit-{wit['id_testigo']}",
                     'case_number': case_number,
                     'fecha': incident['date'],
-                    'oficial': 'Oficial de Turno',
-                    'accion': 'Declaración Tomada',
-                    'comentario': f"Se tomó declaración de testigo {'Anónimo' if wit['es_anonimo'] else wit['nombres']}. Testimonio: \"{wit['testimonio']}\""
+                    'oficial': 'Duty Officer',
+                    'accion': 'Statement Taken',
+                    'comentario': f"Statement taken from witness {'Anonymous' if wit['es_anonimo'] else wit['nombres']}. Testimony: \"{wit['testimonio']}\""
                 })
                 
             # Milestones: Victims registered
@@ -608,15 +758,82 @@ class IncidentDetailView(APIView):
                     'id_log': f"virtual-vic-{vic['id_victima']}",
                     'case_number': case_number,
                     'fecha': incident['date'],
-                    'oficial': 'Sistema SafeCity',
-                    'accion': 'Víctima Registrada',
-                    'comentario': f"Víctima afectada {vic['nombres']} agregada formalmente al archivo del caso para seguimiento y atención legal."
+                    'oficial': 'SafeCity System',
+                    'accion': 'Victim Registered',
+                    'comentario': f"Affected victim {vic['nombres']} formally added to the case file for tracking and legal attention."
                 })
                 
             # Sort everything chronologically descending (newest first)
             timeline_logs = sorted(timeline_logs, key=lambda x: x['fecha'], reverse=True)
             
             incident['timeline_logs'] = timeline_logs
+
+            # Query investigation data
+            inv_res = client.execute("""
+                SELECT 
+                    i.id_detective, 
+                    i.es_caso_mayor, 
+                    i.estado, 
+                    i.reporte_final, 
+                    i.fecha_asignacion, 
+                    i.fecha_resolucion,
+                    o.nombres,
+                    o.apellidos
+                FROM investigacion_especial i
+                LEFT JOIN oficial_policia o ON i.id_detective = o.id_oficial
+                WHERE i.case_number = %(case_number)s
+                LIMIT 1
+            """, {'case_number': case_number})
+            
+            if inv_res:
+                incident['investigation'] = {
+                    'id_detective': inv_res[0][0],
+                    'es_caso_mayor': bool(inv_res[0][1]),
+                    'estado': inv_res[0][2],
+                    'reporte_final': inv_res[0][3],
+                    'fecha_asignacion': normalize_date(inv_res[0][4]) if inv_res[0][4] else None,
+                    'fecha_resolucion': normalize_date(inv_res[0][5]) if inv_res[0][5] else None,
+                    'detective_name': f"Det. {inv_res[0][6]} {inv_res[0][7]}" if inv_res[0][6] else f"ID {inv_res[0][0]}"
+                }
+            else:
+                incident['investigation'] = None
+
+            # Query emergency call associated with this case
+            call_res = client.execute("""
+                SELECT id_llamada, telefono_origen, fecha_hora_llamada, nivel_prioridad, descripcion_inicial
+                FROM llamada_emergencia
+                WHERE case_number = %(case_number)s
+                LIMIT 1
+            """, {'case_number': case_number})
+            
+            if call_res:
+                incident['emergency_call'] = {
+                    'id_llamada': call_res[0][0],
+                    'telefono_origen': call_res[0][1],
+                    'fecha_hora_llamada': normalize_date(call_res[0][2]) if call_res[0][2] else None,
+                    'nivel_prioridad': call_res[0][3],
+                    'descripcion_inicial': call_res[0][4]
+                }
+            else:
+                incident['emergency_call'] = None
+
+            # Consultar si hay solicitudes pendientes para este caso en ClickHouse
+            solicitudes_pendientes = client.execute("""
+                SELECT id_solicitud, id_detective, nombre_detective, fecha_solicitud
+                FROM solicitud_asignacion_caso
+                WHERE case_number = %(case_number)s AND estado = 'Pendiente'
+                LIMIT 1
+            """, {'case_number': case_number})
+            
+            if solicitudes_pendientes:
+                incident['solicitud_pendiente'] = {
+                    'id_solicitud': solicitudes_pendientes[0][0],
+                    'id_detective': solicitudes_pendientes[0][1],
+                    'nombre_detective': solicitudes_pendientes[0][2],
+                    'fecha_solicitud': solicitudes_pendientes[0][3].isoformat()
+                }
+            else:
+                incident['solicitud_pendiente'] = None
 
             return Response(incident, status=status.HTTP_200_OK)
 
@@ -685,6 +902,10 @@ class IncidentDetailView(APIView):
                 'y_coordinate': ('y_coordinate', lambda v: float(v) if v else 0.0),
                 'latitude': ('latitude', lambda v: float(v) if v else 0.0),
                 'longitude': ('longitude', lambda v: float(v) if v else 0.0),
+                'police_report_text': ('police_report_text', lambda v: str(v)),
+                'police_report_file': ('police_report_file', lambda v: str(v)),
+                'patrol_assigned': ('patrol_assigned', lambda v: str(v)),
+                'officers_assigned': ('officers_assigned', lambda v: v if isinstance(v, list) else []),
             }
 
             for req_key, (db_col, transform) in direct_fields.items():
@@ -833,7 +1054,11 @@ class IncidentCreateView(APIView):
                 year,
                 now_dt,
                 to_float(data.get('latitude')),
-                to_float(data.get('longitude'))
+                to_float(data.get('longitude')),
+                data.get('officers_assigned') if isinstance(data.get('officers_assigned'), list) else [],
+                str(data.get('patrol_assigned') or '').strip(),
+                str(data.get('police_report_text') or '').strip(),
+                str(data.get('police_report_file') or '').strip()
             )]
 
             # Insert structured incident into chicago_crimes
@@ -841,7 +1066,8 @@ class IncidentCreateView(APIView):
                 """INSERT INTO chicago_crimes
                    (id, case_number, date, block, description, id_ubicacion,
                     arrest, domestic, beat, id_estacion, ward, community_area,
-                    x_coordinate, y_coordinate, year, updated_on, latitude, longitude)
+                    x_coordinate, y_coordinate, year, updated_on, latitude, longitude,
+                    officers_assigned, patrol_assigned, police_report_text, police_report_file)
                    VALUES""",
                 row_crime
             )
@@ -875,10 +1101,10 @@ class IncidentLogCreateView(APIView):
             
             comentario = data.get('comentario', '').strip()
             oficial = data.get('oficial', 'Oficial SafeCity').strip()
-            accion = data.get('accion', 'Nota de Progreso').strip()
+            accion = data.get('accion', 'Progress Note').strip()
             
             if not comentario:
-                return Response({'error': 'El comentario no puede estar vacío.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'The comment cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
                 
             # Make sure table exists
             client.execute('''
@@ -891,7 +1117,8 @@ class IncidentLogCreateView(APIView):
                     descripcion_avance String,
                     id_oficial Int32,
                     oficial String
-                ) ENGINE = Log
+                ) ENGINE = MergeTree
+                ORDER BY (case_number, fecha_registro, id_seguimiento)
             ''')
             
             id_log = str(uuid.uuid4())
@@ -912,6 +1139,120 @@ class IncidentLogCreateView(APIView):
                 'accion': accion,
                 'comentario': comentario
             }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PatrolIncidentsReportView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            page = int(request.query_params.get('page', 1))
+            per_page = int(request.query_params.get('limit', 10))
+            offset = (page - 1) * per_page
+            
+            patrol = request.query_params.get('patrol', '').strip()
+            status_filter = request.query_params.get('status', 'all').strip().lower()
+            search = request.query_params.get('search', '').strip()
+            crime_type = request.query_params.get('type', '').strip()
+            
+            client = get_clickhouse_client()
+            
+            filters = []
+            params = {'limit': per_page, 'offset': offset}
+            
+            if patrol and patrol not in ('All Patrols', 'Todas las Patrullas', 'all', ''):
+                filters.append("c.patrol_assigned ILIKE %(patrol)s")
+                params['patrol'] = f"%{patrol}%"
+                
+            if status_filter == 'active':
+                filters.append("c.arrest = 0")
+            elif status_filter == 'closed':
+                filters.append("c.arrest = 1")
+                
+            if search:
+                filters.append("(c.case_number ILIKE %(search)s OR c.block ILIKE %(search)s OR cp.gravedad_delito ILIKE %(search)s OR c.description ILIKE %(search)s)")
+                params['search'] = f"%{search}%"
+                
+            if crime_type and crime_type not in ('All Types', 'Todos los Tipos', 'all', ''):
+                filters.append("cp.gravedad_delito ILIKE %(crime_type)s")
+                params['crime_type'] = f"%{crime_type}%"
+                
+            where_clause = "WHERE " + " AND ".join(filters) if filters else ""
+            
+            query = f'''
+                SELECT 
+                    c.case_number,
+                    c.date,
+                    c.block,
+                    cp.gravedad_delito AS primary_type,
+                    c.description,
+                    c.arrest,
+                    c.domestic,
+                    c.ward,
+                    c.community_area,
+                    e.numero_distrito AS district,
+                    c.latitude,
+                    c.longitude,
+                    c.patrol_assigned,
+                    c.officers_assigned
+                FROM chicago_crimes c
+                LEFT JOIN incidente_delito id ON c.case_number = id.case_number
+                LEFT JOIN codigo_penal cp ON id.codigo_iucr = cp.codigo_iucr
+                LEFT JOIN estacion_policial e ON c.id_estacion = e.id_estacion
+                {where_clause}
+                ORDER BY c.date DESC
+                LIMIT %(limit)s OFFSET %(offset)s
+            '''
+            
+            result = client.execute(query, params)
+            
+            total_result = client.execute(f'''
+                SELECT count(*) 
+                FROM chicago_crimes c
+                LEFT JOIN incidente_delito id ON c.case_number = id.case_number
+                LEFT JOIN codigo_penal cp ON id.codigo_iucr = cp.codigo_iucr
+                LEFT JOIN estacion_policial e ON c.id_estacion = e.id_estacion
+                {where_clause}
+            ''', params)
+            total_count = total_result[0][0] if total_result else 0
+            
+            incidents = []
+            for row in result:
+                raw_date = row[1]
+                if isinstance(raw_date, datetime.datetime):
+                    date_str = raw_date.isoformat()
+                else:
+                    date_str = str(raw_date).replace(' ', 'T').rstrip('Z') + 'Z'
+                
+                incidents.append({
+                    'case_number': row[0],
+                    'date': date_str,
+                    'block': row[2],
+                    'primary_type': row[3],
+                    'description': row[4],
+                    'arrest': bool(row[5]),
+                    'domestic': bool(row[6]),
+                    'ward': row[7],
+                    'community_area': row[8],
+                    'district': row[9],
+                    'latitude': row[10],
+                    'longitude': row[11],
+                    'patrol_assigned': row[12],
+                    'officers_assigned': row[13] if len(row) > 13 else []
+                })
+                
+            return Response({
+                'data': incidents,
+                'pagination': {
+                    'total': total_count,
+                    'page': page,
+                    'per_page': per_page,
+                    'total_pages': (total_count + per_page - 1) // per_page
+                }
+            }, status=status.HTTP_200_OK)
             
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

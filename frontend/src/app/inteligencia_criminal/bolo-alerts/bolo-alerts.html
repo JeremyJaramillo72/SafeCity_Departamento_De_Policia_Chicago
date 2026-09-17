@@ -1,0 +1,483 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+    <div class="min-h-full flex flex-col bg-surface relative pb-16">
+      
+      <!-- Standard System Header with Dynamic Subtitle -->
+      <div class="px-6 py-3.5 border-b border-outline-variant bg-surface-container-lowest shrink-0 flex justify-between items-center gap-4">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h2 class="font-display-lg text-xl lg:text-2xl font-bold text-primary flex items-center gap-2">
+              <span class="material-symbols-outlined text-[24px] text-error notranslate" translate="no">campaign</span>
+              Alertas B.O.L.O.
+            </h2>
+            <button (click)="toggleKpis()" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/15 transition-all font-semibold text-xs cursor-pointer select-none" title="Alternar Resumen de Métricas">
+              <span class="material-symbols-outlined text-[15px] notranslate" translate="no">{{ showKpis ? 'visibility_off' : 'visibility' }}</span>
+              <span>{{ showKpis ? 'Ocultar Métricas' : 'Mostrar Métricas' }}</span>
+            </button>
+          </div>
+          <p class="text-xs text-secondary font-medium mt-0.5 flex items-center gap-1.5">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary/60"></span>
+            @if (filterStatus === 'Active') {
+              <span>Alertas tácticas en tiempo real, avistamientos de personas de interés y difusiones B.O.L.O. activas.</span>
+            } @else if (filterStatus === 'Inactive') {
+              <span>Alertas tácticas archivadas, casos B.O.L.O. resueltos y difusiones cerradas.</span>
+            } @else {
+              <span>Registro completo de alertas tácticas, inteligencia de campo activa y repositorio histórico de B.O.L.O.</span>
+            }
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button (click)="openCreateModal()" class="bg-primary hover:bg-primary/90 text-on-primary font-bold py-1.5 px-3.5 rounded-lg flex items-center gap-1.5 transition-all shadow-xs cursor-pointer text-xs">
+            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">add_alert</span>
+            Nueva Alerta BOLO
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Canvas Container (Fluid Full Width) -->
+      <main class="p-4 lg:p-6 flex flex-col gap-4 w-full">
+        
+        <!-- Modern Collapsible KPI Ribbon -->
+        <div class="collapsible-grid shrink-0" [ngClass]="{'expanded': showKpis}">
+            <div class="collapsible-content">
+            <section class="grid grid-cols-2 sm:grid-cols-4 gap-2 pb-1 animate-fade-in">
+              <!-- Active BOLO Alerts -->
+              <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-2 px-3 shadow-xs flex items-center gap-2.5 hover:border-error/30 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[18px] notranslate text-error" translate="no">campaign</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">BOLOs Activos</span>
+                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-error-container text-on-error-container inline-flex items-center shrink-0">ACTIVO</span>
+                  </div>
+                  <span class="text-base font-black text-on-surface block leading-tight">{{ activeBolosCount }}</span>
+                </div>
+              </div>
+
+              <!-- Critical / High Risk -->
+              <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-2 px-3 shadow-xs flex items-center gap-2.5 hover:border-orange-500/30 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-600 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all shrink-0">
+                  <span class="material-symbols-outlined text-[18px] notranslate" translate="no">priority_high</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Alta Prioridad</span>
+                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-orange-500/15 text-orange-600 inline-flex items-center shrink-0">CRÍTICO</span>
+                  </div>
+                  <span class="text-base font-black text-on-surface block leading-tight">{{ criticalBolosCount }}</span>
+                </div>
+              </div>
+
+              <!-- Resolved / Inactive -->
+              <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-2 px-3 shadow-xs flex items-center gap-2.5 hover:border-secondary/30 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center group-hover:bg-secondary group-hover:text-on-secondary transition-all shrink-0">
+                  <span class="material-symbols-outlined text-[18px] notranslate" translate="no">task_alt</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Alertas Resueltas</span>
+                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-secondary-container text-on-secondary-container inline-flex items-center shrink-0">RESUELTO</span>
+                  </div>
+                  <span class="text-base font-black text-on-surface block leading-tight">{{ inactiveBolosCount }}</span>
+                </div>
+              </div>
+
+              <!-- Total Broadcasts -->
+              <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-2 px-3 shadow-xs flex items-center gap-2.5 hover:border-primary/30 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                  <span class="material-symbols-outlined text-[18px] notranslate" translate="no">history_edu</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Total Difusiones</span>
+                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-primary-container text-on-primary-container inline-flex items-center shrink-0">HISTORIAL</span>
+                  </div>
+                  <span class="text-base font-black text-on-surface block leading-tight">{{ bolos.length }}</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Integrated Filter, Risk and Search Toolbar -->
+        <div class="flex flex-wrap items-center justify-between bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-1.5 shadow-xs shrink-0 gap-2.5">
+          <!-- Status & Risk Filters -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Status Segmented Buttons -->
+            <div class="flex bg-surface-container rounded-lg p-0.5 border border-outline-variant/60">
+              <button (click)="filterStatus = 'Active'" 
+                      [ngClass]="filterStatus === 'Active' ? 'bg-primary text-on-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'" 
+                      class="px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer border-0">
+                Activos ({{ activeBolosCount }})
+              </button>
+              <button (click)="filterStatus = 'Inactive'" 
+                      [ngClass]="filterStatus === 'Inactive' ? 'bg-primary text-on-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'" 
+                      class="px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer border-0">
+                Inactivos ({{ inactiveBolosCount }})
+              </button>
+              <button (click)="filterStatus = 'All'" 
+                      [ngClass]="filterStatus === 'All' ? 'bg-primary text-on-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'" 
+                      class="px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer border-0">
+                Todos ({{ bolos.length }})
+              </button>
+            </div>
+
+            <!-- Risk Filter Pills -->
+            <div class="hidden sm:flex items-center gap-1 border-l border-outline-variant/60 pl-2">
+              <button (click)="selectedRisk = 'ALL'" 
+                      [ngClass]="selectedRisk === 'ALL' ? 'bg-surface-container-highest text-on-surface font-bold border-outline' : 'text-on-surface-variant border-transparent'" 
+                      class="px-2 py-0.5 rounded text-[11px] font-semibold border transition-all cursor-pointer bg-transparent">
+                Todos los Riesgos
+              </button>
+              <button (click)="selectedRisk = 'Critical'" 
+                      [ngClass]="selectedRisk === 'Critical' ? 'bg-error text-white font-bold' : 'text-error hover:bg-error/10'" 
+                      class="px-2 py-0.5 rounded text-[11px] font-semibold transition-all cursor-pointer border-0">
+                Crítico
+              </button>
+              <button (click)="selectedRisk = 'High'" 
+                      [ngClass]="selectedRisk === 'High' ? 'bg-orange-600 text-white font-bold' : 'text-orange-600 hover:bg-orange-500/10'" 
+                      class="px-2 py-0.5 rounded text-[11px] font-semibold transition-all cursor-pointer border-0">
+                Alto
+              </button>
+              <button (click)="selectedRisk = 'Medium'" 
+                      [ngClass]="selectedRisk === 'Medium' ? 'bg-yellow-500 text-black font-bold' : 'text-yellow-700 dark:text-yellow-400 hover:bg-yellow-500/10'" 
+                      class="px-2 py-0.5 rounded text-[11px] font-semibold transition-all cursor-pointer border-0">
+                Medio
+              </button>
+              <button (click)="selectedRisk = 'Low'" 
+                      [ngClass]="selectedRisk === 'Low' ? 'bg-green-600 text-white font-bold' : 'text-green-600 hover:bg-green-500/10'" 
+                      class="px-2 py-0.5 rounded text-[11px] font-semibold transition-all cursor-pointer border-0">
+                Bajo
+              </button>
+            </div>
+          </div>
+
+          <!-- Fast Live Search Input -->
+          <div class="relative flex-1 sm:flex-initial min-w-[260px] lg:min-w-[320px]">
+            <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+            <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar BOLO por título, descripción, caso, placas..." 
+                   class="w-full bg-surface-container border border-outline-variant rounded-lg py-1 pl-8 pr-8 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none transition-all">
+            <button *ngIf="searchTerm" (click)="searchTerm = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface flex items-center justify-center p-0.5 bg-transparent border-0 cursor-pointer" title="Limpiar búsqueda">
+              <span class="material-symbols-outlined text-[14px] notranslate" translate="no">close</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content Cards Grid -->
+        <div class="flex-1 overflow-y-auto min-h-0 border border-outline-variant/60 rounded-xl p-3 bg-surface-container-lowest relative">
+          <!-- Background decoration -->
+          <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-error/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+          <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            @for (bolo of filteredBolos; track bolo.id) {
+              <div class="bg-surface-container-low border border-outline-variant/80 rounded-xl overflow-hidden shadow-xs hover:shadow-md hover:border-outline transition-all group flex flex-col">
+                
+                <!-- Clickable card area -->
+                <div (click)="viewBoloDetails(bolo)"
+                     [class.cursor-pointer]="(bolo.tipo === 'Person Desaparecida' || bolo.tipo === 'Persona Desaparecida' || bolo.tipo === 'Missing Person') && bolo.id_referencia"
+                     class="flex-1 flex flex-col">
+                  
+                  <!-- BOLO Header -->
+                  <div class="p-3.5 border-b border-outline-variant/50 relative overflow-hidden flex-shrink-0 w-full font-sans">
+                    <!-- Risk flash stripe -->
+                    <div class="absolute top-0 left-0 w-full h-1" [ngClass]="getRiskColor(bolo.nivel_riesgo)"></div>
+                    
+                    <div class="flex justify-between items-start gap-3">
+                      <div class="flex-1 min-w-0">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider mb-1.5 border" [ngClass]="getRiskColor(bolo.nivel_riesgo) + ' border-current/20'">
+                          <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                          Riesgo {{ getRiskLabel(bolo.nivel_riesgo) }}
+                        </span>
+                        <h3 class="font-headline-sm text-on-surface font-bold text-sm leading-snug line-clamp-2">{{ bolo.titulo }}</h3>
+                      </div>
+                      @if (bolo.foto_url) {
+                        <div (click)="openImagePreview(bolo.foto_url, bolo.titulo, bolo.descripcion, bolo.nivel_riesgo, $event)"
+                             class="w-14 h-14 rounded-lg overflow-hidden border border-outline-variant shrink-0 bg-surface-container cursor-zoom-in group/img relative shadow-xs hover:border-primary transition-all"
+                             title="Clic para ver fotografía ampliada">
+                          <img [src]="bolo.foto_url" class="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-300" alt="Foto BOLO">
+                          <div class="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white">
+                            <span class="material-symbols-outlined text-[16px] notranslate drop-shadow" translate="no">zoom_in</span>
+                          </div>
+                        </div>
+                      } @else {
+                        <div class="w-14 h-14 rounded-lg border border-outline-variant shrink-0 bg-surface-container-high flex items-center justify-center">
+                          <span class="material-symbols-outlined text-secondary text-[20px] notranslate" translate="no">person_search</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- BOLO Body -->
+                  <div class="p-3.5 flex-1 flex flex-col gap-3 w-full font-sans">
+                    <p class="font-body-md text-on-surface-variant text-xs leading-relaxed whitespace-pre-wrap line-clamp-4">
+                      {{ bolo.descripcion }}
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-2 mt-auto">
+                      <div class="bg-surface-container rounded-lg p-2 border border-outline-variant/50">
+                        <span class="block text-[9px] text-secondary uppercase font-bold tracking-wider mb-0.5">Tipo de Alerta</span>
+                        <span class="text-xs text-on-surface flex items-center gap-1 font-medium truncate">
+                          <span class="material-symbols-outlined text-[14px] text-primary notranslate shrink-0" translate="no">
+                            {{ (bolo.tipo === 'Suspicious Vehicle' || bolo.tipo === 'Vehículo Sospechoso') ? 'directions_car' : ((bolo.tipo === 'Missing Person' || bolo.tipo === 'Persona Desaparecida') ? 'person_search' : 'warning') }}
+                          </span>
+                          <span class="truncate">{{ bolo.tipo }}</span>
+                        </span>
+                      </div>
+                      <div class="bg-surface-container rounded-lg p-2 border border-outline-variant/50">
+                        <span class="block text-[9px] text-secondary uppercase font-bold tracking-wider mb-0.5">Estado</span>
+                        <span class="text-xs text-on-surface flex items-center gap-1 font-medium">
+                          <span class="w-1.5 h-1.5 rounded-full shrink-0" [ngClass]="(bolo.estado === 'Active' || bolo.estado === 'Activo') ? 'bg-error animate-pulse' : 'bg-secondary'"></span>
+                          {{ (bolo.estado === 'Active' || bolo.estado === 'Activo') ? 'Activo' : 'Inactivo' }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-[10px] text-secondary pt-1 border-t border-outline-variant/40">
+                      <span class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px] notranslate" translate="no">calendar_today</span>
+                        Emitido: {{ bolo.timestamp | date:'dd/MM/yyyy HH:mm' }}
+                      </span>
+                      <span class="truncate max-w-[120px]">Por: {{ bolo.creado_por }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- BOLO Footer Actions -->
+                <div class="px-3.5 py-2 border-t border-outline-variant/50 bg-surface-container-low flex justify-end gap-1.5 shrink-0">
+                  @if (bolo.case_number) {
+                    <a [routerLink]="['/incidents', bolo.case_number]"
+                       class="px-2.5 py-1 rounded-md bg-primary/10 hover:bg-primary/20 text-primary font-bold text-[11px] transition-colors flex items-center gap-1 border border-primary/20 no-underline cursor-pointer">
+                      <span class="material-symbols-outlined text-[13px] notranslate" translate="no">visibility</span>
+                      Ver Caso
+                    </a>
+                  }
+                  @if (bolo.estado === 'Active' || bolo.estado === 'Activo') {
+                    <button (click)="deactivateBolo(bolo.id)" class="px-2.5 py-1 rounded-md bg-surface-container-high hover:bg-surface-variant text-on-surface font-bold text-[11px] transition-colors flex items-center gap-1 border border-outline-variant cursor-pointer">
+                      <span class="material-symbols-outlined text-[13px] notranslate" translate="no">verified</span>
+                      Resolver / Cerrar
+                    </button>
+                  } @else {
+                    <button (click)="reactivateBolo(bolo.id)" class="px-2.5 py-1 rounded-md bg-primary hover:bg-primary/90 text-on-primary font-bold text-[11px] transition-colors flex items-center gap-1 border-0 cursor-pointer shadow-xs">
+                      <span class="material-symbols-outlined text-[13px] notranslate" translate="no">replay</span>
+                      Reactivar
+                    </button>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="col-span-full py-16 flex flex-col items-center justify-center text-center">
+                <span class="material-symbols-outlined text-[48px] text-secondary/40 mb-2 notranslate" translate="no">search_off</span>
+                <h4 class="text-sm font-bold text-on-surface">No hay alertas BOLO que coincidan con los filtros</h4>
+                <p class="text-xs text-secondary mt-1">Intente ajustar su búsqueda, estado o nivel de riesgo.</p>
+                <button *ngIf="searchTerm || selectedRisk !== 'ALL' || filterStatus !== 'Active'" 
+                        (click)="searchTerm = ''; selectedRisk = 'ALL'; filterStatus = 'Active'" 
+                        class="mt-3 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-primary font-bold text-xs hover:bg-surface-container-high cursor-pointer">
+                  Restablecer Filtros
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: Create New BOLO -->
+<!-- ======================================================== -->
+@if (showCreateModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs animate-fade-in p-4">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-outline-variant flex justify-between items-center shrink-0">
+        <h3 class="font-headline-sm text-on-surface font-bold flex items-center gap-2 text-base">
+          <span class="material-symbols-outlined text-primary notranslate" translate="no">add_alert</span>
+          Emitir Nueva Alerta BOLO
+        </h3>
+        <button (click)="closeCreateModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:text-on-surface hover:bg-surface-variant transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 overflow-y-auto space-y-4 flex-1">
+        <div>
+          <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Tipo de Alerta</label>
+          <select [(ngModel)]="newBolo.tipo" class="w-full bg-surface-container border border-outline-variant rounded-lg p-2 text-xs text-on-surface focus:border-primary focus:outline-none">
+            <option value="Vehículo Sospechoso">Vehículo Sospechoso</option>
+            <option value="Persona Desaparecida">Persona Desaparecida</option>
+            <option value="Persona de Interés">Persona de Interés</option>
+            <option value="Fugitivo Buscado">Fugitivo Buscado</option>
+            <option value="Advertencia Táctica">Advertencia Táctica</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Título / Encabezado *</label>
+          <input type="text" [(ngModel)]="newBolo.titulo" placeholder="ej. SUV Negro 2018 buscado por robo" class="w-full bg-surface-container border border-outline-variant rounded-lg p-2 text-xs text-on-surface focus:border-primary focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Nivel de Riesgo</label>
+          <select [(ngModel)]="newBolo.nivel_riesgo" class="w-full bg-surface-container border border-outline-variant rounded-lg p-2 text-xs text-on-surface focus:border-primary focus:outline-none">
+            <option value="Low">Bajo</option>
+            <option value="Medium">Medio</option>
+            <option value="High">Alto</option>
+            <option value="Critical">Crítico</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Fecha de Expiración</label>
+            <input type="date" [(ngModel)]="newBolo.fecha_expiracion_date" class="w-full bg-surface-container border border-outline-variant rounded-lg p-2 text-xs text-on-surface focus:border-primary focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Hora de Expiración</label>
+            <input type="time" [(ngModel)]="newBolo.fecha_expiracion_time" class="w-full bg-surface-container border border-outline-variant rounded-lg p-2 text-xs text-on-surface focus:border-primary focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Descripción / Detalles Tácticos *</label>
+          <textarea [(ngModel)]="newBolo.descripcion" rows="3" placeholder="Proporcione detalles completos: placas, descripción física, última ubicación conocida..." class="w-full bg-surface-container border border-outline-variant rounded-lg p-2 text-xs text-on-surface focus:border-primary focus:outline-none resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Evidencia / Foto Adjunta</label>
+          <div class="flex items-center gap-3">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="hidden">
+            <button type="button" (click)="triggerFileInput()" [disabled]="isUploading" class="px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-xs font-bold text-on-surface hover:bg-surface-container-high flex items-center gap-1.5 cursor-pointer">
+              <span class="material-symbols-outlined text-[16px] text-primary notranslate" translate="no">upload_file</span>
+              {{ isUploading ? 'Subiendo...' : 'Seleccionar Imagen' }}
+            </button>
+            <span *ngIf="newBolo.foto_url" class="text-xs text-success flex items-center gap-1 font-semibold truncate">
+              <span class="material-symbols-outlined text-[14px] notranslate" translate="no">check_circle</span>
+              Imagen adjunta
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-2 shrink-0">
+        <button (click)="closeCreateModal()" class="px-4 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-xs font-bold text-on-surface hover:bg-surface-container-high cursor-pointer">
+          Cancelar
+        </button>
+        <button (click)="saveBolo()" [disabled]="!newBolo.titulo || !newBolo.descripcion || isSaving" class="px-4 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 cursor-pointer shadow-xs">
+          {{ isSaving ? 'Emitiendo...' : 'Emitir BOLO' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ======================================================== -->
+<!-- MODAL: Confirmation -->
+<!-- ======================================================== -->
+@if (showConfirmModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs animate-fade-in p-4">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl w-full max-w-sm shadow-2xl p-5 text-center">
+      <div class="w-12 h-12 rounded-full bg-primary/10 text-primary mx-auto flex items-center justify-center mb-3">
+        <span class="material-symbols-outlined text-[24px] notranslate" translate="no">help</span>
+      </div>
+      <h3 class="font-bold text-on-surface text-base mb-1">{{ confirmConfig.title }}</h3>
+      <p class="text-xs text-secondary mb-4 leading-relaxed">{{ confirmConfig.message }}</p>
+      <div class="flex justify-center gap-2">
+        <button (click)="closeConfirmModal()" class="px-4 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-xs font-bold text-on-surface hover:bg-surface-container-high cursor-pointer">
+          Cancelar
+        </button>
+        <button (click)="executeConfirmAction()" class="px-4 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 cursor-pointer shadow-xs">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ======================================================== -->
+<!-- MODAL: Missing Person Details -->
+<!-- ======================================================== -->
+@if (showDetailsModal && viewingPerson) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs animate-fade-in p-4">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-outline-variant flex justify-between items-center">
+        <h3 class="font-bold text-on-surface text-sm flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-primary text-[18px] notranslate" translate="no">person_search</span>
+          Perfil de Persona Desaparecida
+        </h3>
+        <button (click)="closeDetailsModal()" class="text-secondary hover:text-on-surface cursor-pointer">
+          <span class="material-symbols-outlined text-[18px] notranslate" translate="no">close</span>
+        </button>
+      </div>
+      <div class="p-4 space-y-3">
+        <div class="flex items-center gap-3">
+          <img *ngIf="viewingPerson.foto || viewingPerson.fotografia" 
+               [src]="viewingPerson.foto || viewingPerson.fotografia" 
+               (click)="openImagePreview(viewingPerson.foto || viewingPerson.fotografia, viewingPerson.nombre_completo, viewingPerson.descripcion_fisica, viewingPerson.nivel_riesgo, $event)"
+               class="w-16 h-16 rounded-xl object-cover border border-outline-variant cursor-zoom-in hover:scale-105 transition-transform shadow-xs"
+               title="Clic para ampliar fotografía">
+          <div>
+            <h4 class="font-bold text-on-surface text-sm">{{ viewingPerson.nombre_completo }}</h4>
+            <span class="text-xs text-secondary">Edad: {{ viewingPerson.edad || 'N/A' }} | Género: {{ viewingPerson.genero || 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="text-xs text-on-surface-variant space-y-1">
+          <p><strong>Última Ubicación Conocida:</strong> {{ viewingPerson.ultima_ubicacion || 'Desconocida' }}</p>
+          <p><strong>Vestimenta:</strong> {{ viewingPerson.vestimenta || 'No especificada' }}</p>
+          <p><strong>Descripción:</strong> {{ viewingPerson.descripcion_fisica || 'Sin descripción física' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ======================================================== -->
+<!-- MODAL: Floating Image Lightbox / Zoom Preview -->
+<!-- ======================================================== -->
+@if (previewImageModal && previewImageData) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in p-4"
+       (click)="closeImagePreview()">
+    <div class="relative bg-surface-container-lowest border border-outline-variant/80 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-scale-up flex flex-col"
+         (click)="$event.stopPropagation()">
+      
+      <!-- Top header bar with title and close button -->
+      <div class="p-3.5 border-b border-outline-variant/60 flex items-center justify-between bg-surface-container-low shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">photo_camera</span>
+          <div class="min-w-0">
+            <h3 class="font-bold text-on-surface text-sm truncate">{{ previewImageData.title }}</h3>
+            <span *ngIf="previewImageData.risk" class="text-[10px] uppercase font-bold text-secondary tracking-wider block">
+              Nivel de Riesgo: {{ getRiskLabel(previewImageData.risk) }}
+            </span>
+          </div>
+        </div>
+        <button (click)="closeImagePreview()" 
+                class="w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-colors cursor-pointer"
+                title="Cerrar vista previa">
+          <span class="material-symbols-outlined text-[18px] notranslate" translate="no">close</span>
+        </button>
+      </div>
+
+      <!-- High resolution large image container -->
+      <div class="bg-black/95 flex items-center justify-center p-3 min-h-[300px] max-h-[65vh] overflow-hidden">
+        <img [src]="previewImageData.url" 
+             [alt]="previewImageData.title" 
+             class="max-w-full max-h-[60vh] object-contain rounded-lg shadow-lg hover:scale-105 transition-transform duration-300">
+      </div>
+
+      <!-- Footer with details if available -->
+      <div *ngIf="previewImageData.subtitle" class="p-3 bg-surface-container-low border-t border-outline-variant/60 text-xs text-on-surface-variant leading-relaxed shrink-0">
+        <p class="line-clamp-3 font-medium">{{ previewImageData.subtitle }}</p>
+      </div>
+    </div>
+  </div>
+}
+

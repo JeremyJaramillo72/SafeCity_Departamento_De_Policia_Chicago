@@ -1,0 +1,180 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+    
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <!-- Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-5 w-full pb-16">
+            <!-- Summary Dashboard Card -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex justify-between items-center shadow-sm select-none animate-fade-in">
+                <div>
+                    <h2 class="text-[17px] font-bold text-on-surface">Consola de Respaldos y Copias de Seguridad</h2>
+                    <p class="text-xs text-on-surface-variant mt-1">Gestión de instantáneas y respaldos en caliente (ClickHouse y SQLite) para resiliencia del sistema.</p>
+                </div>
+            </div>
+
+            <!-- Stats and Controls Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Vitals Card -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col justify-between lg:col-span-2">
+                    <h3 class="text-sm font-bold text-on-surface uppercase tracking-wider mb-4 select-none">Métricas de Almacenamiento</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="p-3 bg-surface-container-low border border-outline-variant rounded-xl text-center">
+                            <span class="text-on-surface-variant text-[10.5px] font-bold uppercase block tracking-wider">BD ClickHouse</span>
+                            <span class="text-2xl font-bold text-on-surface mt-1 block">12.4 MB</span>
+                            <span class="text-[9.5px] text-green-500 font-semibold mt-1 inline-block">Óptimo (Motor Log)</span>
+                        </div>
+                        <div class="p-3 bg-surface-container-low border border-outline-variant rounded-xl text-center">
+                            <span class="text-on-surface-variant text-[10.5px] font-bold uppercase block tracking-wider">Núcleo SQLite</span>
+                            <span class="text-2xl font-bold text-on-surface mt-1 block">2.1 MB</span>
+                            <span class="text-[9.5px] text-green-500 font-semibold mt-1 inline-block">100% Saludable</span>
+                        </div>
+                        <div class="p-3 bg-surface-container-low border border-outline-variant rounded-xl text-center">
+                            <span class="text-on-surface-variant text-[10.5px] font-bold uppercase block tracking-wider">Espacio Libre</span>
+                            <span class="text-2xl font-bold text-on-surface mt-1 block">84%</span>
+                            <span class="text-[9.5px] text-on-surface-variant font-semibold mt-1 inline-block">SSD Virtualizado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup Trigger Controls -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col justify-between">
+                    <h3 class="text-sm font-bold text-on-surface uppercase tracking-wider select-none">Generar Respaldo Rápido</h3>
+                    
+                    @if (!isBackingUp) {
+                        <div class="flex flex-col gap-3 my-2">
+                            <div class="flex gap-2">
+                                <label class="flex items-center gap-1.5 text-xs text-on-surface-variant font-semibold cursor-pointer">
+                                    <input type="radio" name="backupType" value="incremental" [(ngModel)]="backupType" class="accent-primary"/>
+                                    Incremental
+                                </label>
+                                <label class="flex items-center gap-1.5 text-xs text-on-surface-variant font-semibold cursor-pointer ml-3">
+                                    <input type="radio" name="backupType" value="completo" [(ngModel)]="backupType" class="accent-primary"/>
+                                    Completo
+                                </label>
+                            </div>
+                            <button (click)="triggerBackup()" class="w-full bg-primary hover:bg-primary/95 text-white text-[13px] font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-all">
+                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">backup</span>
+                                Crear Respaldo en Caliente
+                            </button>
+                        </div>
+                    } @else {
+                        <div class="flex flex-col gap-3 my-2">
+                            <div class="flex justify-between items-center text-xs text-on-surface">
+                                <span class="font-semibold flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px] animate-spin text-primary notranslate" translate="no">sync</span>
+                                    {{ backupProgress }}% Respaldando...
+                                </span>
+                                <span class="text-on-surface-variant font-data-mono">{{ backupType | uppercase }}</span>
+                            </div>
+                            <div class="w-full bg-surface-container-low h-2.5 rounded-full overflow-hidden border border-outline-variant">
+                                <div class="bg-primary h-full transition-all duration-300" [style.width.%]="backupProgress"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Backups Grid / Table -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+                <div class="border-b border-outline-variant p-4 bg-surface-container-low/20 flex items-center justify-between select-none">
+                    <span class="text-[12px] font-bold text-on-surface-variant uppercase tracking-wider">Historial de Instantáneas y Respaldos</span>
+                </div>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-surface-container-low/50 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant select-none">
+                            <th (click)="sortBackups('id')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                <div class="flex items-center gap-1">
+                                    Identificador
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                        {{ sortField === 'id' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th (click)="sortBackups('fecha')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                <div class="flex items-center gap-1">
+                                    Fecha y Hora de Creación
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                        {{ sortField === 'fecha' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th (click)="sortBackups('tamano')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                <div class="flex items-center gap-1">
+                                    Tamaño
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                        {{ sortField === 'tamano' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th (click)="sortBackups('tipo')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                <div class="flex items-center gap-1">
+                                    Tipo
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                        {{ sortField === 'tipo' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th (click)="sortBackups('estado')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                <div class="flex items-center gap-1">
+                                    Estado
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                        {{ sortField === 'estado' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th class="p-4 text-center">Acción de Recuperación</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant text-[13px] text-on-surface">
+                        @for (backup of backups; track backup.id) {
+                            <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                <td class="p-4 font-semibold text-on-surface font-data-mono">{{ backup.id }}</td>
+                                <td class="p-4 font-data-mono text-on-surface-variant text-xs">{{ backup.fecha }}</td>
+                                <td class="p-4 text-on-surface font-semibold">{{ backup.tamano }}</td>
+                                <td class="p-4">
+                                    <span [class]="'px-2.5 py-0.5 rounded text-[10px] font-bold border ' + 
+                                        (backup.tipo === 'completo' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary/10 text-secondary border-secondary/20')">
+                                        {{ backup.tipo === 'completo' ? 'COMPLETO' : 'INCREMENTAL' }}
+                                    </span>
+                                </td>
+                                <td class="p-4">
+                                    <div class="flex items-center gap-2">
+                                        @if (backup.en_local) {
+                                            <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/10 text-green-500 border border-green-500/20">
+                                                <span class="material-symbols-outlined text-[12px] notranslate" translate="no">database</span>
+                                                Local
+                                            </span>
+                                        }
+                                        @if (backup.en_nube) {
+                                            <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                                                <span class="material-symbols-outlined text-[12px] notranslate" translate="no">cloud</span>
+                                                Supabase (Nube)
+                                            </span>
+                                        }
+                                        @if (!backup.en_local && !backup.en_nube) {
+                                            <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-error/10 text-error border border-error/20">
+                                                <span class="material-symbols-outlined text-[12px] notranslate" translate="no">error</span>
+                                                Sin Copias
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <div class="flex items-center justify-center gap-3">
+                                        <button (click)="restoreBackup(backup)" class="border border-warning/20 hover:bg-warning/10 text-warning text-xs font-semibold py-1.5 px-3 rounded-lg cursor-pointer transition-all">
+                                            Restaurar
+                                        </button>
+                                        <button (click)="downloadBackup(backup)" class="border border-outline-variant hover:bg-surface-container-low text-on-surface text-xs font-semibold py-1.5 px-3 rounded-lg cursor-pointer transition-all">
+                                            Descargar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>

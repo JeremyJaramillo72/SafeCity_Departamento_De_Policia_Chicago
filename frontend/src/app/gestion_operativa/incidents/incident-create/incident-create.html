@@ -1,0 +1,823 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <!-- Page Content -->
+        <main class="bg-surface p-lg pb-16">
+            <div class="max-w-[1240px] w-full mx-auto flex flex-col gap-lg animate-fade-in">
+
+                <!-- Page Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-outline-variant pb-md">
+                    <div>
+                        <div class="flex items-center gap-2.5 mb-1.5">
+                            <span class="material-symbols-outlined text-primary text-[28px] notranslate" translate="no">post_add</span>
+                            <h1 class="font-display-lg text-display-lg text-on-surface font-extrabold tracking-tight">
+                                Radicar Informe de Incidente Policial
+                            </h1>
+                        </div>
+                        <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                            Registre un nuevo incidente en el repositorio de inteligencia criminal. Complete todos los campos obligatorios * para radicar.
+                        </p>
+                    </div>
+                    <div class="flex gap-3 mt-4 md:mt-0 shrink-0">
+                        <button type="button" (click)="router.navigate(['/incidents'])"
+                            class="px-4 py-2.5 rounded-lg border border-outline text-on-surface font-body-sm font-semibold hover:bg-surface-container-low transition-colors cursor-pointer text-xs">
+                            Cancelar
+                        </button>
+                        <button type="button" (click)="onSubmit()" [disabled]="isSubmitting"
+                            class="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-on-primary font-body-sm font-bold shadow-md transition-colors flex items-center gap-2 disabled:opacity-60 min-w-[150px] justify-center cursor-pointer text-xs">
+                            @if (isSubmitting) {
+                                <span class="material-symbols-outlined text-sm animate-spin notranslate" translate="no">progress_activity</span>
+                                Radicando...
+                            } @else {
+                                <span class="material-symbols-outlined text-sm notranslate" translate="no">file_upload</span>
+                                Radicar Incidente
+                            }
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Success banner -->
+                @if (submitSuccess) {
+                    <div class="flex items-center gap-3 bg-secondary-container border border-secondary-container/50 text-on-secondary-container rounded-xl px-md py-3.5 shadow-sm animate-fade-in">
+                        <span class="material-symbols-outlined text-xl notranslate" translate="no">check_circle</span>
+                        <span class="font-body-md font-semibold">
+                            ¡Informe radicado con éxito! Sincronizando base de datos y redirigiendo...
+                        </span>
+                    </div>
+                }
+
+                <!-- Error banner -->
+                @if (submitError) {
+                    <div class="flex items-center gap-3 bg-error-container border border-error/30 text-on-error-container rounded-xl px-md py-3.5 shadow-sm animate-fade-in">
+                        <span class="material-symbols-outlined text-xl notranslate" translate="no">error</span>
+                        <span class="font-body-md font-bold">{{ submitError }}</span>
+                    </div>
+                }
+
+                <!-- Main Layout Grid -->
+                <form (ngSubmit)="onSubmit()" class="grid grid-cols-12 gap-lg pb-xl">
+
+                    <!-- LEFT: Form Core (8 Columns) -->
+                    <div class="col-span-12 lg:col-span-8 flex flex-col gap-lg">
+                        
+                        <!-- CARD 1: Case & Location Details -->
+                        <div class="premium-panel-card flex flex-col">
+                            <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low rounded-t-lg flex items-center justify-between select-none">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">location_on</span>
+                                    <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Detalles del Caso y Ubicación</h2>
+                                </div>
+                                <button type="button" (click)="openMapModal()"
+                                    class="px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary/5 transition-all flex items-center gap-1.5 cursor-pointer text-xs font-bold shrink-0">
+                                    <span class="material-symbols-outlined text-sm notranslate" translate="no">map</span>
+                                    Ubicar en el Mapa (Chicago)
+                                </button>
+                            </div>
+                            <div class="p-lg grid grid-cols-2 gap-y-4 gap-x-md">
+
+                                <!-- Case Number -->
+                                <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5">
+                                    <label>Número de Caso *</label>
+                                    <div class="premium-input-container">
+                                        <span class="material-symbols-outlined notranslate" translate="no">fingerprint</span>
+                                        <input [(ngModel)]="form.case_number" name="case_number" readonly
+                                            class="font-data-mono uppercase bg-surface-container-low text-on-surface-variant cursor-not-allowed select-none"
+                                            placeholder="Autogenerado (Seleccione Tipo de Delito abajo)" type="text"/>
+                                    </div>
+                                </div>
+
+                                <!-- Date & Time -->
+                                <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5">
+                                    <label>Fecha y Hora *</label>
+                                    <div class="premium-input-container" (click)="dateInput.click(); $any(dateInput).showPicker()">
+                                        <span class="material-symbols-outlined notranslate" translate="no">calendar_month</span>
+                                        <input #dateInput [(ngModel)]="form.date" name="date" type="datetime-local" class="cursor-pointer" />
+                                    </div>
+                                </div>
+
+                                <div class="col-span-2 border-t border-outline-variant/60 my-1"></div>
+
+                                <!-- Block / Address -->
+                                <div class="col-span-2 flex flex-col gap-1.5">
+                                    <label>Dirección del Incidente (Cuadra) *</label>
+                                    <div class="premium-input-container">
+                                        <span class="material-symbols-outlined notranslate" translate="no">location_on</span>
+                                        <input [(ngModel)]="form.block" name="block"
+                                            placeholder="ej. 004XX W 64TH ST" type="text"/>
+                                    </div>
+                                </div>
+
+                                <!-- District -->
+                                <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5 relative" (click)="$event.stopPropagation()">
+                                    <label>Distrito</label>
+                                    <div class="premium-input-container relative">
+                                        <span class="material-symbols-outlined notranslate" translate="no">shield</span>
+                                        <input type="text"
+                                               [(ngModel)]="districtSearch"
+                                               name="districtSearch"
+                                               (focus)="isDistrictDropdownOpen = true; isPrimaryTypeDropdownOpen = false; districtSearch = ''"
+                                               (blur)="!districtSearch && (districtSearch = form.district ? 'Distrito ' + form.district : '')"
+                                               autocomplete="off"
+                                               placeholder="Seleccionar Distrito"
+                                               class="w-full h-full font-body-sm text-body-sm focus:outline-none bg-transparent">
+                                        <span class="material-symbols-outlined text-[18px] text-on-surface-variant absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none notranslate" translate="no">arrow_drop_down</span>
+                                    </div>
+                                    @if (isDistrictDropdownOpen) {
+                                        <div class="absolute z-50 w-full mt-1 top-[100%] bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg overflow-hidden">
+                                            <ul class="max-h-[170px] overflow-y-auto py-1 bg-surface-container-lowest">
+                                                @for (d of filteredDistricts; track d) {
+                                                    <li (mousedown)="selectDistrict(d)" class="px-3 py-2 text-sm hover:bg-surface-container-low cursor-pointer text-on-surface transition-colors">Distrito {{ d }}</li>
+                                                }
+                                                @if (filteredDistricts.length === 0) {
+                                                    <li class="px-3 py-2 text-sm text-on-surface-variant italic">Sin coincidencias</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Ward -->
+                                <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5">
+                                    <label>Distrito Electoral (Ward)</label>
+                                    <div class="premium-input-container">
+                                        <span class="material-symbols-outlined notranslate" translate="no">badge</span>
+                                        <input [(ngModel)]="form.ward" name="ward"
+                                            placeholder="Ingrese # de Ward" type="number"/>
+                                    </div>
+                                </div>
+
+                                <!-- Beat -->
+                                <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5">
+                                    <label>Sector de Patrullaje (Beat)</label>
+                                    <div class="premium-input-container">
+                                        <span class="material-symbols-outlined notranslate" translate="no">share_location</span>
+                                        <input [(ngModel)]="form.beat" name="beat"
+                                            class="font-data-mono"
+                                            placeholder="ej. 0722" type="text"/>
+                                    </div>
+                                </div>
+
+                                <!-- Community Area -->
+                                <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5">
+                                    <label>Área Comunitaria</label>
+                                    <div class="premium-input-container">
+                                        <span class="material-symbols-outlined notranslate" translate="no">grid_view</span>
+                                        <input [(ngModel)]="form.community_area" name="community_area"
+                                            placeholder="ej. 68" type="number"/>
+                                    </div>
+                                </div>
+
+                                <!-- Location Type -->
+                                <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5">
+                                    <label>Tipo de Lugar</label>
+                                    <div class="premium-input-container">
+                                        <span class="material-symbols-outlined notranslate" translate="no">home_work</span>
+                                        <select [(ngModel)]="form.location_description" name="location_description">
+                                            <option value="">Seleccionar Tipo de Lugar</option>
+                                            @for (lt of locationTypes; track lt) {
+                                                <option [value]="lt">{{ lt }}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Coordinates (Lat / Lon) -->
+                                <div class="col-span-2 sm:col-span-1 grid grid-cols-2 gap-3">
+                                    <div class="flex flex-col gap-1.5">
+                                        <label>Latitud</label>
+                                        <div class="premium-input-container">
+                                            <span class="material-symbols-outlined notranslate" style="left:8px" translate="no">explore</span>
+                                            <input [(ngModel)]="form.latitude" name="latitude"
+                                                class="font-data-mono" style="padding-left:30px !important"
+                                                placeholder="41.8818" type="number" step="any"/>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label>Longitud</label>
+                                        <div class="premium-input-container">
+                                            <span class="material-symbols-outlined notranslate" style="left:8px" translate="no">explore</span>
+                                            <input [(ngModel)]="form.longitude" name="longitude"
+                                                class="font-data-mono" style="padding-left:30px !important"
+                                                placeholder="-87.6231" type="number" step="any"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                             </div>
+                         </div>
+
+                         <!-- CARD 2: Crime Classification -->
+                         <div class="premium-panel-card flex flex-col">
+                             <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low rounded-t-lg flex items-center justify-between select-none">
+                                 <div class="flex items-center gap-2">
+                                     <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">policy</span>
+                                     <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Clasificación del Delito</h2>
+                                 </div>
+                                 <span class="font-label-caps text-label-caps text-on-primary bg-primary px-2 py-0.5 rounded text-[10px] font-bold tracking-wide">IUCR OBLIGATORIO</span>
+                             </div>
+                             <div class="p-lg flex flex-col gap-4">
+
+                                 <!-- Primary Type -->
+                                 <div class="flex flex-col gap-1.5 relative" (click)="$event.stopPropagation()">
+                                     <label>Tipo Principal *</label>
+                                     <div class="premium-input-container relative">
+                                         <span class="material-symbols-outlined text-primary notranslate" translate="no">gavel</span>
+                                         <input type="text"
+                                                [(ngModel)]="primaryTypeSearch"
+                                                name="primaryTypeSearch"
+                                                (focus)="isPrimaryTypeDropdownOpen = true; isDistrictDropdownOpen = false; primaryTypeSearch = ''"
+                                                (blur)="!primaryTypeSearch && (primaryTypeSearch = form.primary_type)"
+                                                autocomplete="off"
+                                                placeholder="Seleccionar Tipo de Clasificación"
+                                                class="w-full h-full font-bold text-primary bg-transparent focus:outline-none pr-10">
+                                         
+                                         <!-- Custom Add Button -->
+                                         <button type="button" 
+                                                 (click)="openCustomTypeModal(); $event.stopPropagation()" 
+                                                 class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+                                                 title="Agregar Tipo Personalizado">
+                                             <span class="material-symbols-outlined text-[20px] notranslate" translate="no">add</span>
+                                         </button>
+                                     </div>
+                                     @if (isPrimaryTypeDropdownOpen) {
+                                         <div class="absolute z-50 w-full mt-1 top-[100%] bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg overflow-hidden">
+                                             <ul class="max-h-[170px] overflow-y-auto py-1 bg-surface-container-lowest">
+                                                 @for (pt of filteredPrimaryTypes; track pt) {
+                                                     <li (mousedown)="selectPrimaryType(pt)" class="px-3 py-2 text-sm hover:bg-surface-container-low cursor-pointer text-on-surface transition-colors">{{ pt }}</li>
+                                                 }
+                                                 @if (filteredPrimaryTypes.length === 0) {
+                                                     <li class="px-3 py-2 text-sm text-on-surface-variant italic">Sin coincidencias</li>
+                                                 }
+                                             </ul>
+                                         </div>
+                                     }
+                                 </div>
+
+                                 <!-- IUCR Code & Description -->
+                                 <div class="flex flex-col gap-1.5 relative">
+                                     <label>Código IUCR y Descripción *</label>
+                                     <div class="flex gap-3 items-center">
+                                         <div class="premium-input-container w-32">
+                                             <span class="material-symbols-outlined notranslate" translate="no">tag</span>
+                                             <input [(ngModel)]="form.iucr" name="iucr"
+                                                 class="font-data-mono font-bold"
+                                                 (input)="searchIucr(form.iucr)"
+                                                 (focus)="searchIucr(form.iucr)"
+                                                 (blur)="hideSuggestionsWithDelay()"
+                                                 placeholder="0110" type="text"/>
+                                         </div>
+                                         <div class="premium-input-container flex-1">
+                                             <span class="material-symbols-outlined notranslate" translate="no">description</span>
+                                             <input [(ngModel)]="form.description" name="description"
+                                                 (input)="searchIucr(form.description)"
+                                                 (focus)="searchIucr(form.description)"
+                                                 (blur)="hideSuggestionsWithDelay()"
+                                                 placeholder="ej. ASESINATO EN PRIMER GRADO" type="text"/>
+                                         </div>
+                                         <button type="button" (click)="addCurrentInputAsCustom()"
+                                             [disabled]="!form.iucr || !form.description"
+                                             class="p-2.5 rounded-lg border border-outline text-on-surface hover:bg-surface-container-low hover:text-primary transition-all cursor-pointer flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                                             title="Agregar delito personalizado">
+                                             <span class="material-symbols-outlined text-lg notranslate" translate="no">add</span>
+                                         </button>
+                                     </div>
+
+                                     <!-- Floating suggestions dropdown -->
+                                     @if (showIucrSuggestions && iucrSuggestions.length > 0) {
+                                         <div class="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                             @for (sug of iucrSuggestions; track sug.code) {
+                                                 <div (mousedown)="selectIucr(sug)" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                                     <div class="flex flex-col">
+                                                         <div class="flex items-center gap-2">
+                                                             <span class="font-bold text-primary font-data-mono">IUCR {{ sug.code }}</span>
+                                                             <span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">{{ sug.primary }}</span>
+                                                         </div>
+                                                         <span class="text-xs text-on-surface-variant mt-0.5">{{ sug.desc }}</span>
+                                                     </div>
+                                                     <span class="font-bold font-data-mono bg-surface-container-highest px-2 py-0.5 rounded text-[10px] text-secondary">FBI {{ sug.fbi }}</span>
+                                                 </div>
+                                             }
+                                         </div>
+                                     }
+                                 </div>
+
+                                 <!-- Roster Visual de Delitos Vinculados -->
+                                 @if (selectedClassifications.length > 0) {
+                                     <div class="mt-2 flex flex-col gap-2 bg-surface-container-lowest p-3 border border-outline-variant/60 rounded-xl">
+                                         <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider select-none">Delitos Vinculados al Incidente ({{selectedClassifications.length}})</span>
+                                         <div class="flex flex-col gap-1.5">
+                                             @for (c of selectedClassifications; track c.code) {
+                                                 <div class="flex items-center justify-between p-2 rounded-lg border border-outline-variant/40 bg-surface-container-low hover:border-primary/25 hover:bg-surface-container-low/90 transition-all select-none">
+                                                     <div class="flex items-center gap-2">
+                                                         <span class="font-bold font-data-mono bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px]">IUCR {{ c.code }}</span>
+                                                         <span class="font-bold font-data-mono bg-secondary/10 text-secondary px-2 py-0.5 rounded text-[10px]">FBI {{ c.fbi }}</span>
+                                                         <div class="flex flex-col">
+                                                             <span class="text-xs font-bold text-on-surface leading-tight">{{ c.desc }}</span>
+                                                             <span class="text-[9px] text-on-surface-variant italic leading-none">{{ c.primary }}</span>
+                                                         </div>
+                                                     </div>
+                                                     <button type="button" (click)="removeClassification(c.code)" class="text-on-surface-variant hover:text-error transition-colors p-1 flex items-center justify-center cursor-pointer">
+                                                         <span class="material-symbols-outlined text-sm notranslate" translate="no">close</span>
+                                                     </button>
+                                                 </div>
+                                             }
+                                         </div>
+                                     </div>
+                                 } @else {
+                                     <div class="mt-2 p-3 text-center border border-dashed border-outline-variant rounded-xl bg-surface-container-lowest text-xs text-on-surface-variant select-none">
+                                         Sin delitos vinculados. Seleccione del directorio o busque arriba para agregar.
+                                     </div>
+                                 }
+
+                                 <!-- Domestic and Arrest Toggles -->
+                                 <div class="mt-2 p-4 border border-outline-variant rounded-xl bg-surface-container-low flex flex-col gap-4">
+                                     <!-- Domestic Toggle -->
+                                     <div class="flex items-center justify-between cursor-pointer group" (click)="form.domestic = !form.domestic">
+                                         <div class="select-none">
+                                             <span class="font-body-md text-body-md text-on-surface font-bold group-hover:text-primary transition-colors block">Incidente Doméstico</span>
+                                             <span class="font-body-sm text-body-sm text-on-surface-variant block mt-0.5">Incidente que involucra a miembros del grupo familiar o convivientes</span>
+                                         </div>
+                                         <div class="relative ml-4 shrink-0 pointer-events-none">
+                                             <div class="w-10 h-5 rounded-full transition-all" [ngClass]="form.domestic ? 'bg-error' : 'bg-outline-variant'"></div>
+                                             <div class="absolute left-1 top-1 bg-surface-container-lowest w-3 h-3 rounded-full transition-all shadow-sm" [ngClass]="form.domestic ? 'translate-x-5' : ''"></div>
+                                         </div>
+                                     </div>
+                                     
+                                     <div class="w-full h-px bg-outline-variant/60"></div>
+                                     
+                                     <!-- Arrest Toggle -->
+                                     <div class="flex items-center justify-between cursor-pointer group" (click)="form.arrest = !form.arrest">
+                                         <div class="select-none">
+                                             <span class="font-body-md text-body-md text-on-surface font-bold group-hover:text-primary transition-colors block">Arresto Efectuado</span>
+                                             <span class="font-body-sm text-body-sm text-on-surface-variant block mt-0.5">El sujeto fue aprehendido en el lugar o poco después</span>
+                                         </div>
+                                         <div class="relative ml-4 shrink-0 pointer-events-none">
+                                             <div class="w-10 h-5 rounded-full transition-all" [ngClass]="form.arrest ? 'bg-primary' : 'bg-outline-variant'"></div>
+                                             <div class="absolute left-1 top-1 bg-surface-container-lowest w-3 h-3 rounded-full transition-all shadow-sm" [ngClass]="form.arrest ? 'translate-x-5' : ''"></div>
+                                         </div>
+                                     </div>
+                                 </div>
+
+                             </div>
+                         </div>
+
+                         <!-- CARD 3: Responding Units & Report -->
+                         <div class="premium-panel-card flex flex-col">
+                             <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low rounded-t-lg flex items-center justify-between select-none">
+                                 <div class="flex items-center gap-2">
+                                     <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">local_police</span>
+                                     <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Unidades de Respuesta e Informe</h2>
+                                 </div>
+                             </div>
+                             <div class="p-lg flex flex-col gap-4">
+                                  <!-- Responding Patrol -->
+                                  <div class="flex flex-col gap-1.5 relative">
+                                      <label>Patrulla de Respuesta</label>
+                                      <div class="premium-input-container relative" (click)="$event.stopPropagation()">
+                                          <span class="material-symbols-outlined notranslate" translate="no">directions_car</span>
+                                          @if (form.patrol_assigned) {
+                                              <input 
+                                                  type="text" 
+                                                  [value]="form.patrol_assigned"
+                                                  class="cursor-pointer font-bold !text-primary"
+                                                  readonly
+                                                  (click)="form.patrol_assigned = ''; vehicleSearchQuery = ''; showVehicleDropdown = true"
+                                              />
+                                              <button type="button" (click)="form.patrol_assigned = ''; vehicleSearchQuery = ''; showVehicleDropdown = true" class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-[16px] hover:text-error transition-colors notranslate z-20" translate="no">close</button>
+                                          } @else {
+                                              <input 
+                                                  type="text" 
+                                                  placeholder="Escriba para buscar vehículo de patrulla..." 
+                                                  [(ngModel)]="vehicleSearchQuery" 
+                                                  name="vehicleSearchQuery" 
+                                                  (focus)="showVehicleDropdown = true"
+                                                  autocomplete="off"
+                                              />
+                                              <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-[16px] notranslate z-20 pointer-events-none" translate="no">search</span>
+                                          }
+                                      </div>
+                                      
+                                      <!-- Custom Dropdown -->
+                                      @if (showVehicleDropdown && !form.patrol_assigned) {
+                                          <div class="fixed inset-0 z-[90]" (click)="showVehicleDropdown = false; $event.stopPropagation()"></div>
+                                          <div class="absolute top-[68px] left-0 w-full bg-surface-container-low border border-outline-variant rounded-lg shadow-xl z-[100] max-h-40 overflow-y-auto" (click)="$event.stopPropagation()">
+                                              @if (vehicleSearchQuery.trim()) {
+                                                  <div class="px-3 py-1.5 bg-surface-container text-[10px] text-on-surface-variant font-bold uppercase tracking-wider border-b border-outline-variant sticky top-0 z-10">
+                                                      Mostrando {{ getFilteredVehicles().length }} resultados para "{{ vehicleSearchQuery }}"
+                                                  </div>
+                                              }
+                                              <ul class="py-1">
+                                                  @for (v of getFilteredVehicles(); track v.id_vehiculo) {
+                                                      <li (click)="selectVehicle(v)" class="px-4 py-2.5 text-sm text-on-surface hover:bg-primary/10 hover:text-primary cursor-pointer flex items-center gap-2 transition-colors border-b border-outline-variant/30 last:border-0">
+                                                          <span class="material-symbols-outlined text-[16px] text-on-surface-variant notranslate" translate="no">directions_car</span>
+                                                          <span class="font-bold">{{ v.placa_vehiculo }}</span>
+                                                          <span class="text-xs text-on-surface-variant">- {{ v.tipo_vehiculo }}</span>
+                                                      </li>
+                                                  }
+                                                  @if (getFilteredVehicles().length === 0) {
+                                                      <li class="px-3 py-3 text-sm text-on-surface-variant italic text-center">No se encontraron vehículos.</li>
+                                                  }
+                                              </ul>
+                                          </div>
+                                      }
+ 
+                                      <span class="text-[11px] text-on-surface-variant italic">Al seleccionar una patrulla activa se agregarán automáticamente sus oficiales asignados.</span>
+                                  </div>
+ 
+                                  <!-- Responding Officers -->
+                                  <div class="flex flex-col gap-1.5">
+                                      <label>Oficiales de Respuesta</label>
+                                      
+                                      <!-- Selected Officers Chips -->
+                                      @if (form.officers_assigned.length > 0) {
+                                          <div class="flex flex-wrap gap-2 mb-1">
+                                              @for (officer of form.officers_assigned; track officer) {
+                                                  <div class="flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full text-xs font-bold">
+                                                      <span class="material-symbols-outlined text-[14px] notranslate" translate="no">local_police</span>
+                                                      {{ officer }}
+                                                      <button type="button" (click)="removeOfficer(officer)" class="flex items-center justify-center hover:bg-primary/20 rounded-full w-4 h-4 transition-colors">
+                                                          <span class="material-symbols-outlined text-[12px] notranslate" translate="no">close</span>
+                                                      </button>
+                                                  </div>
+                                              }
+                                          </div>
+                                      }
+ 
+                                      <!-- Add Extra Officer Dropdown -->
+                                      <div class="relative">
+                                          <div class="premium-input-container !border-dashed bg-surface-container-lowest/50 relative" (click)="$event.stopPropagation()">
+                                              <span class="material-symbols-outlined notranslate" translate="no">person_add</span>
+                                              <input 
+                                                  type="text" 
+                                                  placeholder="+ Agregar otro oficial al caso..." 
+                                                  [(ngModel)]="officerSearchQuery" 
+                                                  name="officerSearchQuery" 
+                                                  (focus)="showOfficerDropdown = true"
+                                                  autocomplete="off"
+                                              />
+                                              <span class="absolute right-3 !left-auto top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-[16px] notranslate z-20 pointer-events-none" translate="no">search</span>
+                                          </div>
+ 
+                                          <!-- Custom Dropdown -->
+                                          @if (showOfficerDropdown) {
+                                              <div class="fixed inset-0 z-[90]" (click)="showOfficerDropdown = false; $event.stopPropagation()"></div>
+                                              <div class="absolute top-[44px] left-0 w-full bg-surface-container-low border border-outline-variant rounded-lg shadow-xl z-[100] max-h-40 overflow-y-auto" (click)="$event.stopPropagation()">
+                                                  @if (officerSearchQuery.trim()) {
+                                                      <div class="px-3 py-1.5 bg-surface-container text-[10px] text-on-surface-variant font-bold uppercase tracking-wider border-b border-outline-variant sticky top-0 z-10">
+                                                          Mostrando {{ getFilteredOfficers().length }} resultados para "{{ officerSearchQuery }}"
+                                                      </div>
+                                                  }
+                                                  <ul class="py-1">
+                                                      @for (o of getFilteredOfficers(); track o.id_oficial) {
+                                                          <li (click)="selectOfficer(o)" class="px-4 py-2.5 text-sm text-on-surface hover:bg-primary/10 hover:text-primary cursor-pointer flex items-center gap-2 transition-colors border-b border-outline-variant/30 last:border-0">
+                                                              <span class="material-symbols-outlined text-[16px] text-on-surface-variant notranslate" translate="no">local_police</span>
+                                                              <span class="font-bold">{{ o.nombres }} {{ o.apellidos }}</span>
+                                                              <span class="text-xs text-on-surface-variant">- {{ o.placa_policial }}</span>
+                                                          </li>
+                                                      }
+                                                      @if (getFilteredOfficers().length === 0) {
+                                                          <li class="px-3 py-3 text-sm text-on-surface-variant italic text-center">No se encontraron oficiales.</li>
+                                                      }
+                                                  </ul>
+                                              </div>
+                                          }
+                                      </div>
+                                  </div>
+ 
+                                  <!-- Police Report Narrative -->
+                                  <div class="flex flex-col gap-1.5">
+                                      <label>Narrativa del Informe Policial</label>
+                                      <div class="premium-input-container !h-auto !items-start !py-2.5">
+                                          <span class="material-symbols-outlined mt-1 notranslate" translate="no">history_edu</span>
+                                          <textarea [(ngModel)]="form.police_report_text" name="police_report_text" rows="5" class="w-full bg-transparent border-none outline-none resize-y text-sm text-on-surface" placeholder="Redacte la narrativa completa del informe policial aquí..."></textarea>
+                                      </div>
+                                  </div>
+
+
+                             </div>
+                         </div>
+
+                     </div>
+
+                     <!-- RIGHT: Operational Command Side-Panel (4 Columns) -->
+                     <div class="col-span-12 lg:col-span-4 flex flex-col gap-lg">
+                         
+                         <!-- CARD 1: Operational Live Audit -->
+                         <div class="premium-panel-card flex flex-col relative overflow-hidden backdrop-blur-sm">
+                             <div class="absolute left-0 top-0 w-full h-1 bg-primary"></div>
+                             
+                             <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low rounded-t-lg flex justify-between items-center select-none">
+                                 <h3 class="font-headline-sm text-headline-sm text-primary flex items-center gap-1.5 font-bold">
+                                     <span class="material-symbols-outlined text-[20px] notranslate" translate="no">analytics</span>
+                                     Auditoría Operativa
+                                 </h3>
+                                 <span class="status-indicator-dot pulse"></span>
+                             </div>
+                             
+                             <div class="p-lg space-y-lg">
+                                 <!-- Badge Case Preview -->
+                                 <div class="flex flex-col items-center justify-center p-md bg-primary/5 rounded-xl border border-primary/10 select-none">
+                                     <span class="material-symbols-outlined text-primary text-[32px] mb-1 notranslate" translate="no">receipt_long</span>
+                                     <span class="text-[10px] text-outline font-bold uppercase tracking-wider mb-1">Expediente del Caso Policial</span>
+                                     <div class="flex items-center gap-2">
+                                         <div class="neon-badge-police px-4 py-1.5 rounded-lg text-lg tracking-wider font-bold">
+                                             #{{ form.case_number || 'ID PENDIENTE' }}
+                                         </div>
+                                         <button *ngIf="form.case_number" (click)="copyToClipboard()" type="button"
+                                                 class="p-2 rounded-lg bg-surface-container-high border border-outline-variant hover:bg-surface-container-highest transition-all flex items-center justify-center cursor-pointer text-on-surface-variant"
+                                                 [title]="isCopied ? '¡Copiado!' : 'Copiar ID'">
+                                             <span class="material-symbols-outlined text-[16px] notranslate" translate="no" [class.text-success]="isCopied">
+                                                 {{ isCopied ? 'check' : 'content_copy' }}
+                                             </span>
+                                         </button>
+                                     </div>
+                                 </div>
+                                 
+                                 <div class="divide-y divide-outline-variant/60 text-xs">
+                                     <div class="flex justify-between py-2.5">
+                                         <span class="text-on-surface-variant font-bold">Oficial Radicador:</span>
+                                         <span class="text-on-surface font-semibold">{{ authService.getOfficerName() }}</span>
+                                     </div>
+                                     <div class="flex justify-between py-2.5">
+                                         <span class="text-on-surface-variant font-bold">Estado de Auditoría:</span>
+                                         <span class="font-bold uppercase tracking-wide" [class]="form.case_number ? 'text-primary' : 'text-error'">
+                                             {{ form.case_number ? 'Verificado' : 'Registro Pendiente' }}
+                                         </span>
+                                     </div>
+                                     <div class="flex justify-between py-2.5">
+                                         <span class="text-on-surface-variant font-bold">Progresión Judicial:</span>
+                                         <span class="font-bold" [class]="form.arrest ? 'text-success' : 'text-primary'">
+                                             {{ form.arrest ? 'Cerrado - Con Arresto' : 'Investigación Activa' }}
+                                         </span>
+                                     </div>
+                                     <div class="flex justify-between py-2.5">
+                                         <span class="text-on-surface-variant font-bold">Sincronización de BD:</span>
+                                         <span class="text-success font-bold flex items-center gap-1">
+                                             <span class="material-symbols-outlined text-[14px] notranslate" translate="no">cloud_done</span> Registro Seguro
+                                         </span>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+
+                         <!-- CARD 2: IUCR Crime Reference Directory -->
+                         <div class="premium-panel-card flex flex-col">
+                             <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low rounded-t-lg">
+                                 <h3 class="font-headline-sm text-headline-sm text-on-surface-variant flex items-center gap-1.5 font-bold">
+                                     <span class="material-symbols-outlined text-[20px] notranslate" translate="no">help_center</span>
+                                     Directorio de Referencia IUCR
+                                 </h3>
+                             </div>
+                             <div class="p-lg space-y-4">
+                                 <p class="text-xs text-on-surface-variant leading-relaxed">
+                                     Consulte rápidamente los códigos estándar IUCR y sus clasificaciones FBI correspondientes:
+                                 </p>
+
+                                 <!-- Search Input for Directory -->
+                                 <div class="premium-input-container">
+                                     <span class="material-symbols-outlined notranslate" translate="no">search</span>
+                                     <input [(ngModel)]="iucrSearchQuery" name="iucrSearchQuery"
+                                         placeholder="Buscar IUCR, FBI o Delito..." type="text"/>
+                                 </div>
+                                 
+                                 <div class="space-y-2 text-xs max-h-[360px] overflow-y-auto pr-1">
+                                     @for (item of getFilteredIucrList(); track item.code) {
+                                         <div (click)="selectIucr(item)"
+                                             class="flex items-center justify-between bg-surface-container-low p-2 rounded-lg border border-outline-variant/40 hover:border-primary/50 hover:bg-surface-container-low/80 hover:translate-y-[-1px] transition-all cursor-pointer group">
+                                             <div class="flex flex-col">
+                                                 <span class="font-bold text-primary font-data-mono group-hover:text-primary-light">IUCR {{ item.code }}</span>
+                                                 <span class="text-[10px] text-on-surface-variant font-medium leading-tight">{{ item.desc }}</span>
+                                                 <span class="text-[9px] text-on-surface-variant/80 italic mt-0.5">{{ item.primary }}</span>
+                                             </div>
+                                             <div class="flex flex-col items-end gap-1 shrink-0 ml-2">
+                                                 <span class="font-bold font-data-mono bg-surface-container-highest px-2 py-0.5 rounded text-[10px]">FBI {{ item.fbi }}</span>
+                                                 <span class="text-[8px] text-primary/60 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">Clic para aplicar</span>
+                                             </div>
+                                         </div>
+                                     }
+                                 </div>
+                             </div>
+                         </div>
+
+                         <!-- CARD 3: Report Evidence -->
+                         <div class="premium-panel-card flex flex-col">
+                             <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low rounded-t-lg">
+                                 <h3 class="font-headline-sm text-headline-sm text-on-surface-variant flex items-center gap-1.5 font-bold">
+                                     <span class="material-symbols-outlined text-[20px] notranslate" translate="no">attach_file</span>
+                                     Evidencias del Informe
+                                 </h3>
+                             </div>
+                             <div class="p-lg">
+                                 <!-- Police Report File Upload (Supabase Storage) -->
+                                 <div class="flex flex-col gap-1.5">
+                                     <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Adjuntar Archivo del Informe Policial</label>
+                                     <div class="flex flex-wrap items-center gap-4 border border-outline-variant rounded-lg p-3 bg-surface-bright">
+                                         <button type="button" (click)="fileInput.click()" class="flex items-center gap-2 px-3 py-1.5 border border-primary/20 rounded-lg bg-primary/5 hover:bg-primary/10 text-primary transition-colors cursor-pointer text-xs font-bold select-none">
+                                             <span class="material-symbols-outlined text-[16px] notranslate" translate="no">upload</span>
+                                             Adjuntar Archivo
+                                         </button>
+                                         <input #fileInput type="file" (change)="onFileSelected($event)" class="hidden" accept="image/*,.pdf,.doc,.docx">
+                                         @if (policeReportFileObj) {
+                                             <div class="flex items-center gap-2">
+                                                 <span class="text-xs text-primary font-bold flex items-center gap-1.5">
+                                                     <span class="material-symbols-outlined text-[16px] notranslate" translate="no">description</span>
+                                                     {{ policeReportFileObj.name }}
+                                                 </span>
+                                                 <button type="button" (click)="policeReportFileObj = null" class="text-error font-bold text-xs hover:underline cursor-pointer">
+                                                     Eliminar
+                                                 </button>
+                                             </div>
+                                         } @else {
+                                             <span class="text-xs text-slate-400 italic">Sin archivo adjunto</span>
+                                         }
+                                     </div>
+                                     <span class="text-[11px] text-on-surface-variant font-medium">Formatos permitidos: PDF, DOC, PNG, JPG (Máx 10MB)</span>
+                                 </div>
+                             </div>
+                         </div>
+
+                     </div>
+
+                 </form>
+             </div>
+         </main>
+     </div>
+ </div>
+
+ <!-- Custom Primary Type Modal -->
+ @if (showCustomTypeModal) {
+   <div class="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4 overflow-y-auto" (click)="cancelCustomTypeModal()">
+     <div class="bg-surface-container-lowest border border-outline-variant/50 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200" (click)="$event.stopPropagation()">
+       
+       <!-- Gradient Header -->
+       <div class="relative overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-8 py-6 border-b border-outline-variant/30">
+         <div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl"></div>
+         <div class="absolute right-12 top-4 w-12 h-12 bg-secondary/10 rounded-full blur-xl"></div>
+         
+         <div class="flex justify-between items-start relative z-10">
+           <div class="flex items-center gap-4">
+             <div class="w-12 h-12 bg-primary/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-inner border border-primary/20">
+               <span class="material-symbols-outlined text-primary text-[28px] notranslate" translate="no">library_add</span>
+             </div>
+             <div>
+               <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">Tipo de Delito Personalizado</h3>
+               <p class="text-body-sm text-on-surface-variant mt-0.5">Tipo temporal para presentación</p>
+             </div>
+           </div>
+           <button (click)="cancelCustomTypeModal()" class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 p-2 rounded-full transition-colors cursor-pointer">
+             <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+           </button>
+         </div>
+       </div>
+       
+       <!-- Body -->
+       <div class="p-8 space-y-6">
+         <div class="space-y-2">
+           <label class="block text-label-md font-semibold text-on-surface">Nombre de la Clasificación</label>
+           <div class="relative group">
+             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60 group-focus-within:text-primary transition-colors notranslate" translate="no">edit</span>
+             <input type="text" 
+                    [(ngModel)]="customTypeInput"
+                    (keyup.enter)="saveCustomPrimaryType()"
+                    placeholder="ej. CIBERDELITO" 
+                    class="w-full pl-12 pr-4 py-3.5 bg-surface-container-low border-2 border-transparent hover:border-outline-variant/50 rounded-xl text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:bg-surface-container-lowest transition-all font-body-md uppercase shadow-sm" autofocus/>
+           </div>
+           <p class="text-[11px] text-on-surface-variant mt-2 font-medium flex items-center gap-1">
+             <span class="material-symbols-outlined text-[14px] notranslate" translate="no">info</span>
+             Esta clasificación se seleccionará automáticamente al guardar.
+           </p>
+         </div>
+       </div>
+       
+       <!-- Footer -->
+       <div class="px-8 py-5 bg-surface-container-low/50 border-t border-outline-variant/30 flex justify-end gap-3">
+         <button (click)="cancelCustomTypeModal()" class="px-5 py-2.5 rounded-xl text-on-surface-variant font-label-lg hover:bg-surface-container-high hover:text-on-surface transition-all cursor-pointer">
+           Cancelar
+         </button>
+         <button (click)="saveCustomPrimaryType()" [disabled]="!customTypeInput.trim()" [class.opacity-50]="!customTypeInput.trim()" class="px-6 py-2.5 bg-primary hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 text-on-primary font-label-lg font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5">
+           <span class="material-symbols-outlined text-[18px] notranslate" translate="no">check_circle</span> 
+           Agregar y Seleccionar
+         </button>
+       </div>
+     </div>
+   </div>
+ }
+
+ <!-- Chicago Tactical Map Modal -->
+ @if (showMapModal) {
+     <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
+         <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+             
+             <!-- Modal Header -->
+             <div class="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center shrink-0">
+                 <div class="flex items-center gap-3">
+                     <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                         <span class="material-symbols-outlined text-[24px] notranslate" translate="no">map</span>
+                     </div>
+                     <div>
+                         <h3 class="font-headline-sm text-on-surface font-bold text-base leading-tight">Seleccionar Ubicación del Incidente</h3>
+                         <p class="font-body-sm text-secondary text-xs">Busque una calle para navegar y haga clic en el mapa para marcar el lugar exacto del delito.</p>
+                     </div>
+                 </div>
+                 <button type="button" (click)="closeMapModal()" class="text-on-surface-variant hover:text-on-surface p-1.5 rounded-full hover:bg-surface-container-high transition-colors cursor-pointer flex items-center justify-center">
+                     <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                 </button>
+             </div>
+
+             <!-- Modal Body (Leaflet Map + Search Overlay + Guidance) -->
+             <div class="flex-1 relative bg-surface-container-low flex flex-col">
+                 <!-- Search overlay -->
+                 <div class="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-md z-[1000] px-4">
+                     <div class="bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant/80 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                         <div class="flex items-center relative">
+                             <span class="material-symbols-outlined absolute left-3.5 text-primary text-[20px] notranslate" translate="no">search</span>
+                             <input type="text" 
+                                    placeholder="Buscar calle, avenida o zona en Chicago..." 
+                                    class="w-full py-3 pl-11 pr-10 outline-none font-body-sm text-xs text-on-surface bg-transparent placeholder:text-on-surface-variant/50"
+                                    [(ngModel)]="mapSearchQuery"
+                                    (input)="onSearchQueryChange()"
+                                    (keydown.enter)="searchStreet()">
+                             
+                             @if (isSearchingMap) {
+                                 <div class="absolute right-3.5 w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                             } @else {
+                                 @if (mapSearchQuery) {
+                                     <button type="button" 
+                                             class="absolute right-2.5 text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-variant transition-colors cursor-pointer"
+                                             (click)="clearMapSearch()">
+                                         <span class="material-symbols-outlined text-[16px] notranslate" translate="no">close</span>
+                                     </button>
+                                 }
+                             }
+                         </div>
+
+                         <!-- Suggestions Dropdown -->
+                         @if (mapSearchSuggestions.length > 0) {
+                             <ul class="border-t border-outline-variant/50 max-h-56 overflow-y-auto divide-y divide-outline-variant/20">
+                                 @for (sug of mapSearchSuggestions; track sug.display_name) {
+                                     <li class="px-4 py-2.5 hover:bg-primary/5 cursor-pointer flex items-start gap-3 transition-colors group"
+                                         (click)="selectMapSuggestion(sug)">
+                                         <span class="material-symbols-outlined text-primary/60 group-hover:text-primary mt-0.5 text-[18px] shrink-0 notranslate" translate="no">near_me</span>
+                                         <div class="min-w-0 flex-1">
+                                             <div class="font-body-sm text-xs font-bold text-on-surface group-hover:text-primary truncate">{{ sug.display_name.split(',')[0] }}</div>
+                                             <div class="text-[10px] text-secondary truncate">{{ sug.display_name }}</div>
+                                         </div>
+                                         <span class="text-[10px] text-primary font-bold shrink-0 self-center">Ir a la Calle</span>
+                                     </li>
+                                 }
+                             </ul>
+                         }
+
+                         @if (mapSearchError) {
+                             <div class="p-2 text-center text-xs text-error font-medium border-t border-outline-variant/50 bg-error/5">
+                                 {{ mapSearchError }}
+                             </div>
+                         }
+                     </div>
+                 </div>
+
+                 <!-- Floating Guidance Pill -->
+                 @if (isPinningLocation || form.block) {
+                     <div class="absolute top-20 left-1/2 -translate-x-1/2 z-[1000] bg-surface-container-lowest/95 backdrop-blur-md border border-primary/40 text-on-surface px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 text-xs select-none animate-fade-in pointer-events-none">
+                         <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                         <span class="font-medium text-primary">¡Calle centrada! Haga clic en cualquier lugar del mapa para fijar la ubicación exacta.</span>
+                     </div>
+                 }
+
+                 <div id="modal-incident-map" class="w-full h-full"></div>
+             </div>
+
+             <!-- Modal Footer -->
+             <div class="px-6 py-3.5 border-t border-outline-variant bg-surface-container-low flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+                 <div class="flex items-center gap-2.5 max-w-md w-full min-w-0">
+                     <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                         <span class="material-symbols-outlined text-[18px] notranslate" translate="no">pin_drop</span>
+                     </div>
+                     <div class="flex flex-col min-w-0">
+                         <span class="text-[10px] font-bold uppercase tracking-wider text-secondary">Ubicación Seleccionada</span>
+                         <span class="text-xs font-bold text-on-surface truncate">
+                             {{ form.block || 'Haga clic en el mapa para fijar un marcador o busque una calle' }}
+                         </span>
+                     </div>
+                 </div>
+                 <div class="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
+                     <button type="button" 
+                             (click)="closeMapModal()" 
+                             class="px-4 py-2 rounded-xl border border-outline-variant hover:bg-surface-variant text-on-surface transition-colors cursor-pointer text-xs font-semibold">
+                         Cancelar
+                     </button>
+                     <button type="button" 
+                             (click)="confirmMapLocation()" 
+                             [disabled]="!form.block && !form.latitude"
+                             class="px-5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                         <span class="material-symbols-outlined text-[17px] notranslate" translate="no">check_circle</span>
+                         Confirmar Ubicación
+                     </button>
+                 </div>
+             </div>
+
+         </div>
+     </div>
+ }

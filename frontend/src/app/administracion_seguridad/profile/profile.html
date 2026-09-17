@@ -1,0 +1,365 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+    
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <!-- Scrollable Main Canvas -->
+        <main class="p-lg flex flex-col gap-6 bg-background pb-16">
+            <div class="max-w-5xl w-full mx-auto flex flex-col gap-6 animate-fade-in">
+                
+                <!-- Welcome Title -->
+                <div class="flex flex-col gap-1 shrink-0">
+                    <h2 class="font-headline-lg text-[22px] font-bold text-on-surface flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary text-[28px] notranslate" translate="no">account_circle</span>
+                        Mi Ficha de Identidad Policial
+                    </h2>
+                    <p class="text-on-surface-variant text-xs">Consulte la información de su registro institucional, historial de actividad, insignias y configure el acceso a su cuenta.</p>
+                </div>
+
+                @if (loading) {
+                    <div class="flex-1 flex flex-col items-center justify-center py-20 bg-surface-container-lowest border border-outline-variant rounded-2xl">
+                        <span class="material-symbols-outlined animate-spin text-[40px] text-primary notranslate" translate="no">progress_activity</span>
+                        <p class="text-on-surface-variant mt-4 font-medium text-xs">Cargando datos de su ficha oficial...</p>
+                    </div>
+                } @else if (error) {
+                    <div class="flex-1 flex flex-col items-center justify-center py-20 bg-surface-container-lowest border border-error/10 rounded-2xl text-center px-6">
+                        <span class="material-symbols-outlined text-[48px] text-error mb-4 notranslate" translate="no">error</span>
+                        <h3 class="text-on-surface font-bold text-lg mb-2">Error de Carga</h3>
+                        <p class="text-on-surface-variant max-w-md text-xs">{{ error }}</p>
+                        <button (click)="loadProfile()" class="mt-6 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-semibold py-2 px-4 rounded-lg transition-all flex items-center gap-2 cursor-pointer text-xs">
+                            <span class="material-symbols-outlined text-sm notranslate" translate="no">refresh</span>
+                            Reintentar
+                        </button>
+                    </div>
+                } @else {
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        
+                        <!-- LEFT PANEL: Officer Card & Badges -->
+                        <div class="lg:col-span-1 flex flex-col gap-6">
+                            
+                            <!-- Officer Card -->
+                            <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 flex flex-col items-center text-center shadow-sm relative overflow-hidden">
+                                <div class="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-primary/60 to-primary"></div>
+                                
+                                <!-- Photograph -->
+                                <div class="relative group mt-4 mb-5 cursor-pointer select-none" (click)="triggerFileInput()">
+                                    <div class="absolute inset-0 bg-primary/5 rounded-full blur-md group-hover:bg-primary/10 transition-all duration-300"></div>
+                                    
+                                    <div class="relative w-28 h-28 rounded-full overflow-hidden border-2 border-outline-variant z-10 shadow-sm">
+                                        <img [src]="officer?.url_fotografia || authService.getProfileImage()" 
+                                             alt="Profile Picture" 
+                                             class="w-full h-full object-cover"
+                                             (error)="onImgError($event)"/>
+                                        
+                                        <!-- Hover Overlay -->
+                                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white">
+                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">photo_camera</span>
+                                            <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Cambiar Foto</span>
+                                        </div>
+
+                                        <!-- Uploading Spinner -->
+                                        <div *ngIf="isUploadingImage" class="absolute inset-0 bg-black/60 flex items-center justify-center text-white z-20">
+                                            <span class="material-symbols-outlined animate-spin text-[24px] notranslate" translate="no">progress_activity</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <span class="absolute right-1 bottom-1 w-5 h-5 bg-success rounded-full border-4 border-surface-container-lowest z-20" title="Servicio Activo"></span>
+                                    
+                                    <!-- Hidden Input -->
+                                    <input type="file" id="avatar-file-input" style="display: none;" accept="image/*" (change)="onFileSelected($event)">
+                                </div>
+
+                                <!-- Name and Badge -->
+                                <h3 class="text-on-surface font-bold text-md leading-snug z-10">Ofc. {{ officer?.nombres }} {{ officer?.apellidos }}</h3>
+                                <span class="font-data-mono text-primary font-bold tracking-wider mt-1 z-10 text-xs select-all">{{ officer?.placa_policial }}</span>
+
+                                <div class="w-full h-px bg-outline-variant my-4 z-10"></div>
+
+                                <!-- Institutional Details -->
+                                <div class="w-full flex flex-col gap-3 z-10">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-on-surface-variant font-medium flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[15px] text-on-surface-variant notranslate" translate="no">shield</span>
+                                            Rango
+                                        </span>
+                                        <span class="text-primary font-bold bg-primary-container/10 border border-primary/15 py-0.5 px-2 rounded-full text-[10px]">{{ getRoleLabel(officer?.id_rol) }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-on-surface-variant font-medium flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[15px] text-on-surface-variant notranslate" translate="no">lan</span>
+                                            División
+                                        </span>
+                                        <span class="text-on-surface font-semibold text-[11px] truncate max-w-[150px]" [title]="getDivisionLabel()">{{ getDivisionLabel() }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-on-surface-variant font-medium flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[15px] text-on-surface-variant notranslate" translate="no">calendar_month</span>
+                                            Fecha de Ingreso
+                                        </span>
+                                        <span class="text-on-surface font-semibold">{{ officer?.fecha_ingreso }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="w-full h-px bg-outline-variant my-4 z-10"></div>
+
+                                <!-- Emergency Data (Police File standard) -->
+                                <div class="w-full flex flex-col gap-3 z-10">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-on-surface-variant font-medium flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[15px] text-error notranslate" translate="no">bloodtype</span>
+                                            Grupo Sanguíneo
+                                        </span>
+                                        <span class="text-error font-bold bg-error/5 border border-error/20 py-0.5 px-2 rounded-md text-[10px]">{{ officer?.grupo_sanguineo || 'O+' }}</span>
+                                    </div>
+                                    <div class="flex flex-col gap-1 text-left mt-1.5 text-xs w-full bg-surface-container-low border border-outline-variant/60 rounded-xl p-2.5">
+                                        <span class="text-on-surface-variant font-bold uppercase tracking-wider text-[8px] block">Contacto de Emergencia</span>
+                                        <span class="text-on-surface font-semibold text-[10px] flex items-center gap-1 mt-0.5">
+                                            <span class="material-symbols-outlined text-[12px] text-on-surface-variant notranslate" translate="no">contacts</span>
+                                            {{ officer?.contacto_emergencia_nombre || 'No registrado' }}
+                                        </span>
+                                        <span class="text-primary font-semibold text-[10px] flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[12px] notranslate" translate="no">call</span>
+                                            {{ officer?.contacto_emergencia_telefono || 'No registrado' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Badges / Certifications -->
+                            <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                                <h4 class="text-on-surface font-bold text-xs flex items-center gap-2 uppercase tracking-wider">
+                                    <span class="material-symbols-outlined text-primary text-[18px] notranslate" translate="no">verified</span>
+                                    Insignias y Distinciones
+                                </h4>
+                                <div class="flex flex-col gap-3">
+                                    @for (badge of badges; track badge.name) {
+                                        <div class="flex items-center gap-3 p-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl">
+                                            <div class="w-8 h-8 rounded-lg flex items-center justify-center border shrink-0 {{ badge.color }}">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">{{ badge.icon }}</span>
+                                            </div>
+                                            <div class="flex flex-col overflow-hidden">
+                                                <span class="text-[11.5px] font-bold text-on-surface leading-tight">{{ badge.name }}</span>
+                                                <span class="text-[9.5px] text-on-surface-variant truncate mt-0.5">{{ badge.desc }}</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT PANEL: Roster, Stats, Activity, Password Form -->
+                        <div class="lg:col-span-2 flex flex-col gap-6">
+                            
+                            <!-- Roster Data Sheet -->
+                            <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm relative overflow-hidden">
+                                <div class="absolute right-0 top-0 w-24 h-24 bg-surface-container-low/20 border-l border-b border-outline-variant rounded-bl-3xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-[32px] text-on-surface/5 notranslate" translate="no">badge</span>
+                                </div>
+                                
+                                <h4 class="text-on-surface font-bold text-sm flex items-center gap-2 mb-4">
+                                    <span class="material-symbols-outlined text-primary text-[18px] notranslate" translate="no">contact_page</span>
+                                    Ficha de Datos de Dotación
+                                </h4>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+                                    <div class="flex flex-col gap-1.5">
+                                        <span class="text-on-surface-variant font-semibold uppercase tracking-wider text-[10px]">Correo Institucional</span>
+                                        <span class="text-on-surface font-medium select-all py-2.5 px-3.5 bg-surface-container-low border border-outline-variant rounded-lg flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[15px] text-primary notranslate" translate="no">mail</span>
+                                            {{ officer?.correo_electronico }}
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <span class="text-on-surface-variant font-semibold uppercase tracking-wider text-[10px]">Teléfono de Contacto</span>
+                                        <span class="text-on-surface font-medium py-2.5 px-3.5 bg-surface-container-low border border-outline-variant rounded-lg flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[15px] text-primary notranslate" translate="no">call</span>
+                                            {{ officer?.telefono_contacto }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Performance/Activity Statistics -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <!-- Stat 1: Assigned Cases -->
+                                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 shadow-sm flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">folder_open</span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[9px] text-on-surface-variant font-bold uppercase tracking-wider">Casos Activos</span>
+                                        <span class="text-lg font-black text-on-surface leading-none mt-1">4</span>
+                                    </div>
+                                </div>
+                                <!-- Stat 2: Reports Created -->
+                                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 shadow-sm flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-error/10 text-error border border-error/20 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">description</span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[9px] text-on-surface-variant font-bold uppercase tracking-wider">Informes</span>
+                                        <span class="text-lg font-black text-on-surface leading-none mt-1">18</span>
+                                    </div>
+                                </div>
+                                <!-- Stat 3: Guard Duty Shifts -->
+                                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 shadow-sm flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-warning/10 text-warning border border-warning/20 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">verified_user</span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[9px] text-on-surface-variant font-bold uppercase tracking-wider">Turnos Cumplidos</span>
+                                        <span class="text-lg font-black text-on-surface leading-none mt-1">42</span>
+                                    </div>
+                                </div>
+                                <!-- Stat 4: Service Hours -->
+                                <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 shadow-sm flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-success/10 text-success border border-success/20 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">timelapse</span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[9px] text-on-surface-variant font-bold uppercase tracking-wider">Horas de Servicio</span>
+                                        <span class="text-lg font-black text-on-surface leading-none mt-1">336</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recent Activity Timeline -->
+                            <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+                                <h4 class="text-on-surface font-bold text-xs flex items-center gap-2 uppercase tracking-wider">
+                                    <span class="material-symbols-outlined text-primary text-[18px] notranslate" translate="no">timeline</span>
+                                    Bitácora de Actividad Reciente
+                                </h4>
+                                <div class="flex flex-col gap-4 pl-2 relative before:absolute before:left-5 before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant/60">
+                                    @for (activity of recentActivities; track activity.event) {
+                                        <div class="flex gap-4 relative z-10">
+                                            <div class="w-6 h-6 rounded-full bg-surface-container-low border border-outline-variant flex items-center justify-center text-primary shrink-0 shadow-sm">
+                                                <span class="material-symbols-outlined text-[13px] notranslate" translate="no">{{ activity.icon }}</span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-[11.5px] font-bold text-on-surface">{{ activity.event }}</span>
+                                                    <span class="text-[9px] text-on-surface-variant bg-surface-container-low px-1.5 py-0.5 rounded-md font-semibold">{{ activity.time }}</span>
+                                                </div>
+                                                <span class="text-[10px] text-on-surface-variant mt-0.5">{{ activity.desc }}</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Change Password Section (Togglable) -->
+                            <div id="password-section" class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm relative overflow-hidden transition-all duration-300">
+                                
+                                @if (!showPasswordForm) {
+                                    <!-- Collapsed/Secure State View -->
+                                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <div class="flex items-start gap-3.5">
+                                            <div class="w-10 h-10 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shrink-0">
+                                                <span class="material-symbols-outlined text-[22px] notranslate" translate="no">lock_open</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-on-surface font-bold text-sm flex items-center gap-2 leading-none mt-1">
+                                                    Seguridad de Acceso
+                                                </h4>
+                                                <p class="text-on-surface-variant text-[11px] mt-1.5">Su contraseña del sistema se encuentra activa y cifrada de forma segura.</p>
+                                            </div>
+                                        </div>
+                                        <button (click)="showPasswordForm = true" class="w-full md:w-auto bg-primary hover:bg-primary/95 text-on-primary font-bold py-2 px-4 rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer text-xs shrink-0 select-none">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no font-bold">lock_reset</span>
+                                            Cambiar Contraseña
+                                        </button>
+                                    </div>
+                                } @else {
+                                    <!-- Expanded Form View -->
+                                    <div class="animate-fade-in">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <div>
+                                                <h4 class="text-on-surface font-bold text-sm flex items-center gap-2">
+                                                    <span class="material-symbols-outlined text-primary text-[18px] notranslate" translate="no">lock_open</span>
+                                                    Actualizar Contraseña de Acceso
+                                                </h4>
+                                                <p class="text-on-surface-variant text-xs mt-1">Defina una contraseña robusta y confidencial para su cuenta institucional.</p>
+                                            </div>
+                                            <button (click)="showPasswordForm = false; passwordError = ''; passwordSuccess = ''; passwordForm.reset()" 
+                                                    class="p-1 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer" title="Cancelar">
+                                                <span class="material-symbols-outlined text-lg notranslate" translate="no">close</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="w-full h-px bg-outline-variant my-4"></div>
+
+                                        <!-- Alert Banners -->
+                                        @if (passwordSuccess) {
+                                            <div class="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 rounded-xl p-4 flex items-start gap-3 text-xs animate-fade-in">
+                                                <span class="material-symbols-outlined text-[20px] shrink-0 text-emerald-600 notranslate" translate="no">check_circle</span>
+                                                <div>
+                                                    <h5 class="font-bold text-emerald-800">Cambio Exitoso</h5>
+                                                    <p class="mt-0.5">{{ passwordSuccess }}</p>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (passwordError) {
+                                            <div class="mb-4 bg-error/10 border border-error/20 text-error rounded-xl p-4 flex items-start gap-3 text-xs animate-fade-in">
+                                                <span class="material-symbols-outlined text-[20px] shrink-0 text-error notranslate" translate="no">error</span>
+                                                <div>
+                                                    <h5 class="font-bold text-red-800">Error de Seguridad</h5>
+                                                    <p class="mt-0.5">{{ passwordError }}</p>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Form -->
+                                        <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="flex flex-col gap-4">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <!-- New Password -->
+                                                <div class="flex flex-col gap-1.5">
+                                                    <label class="text-on-surface-variant text-xs font-semibold">Nueva Contraseña</label>
+                                                    <div class="relative">
+                                                        <input type="password" formControlName="newPassword" 
+                                                               class="w-full bg-surface-container border border-outline-variant hover:border-outline focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3.5 py-2.5 text-on-surface text-xs focus:outline-none transition-all"
+                                                               placeholder="Ingrese al menos 6 caracteres" />
+                                                        <span class="absolute right-3.5 top-3 text-on-surface-variant material-symbols-outlined text-[18px] notranslate" translate="no">vpn_key</span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Confirm Password -->
+                                                <div class="flex flex-col gap-1.5">
+                                                    <label class="text-on-surface-variant text-xs font-semibold">Confirmar Nueva Contraseña</label>
+                                                    <div class="relative">
+                                                        <input type="password" formControlName="confirmPassword" 
+                                                               class="w-full bg-surface-container border border-outline-variant hover:border-outline focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3.5 py-2.5 text-on-surface text-xs focus:outline-none transition-all"
+                                                               placeholder="Confirme la contraseña" />
+                                                        <span class="absolute right-3.5 top-3 text-on-surface-variant material-symbols-outlined text-[18px] notranslate" translate="no">lock</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Buttons -->
+                                            <div class="flex justify-end gap-3 mt-2">
+                                                <button type="button" (click)="showPasswordForm = false; passwordError = ''; passwordSuccess = ''; passwordForm.reset()"
+                                                        class="border border-outline-variant hover:bg-surface-container-low text-on-surface font-semibold py-2 px-4 rounded-lg transition-all text-xs cursor-pointer select-none">
+                                                    Cancelar
+                                                </button>
+                                                <button type="submit" [disabled]="passwordForm.invalid || isSavingPassword" 
+                                                        class="bg-primary hover:bg-primary/95 disabled:opacity-45 text-on-primary font-bold py-2 px-6 rounded-lg transition-all shadow-md flex items-center gap-2 cursor-pointer text-xs">
+                                                    @if (isSavingPassword) {
+                                                        <span class="material-symbols-outlined animate-spin text-[16px] notranslate" translate="no">progress_activity</span>
+                                                        Guardando...
+                                                    } @else {
+                                                        <span class="material-symbols-outlined text-[18px] notranslate" translate="no font-bold">lock_reset</span>
+                                                        Guardar Contraseña
+                                                    }
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        </main>
+    </div>
+</div>

@@ -1,0 +1,309 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    
+    <!-- Barra Lateral -->
+    <app-sidebar></app-sidebar>
+    
+    <!-- Contenido Principal -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+        <main class="p-4 lg:p-6 flex flex-col gap-4 w-full pb-16">
+            
+            <!-- ========================================================================= -->
+            <!-- VISTA 1: LISTADO MASIVO DE INCIDENTES (Sección 2.2) -->
+            <!-- ========================================================================= -->
+            @if (vistaActual === 'listado') {
+                
+                <!-- ENCABEZADO -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+                    <div>
+                        <h1 class="font-display-lg text-display-lg text-primary tracking-tight font-bold">Registros de Incidentes</h1>
+                        <p class="font-body-md text-body-md text-secondary mt-1">Gestione y revise todas las bitácoras y registros de eventos policiales.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="px-5 py-2.5 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface-variant font-bold text-xs flex items-center gap-2 shadow-sm relative pointer-events-none">
+                            <span class="material-symbols-outlined text-[18px]">assignment_late</span>
+                            Solicitudes
+                            <span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-error text-[10px] text-on-error font-bold animate-pulse">1</span>
+                        </button>
+                        <button (click)="cambiarVista('creacion')" class="px-5 py-2.5 rounded-xl bg-primary-container text-on-primary font-bold text-xs flex items-center gap-2 hover:bg-primary transition-colors shadow-md cursor-pointer">
+                            <span class="material-symbols-outlined text-[18px]">add</span>
+                            Registrar Nuevo Incidente
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 BENTO KPI CARDS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center justify-between gap-2 shadow-sm">
+                        <div>
+                            <span class="block font-label-caps text-[10.5px] text-on-surface-variant uppercase font-bold tracking-wider mb-1">Total Registrado</span>
+                            <span class="font-headline-md text-2xl text-primary font-black">{{ pagination.total | number }}</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary"><span class="material-symbols-outlined">folder_open</span></div>
+                    </div>
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center justify-between gap-2 shadow-sm">
+                        <div>
+                            <span class="block font-label-caps text-[10.5px] text-tertiary uppercase font-bold tracking-wider mb-1">Activos</span>
+                            <span class="font-headline-md text-2xl text-tertiary font-black">{{ activeCount }}</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-tertiary/10 border border-tertiary/20 flex items-center justify-center text-tertiary"><span class="material-symbols-outlined">pending_actions</span></div>
+                    </div>
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center justify-between gap-2 shadow-sm">
+                        <div>
+                            <span class="block font-label-caps text-[10.5px] text-secondary uppercase font-bold tracking-wider mb-1">Cerrados</span>
+                            <span class="font-headline-md text-2xl text-secondary font-black">{{ closedCount }}</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-secondary-container border border-secondary-container flex items-center justify-center text-secondary"><span class="material-symbols-outlined">check_circle</span></div>
+                    </div>
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center justify-between gap-2 shadow-sm">
+                        <div>
+                            <span class="block font-label-caps text-[10.5px] text-error uppercase font-bold tracking-wider mb-1">Predominante</span>
+                            <span class="font-headline-sm text-sm text-error font-bold block truncate max-w-[120px]">{{ predominantType }}</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-error-container border border-error-container flex items-center justify-center text-error"><span class="material-symbols-outlined">warning</span></div>
+                    </div>
+                </div>
+
+                <!-- TABLA Y FILTROS -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col mt-2">
+                    
+                    <!-- 5 FILTROS COMBOBOX -->
+                    <div class="p-4 border-b border-outline-variant bg-surface-container-lowest flex flex-col sm:flex-row gap-4 items-end">
+                        <div class="w-full sm:w-1/4">
+                            <label class="block font-label-caps text-[10.5px] font-bold text-on-surface-variant uppercase mb-1">Buscar</label>
+                            <input type="text" [(ngModel)]="filters.search" placeholder="ID o Ubicación..." class="w-full px-3 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-sm text-on-surface focus:border-primary focus:outline-none">
+                        </div>
+                        <div class="w-full sm:w-1/4">
+                            <label class="block font-label-caps text-[10.5px] font-bold text-on-surface-variant uppercase mb-1">Patrulla</label>
+                            <select [(ngModel)]="filters.patrol" class="w-full px-3 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-sm text-on-surface focus:border-primary focus:outline-none"><option>Todas las Patrullas</option></select>
+                        </div>
+                        <div class="w-full sm:w-1/6">
+                            <label class="block font-label-caps text-[10.5px] font-bold text-on-surface-variant uppercase mb-1">Estado</label>
+                            <select [(ngModel)]="filters.status" class="w-full px-3 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-sm text-on-surface focus:border-primary focus:outline-none"><option>Todos los Estados</option></select>
+                        </div>
+                        <div class="w-full sm:w-1/6">
+                            <label class="block font-label-caps text-[10.5px] font-bold text-on-surface-variant uppercase mb-1">Distrito</label>
+                            <select [(ngModel)]="filters.district" class="w-full px-3 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-sm text-on-surface focus:border-primary focus:outline-none"><option>Todos</option></select>
+                        </div>
+                        <div class="w-full sm:w-1/6">
+                            <label class="block font-label-caps text-[10.5px] font-bold text-on-surface-variant uppercase mb-1">Tipo Penal</label>
+                            <select [(ngModel)]="filters.type" class="w-full px-3 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-sm text-on-surface focus:border-primary focus:outline-none"><option>Todos</option></select>
+                        </div>
+                    </div>
+
+                    <!-- TABLA 7 COLUMNAS -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container-low border-b border-outline-variant">
+                                <tr>
+                                    <th class="py-3 px-3 font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">ID Caso</th>
+                                    <th class="py-3 px-3 font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Fecha y Hora</th>
+                                    <th class="py-3 px-3 font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Tipo Principal</th>
+                                    <th class="py-3 px-3 font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Ubicación (Block)</th>
+                                    <th class="py-3 px-3 font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Unidad / Patrulla</th>
+                                    <th class="py-3 px-3 font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Distrito</th>
+                                    <th class="py-3 px-3 font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wider text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant/50 bg-surface-container-lowest">
+                                @for (inc of incidents; track inc.case_number) {
+                                <tr (click)="cambiarVista('detalle', inc)" class="hover:bg-surface-variant transition-colors cursor-pointer group">
+                                    <td class="py-3 px-3 font-data-mono text-xs text-primary font-bold">#{{ inc.case_number }}</td>
+                                    <td class="py-3 px-3 leading-tight"><span class="font-body-sm text-xs font-semibold block">{{ inc.date | date:'d MMM y' }}</span><span class="text-[11px] text-secondary font-mono">{{ inc.date | date:'HH:mm' }}</span></td>
+                                    <td class="py-3 px-3 font-body-sm text-xs font-semibold">{{ inc.primary_type }}</td>
+                                    <td class="py-3 px-3 font-body-sm text-xs text-secondary">{{ inc.block }}</td>
+                                    <td class="py-3 px-3 font-body-sm text-xs flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-secondary">directions_car</span> {{ inc.patrol_assigned }}</td>
+                                    <td class="py-3 px-3 font-body-sm text-xs">Distrito {{ inc.district }}</td>
+                                    <td class="py-3 px-3 text-center">
+                                        @if (inc.arrest) {
+                                            <span class="inline-flex px-2 py-0.5 rounded-md font-label-caps text-[10px] font-bold uppercase bg-secondary-container text-on-secondary-container">Arresto Efectuado</span>
+                                        } @else {
+                                            <span class="inline-flex px-2 py-0.5 rounded-md font-label-caps text-[10px] font-bold uppercase bg-error-container text-on-error-container">En Investigación</span>
+                                        }
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <!-- ========================================================================= -->
+            <!-- VISTA 2: CREACIÓN DE NUEVO INCIDENTE (Sección 2.1) -->
+            <!-- ========================================================================= -->
+            @if (vistaActual === 'creacion') {
+                
+                <div class="flex items-center gap-3 mb-4">
+                    <button (click)="cambiarVista('listado')" class="p-2 bg-surface-container rounded-lg hover:bg-surface-variant transition-colors text-on-surface cursor-pointer">
+                        <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                    </button>
+                    <div>
+                        <h2 class="font-headline-md text-2xl text-primary font-bold">Registro de Nuevo Incidente</h2>
+                        <span class="font-data-mono text-sm text-secondary">Folio Asignado: {{ nuevoIncidente.case_number }}</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Formulario Izquierdo -->
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm space-y-4">
+                        <h3 class="font-label-caps text-on-surface-variant font-bold border-b border-outline-variant pb-2 mb-3">1. Datos Generales y Ubicación</h3>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block font-label-caps text-[10.5px] font-bold text-on-surface-variant mb-1">Fecha y Hora</label>
+                                <input type="datetime-local" [(ngModel)]="nuevoIncidente.date" class="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm">
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-[10.5px] font-bold text-on-surface-variant mb-1">Distrito Policial</label>
+                                <select [(ngModel)]="nuevoIncidente.district" class="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm">
+                                    <option value="001">Distrito 001 - Central</option>
+                                    <option value="002">Distrito 002 - Wentworth</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-label-caps text-[10.5px] font-bold text-on-surface-variant mb-1">Dirección (Block)</label>
+                            <input type="text" [(ngModel)]="nuevoIncidente.block" placeholder="Ej. 100 N STATE ST" class="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm">
+                        </div>
+
+                        <!-- MAPA PLACEHOLDER -->
+                        <div class="h-48 bg-surface-container rounded-xl border border-outline-variant flex flex-col items-center justify-center text-secondary relative overflow-hidden">
+                            <span class="material-symbols-outlined text-4xl mb-2">map</span>
+                            <span class="font-label-caps tracking-widest">Simulación Mapa Leaflet GPS</span>
+                            <div class="absolute bottom-2 right-2 bg-black/50 text-white text-[9px] px-2 py-1 rounded font-data-mono">LAT: 41.8781 | LNG: -87.6298</div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario Derecho -->
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm space-y-4 flex flex-col">
+                        <h3 class="font-label-caps text-on-surface-variant font-bold border-b border-outline-variant pb-2 mb-3">2. Clasificación Forense y Penal (IUCR)</h3>
+                        
+                        <div>
+                            <label class="block font-label-caps text-[10.5px] font-bold text-on-surface-variant mb-1 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">search</span> Buscador Código IUCR / FBI
+                            </label>
+                            <select [(ngModel)]="nuevoIncidente.iucr" class="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm font-data-mono font-bold text-primary">
+                                <option value="">Seleccione Código Penal...</option>
+                                @for (code of iucrCatalog; track code.code) {
+                                    <option [value]="code.code">{{ code.code }} - {{ code.name }}</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="flex items-center gap-6 mt-2 p-3 bg-surface rounded-lg border border-outline-variant">
+                            <label class="flex items-center gap-2 text-body-sm text-on-surface cursor-pointer">
+                                <input type="checkbox" [(ngModel)]="nuevoIncidente.arrest" class="w-4 h-4 accent-primary"> ¿Arresto Inmediato?
+                            </label>
+                            <label class="flex items-center gap-2 text-body-sm text-on-surface cursor-pointer">
+                                <input type="checkbox" [(ngModel)]="nuevoIncidente.domestic" class="w-4 h-4 accent-error"> ¿Violencia Doméstica?
+                            </label>
+                        </div>
+
+                        <div class="mt-auto pt-6 flex justify-end gap-3">
+                            <button (click)="cambiarVista('listado')" class="px-5 py-2.5 rounded-xl border border-outline-variant text-on-surface font-bold text-xs hover:bg-surface-container cursor-pointer">Cancelar</button>
+                            <button (click)="guardarIncidente()" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center gap-2 hover:bg-primary-container shadow-md cursor-pointer">
+                                <span class="material-symbols-outlined text-[18px]">save</span> Guardar Incidente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- ========================================================================= -->
+            <!-- VISTA 3: EXPEDIENTE DETALLADO FORENSE (Sección 2.3) -->
+            <!-- ========================================================================= -->
+            @if (vistaActual === 'detalle' && selectedIncident) {
+                
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <button (click)="cambiarVista('listado')" class="p-2 bg-surface-container rounded-lg hover:bg-surface-variant transition-colors text-on-surface cursor-pointer">
+                            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                        </button>
+                        <div>
+                            <h2 class="font-headline-md text-2xl text-primary font-bold flex items-center gap-2">
+                                Expediente Forense <span class="font-data-mono text-lg">#{{ selectedIncident.case_number }}</span>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface font-bold text-xs flex items-center gap-2 hover:bg-surface-variant cursor-pointer">
+                            <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> PDF
+                        </button>
+                        <button class="px-4 py-2 rounded-lg bg-primary text-on-primary font-bold text-xs flex items-center gap-2 hover:bg-primary-container cursor-pointer">
+                            <span class="material-symbols-outlined text-[16px]">lock</span> Cerrar Caso
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Resumen Izquierdo -->
+                    <div class="lg:col-span-1 space-y-4">
+                        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm relative overflow-hidden">
+                            <!-- Indicador de Severidad -->
+                            @if (severity === 'CRITICAL') {
+                                <div class="absolute top-0 right-0 px-3 py-1 bg-error-container text-on-error-container font-label-caps text-[10px] font-bold rounded-bl-lg">NIVEL: CRÍTICO</div>
+                            } @else if (severity === 'HIGH') {
+                                <div class="absolute top-0 right-0 px-3 py-1 bg-tertiary-container text-on-tertiary-container font-label-caps text-[10px] font-bold rounded-bl-lg">NIVEL: ALTO</div>
+                            } @else {
+                                <div class="absolute top-0 right-0 px-3 py-1 bg-secondary-container text-on-secondary-container font-label-caps text-[10px] font-bold rounded-bl-lg">NIVEL: MODERADO</div>
+                            }
+
+                            <div class="mt-4">
+                                <span class="font-label-caps text-on-surface-variant">Tipo Principal</span>
+                                <div class="font-headline-sm text-primary font-bold mb-3">{{ selectedIncident.primary_type }}</div>
+                                
+                                <span class="font-label-caps text-on-surface-variant">Ubicación Registrada</span>
+                                <div class="font-body-sm font-semibold mb-3">{{ selectedIncident.block }}</div>
+                                
+                                <span class="font-label-caps text-on-surface-variant">Oficial / Unidad Asignada</span>
+                                <div class="font-body-sm font-semibold mb-3 flex items-center gap-1 text-secondary"><span class="material-symbols-outlined text-[16px]">local_police</span> {{ selectedIncident.patrol_assigned }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Mapa -->
+                        <div class="h-40 bg-surface border border-outline-variant rounded-xl flex items-center justify-center text-secondary relative">
+                            <span class="material-symbols-outlined text-3xl">pin_drop</span>
+                            <div class="absolute bottom-2 bg-black/60 text-white px-2 py-1 text-[10px] font-data-mono rounded">Geocodificación Forense Activa</div>
+                        </div>
+                    </div>
+
+                    <!-- Bitácora Derecha -->
+                    <div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm flex flex-col h-[500px]">
+                        
+                        <div class="flex items-center gap-2 border-b border-outline-variant pb-3 mb-4">
+                            <span class="material-symbols-outlined text-primary">history</span>
+                            <h3 class="font-label-caps font-bold text-on-surface-variant uppercase text-sm">Bitácora de Seguimiento Inmutable</h3>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto space-y-4 pr-2">
+                            @for (log of timelineLogs; track log.date) {
+                                <div class="flex gap-4">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-3 h-3 rounded-full bg-primary ring-4 ring-primary-container"></div>
+                                        <div class="w-px h-full bg-outline-variant my-1"></div>
+                                    </div>
+                                    <div class="pb-4">
+                                        <div class="flex items-baseline gap-2">
+                                            <span class="font-data-mono text-xs text-primary font-bold">{{ log.date | date:'dd/MM/yyyy HH:mm' }}</span>
+                                            <span class="font-label-caps text-[9px] bg-surface-variant px-1.5 py-0.5 rounded text-on-surface-variant">{{ log.officer }}</span>
+                                        </div>
+                                        <p class="font-body-sm text-on-surface mt-1">{{ log.action }}</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-outline-variant flex gap-2">
+                            <input type="text" placeholder="Añadir nota forense al expediente..." class="flex-1 px-3 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-primary focus:outline-none">
+                            <button class="px-4 bg-primary text-on-primary rounded-lg hover:bg-primary-container font-bold text-xs">Guardar Nota</button>
+                        </div>
+                    </div>
+
+                </div>
+            }
+
+        </main>
+    </div>
+</div>

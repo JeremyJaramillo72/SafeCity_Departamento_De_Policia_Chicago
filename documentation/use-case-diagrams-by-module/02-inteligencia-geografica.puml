@@ -1,0 +1,65 @@
+@startuml Módulo 02 - Inteligencia Geográfica y Mapeo Táctico
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam actorStyle helio
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam package {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor White
+  BorderColor Black
+}
+
+title Módulo 02: Inteligencia Geográfica y Mapeo Táctico\n(Inteligencia Geográfica y Mapas Tácticos)
+
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "Sistema SafeCity Intelligence Ops" {
+
+  actor "Sheriff" as Commander
+  actor "Analista de Inteligencia\nCriminal" as Analyst
+
+  package "Módulo: Inteligencia Geográfica" as mod2 {
+    usecase "CU-E02: Visualizar Mapa Táctico\nde Calor de Delitos" as UC_E02
+    usecase "CU-T03: Filtrar Delitos\npor Calle en Mapa" as UC_T03
+    usecase "CU-T04: Alternar Capas\ny Filtros del Mapa" as UC_T04
+    usecase "CU-T11: Realizar Análisis\nPredictivo de Puntos Calientes" as UC_T11
+  }
+
+  Commander --> UC_E02
+  Analyst --> UC_T03
+  Analyst --> UC_T04
+  Analyst --> UC_T11
+
+  UC_T11 ..> UC_E02 : <<alimenta>>
+}
+
+note right of mod2
+  <b>Actor principal:</b> Analista de Inteligencia
+  <b>Objetivo:</b> Visualización geoespacial del crimen
+  <b>Técnicas:</b> KDE (Densidad de Kernel),
+  Clustering Espacial, GIS
+  <b>Tablas Fact:</b> Fact_Chicago_Crimes
+  <b>Tablas Dim:</b> Dim_Catalogo_Ubicacion,
+  Dim_Codigo_Penal
+end note
+
+@enduml

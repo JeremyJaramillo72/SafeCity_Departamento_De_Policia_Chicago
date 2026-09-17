@@ -1,0 +1,48 @@
+@startuml SafeCity - Diagrama de Componentes v2
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam component {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam interface {
+  BackgroundColor White
+  BorderColor Black
+}
+
+left to right direction
+title Diagrama de Componentes UML - SafeCity Intelligence Ops v2
+
+' === INTERFACES ===
+() "REST API" as I_REST
+() "Autenticación\nJWT" as I_AUTH
+() "DB Transaccional" as I_PB
+() "DB Analítica\n(OLAP)" as I_CH
+() "Cloudinary" as I_CLOUD
+
+' === COMPONENTES ===
+component "Angular 17+ SPA\n<<frontend>>" as angular
+component "Django REST\nFramework Backend\n<<backend>>" as django
+component "PocketBase\n<<transaccional>>" as pocketbase
+component "ClickHouse\n<<data warehouse>>" as clickhouse
+component "Apache Airflow\n<<ETL>>" as airflow
+
+' === CONEXIONES ===
+angular -- I_REST
+angular -- I_AUTH
+django -- I_REST
+django -- I_AUTH
+django -- I_PB
+django -- I_CH
+django -- I_CLOUD : <<evidencia>>
+pocketbase -- I_PB
+clickhouse -- I_CH
+
+' === ETL ===
+airflow ..> I_PB : <<extrae>>
+airflow ..> I_CH : <<carga>>
+@enduml

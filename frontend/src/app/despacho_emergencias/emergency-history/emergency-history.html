@@ -1,0 +1,375 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+    
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <!-- Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-4 w-full pb-16">
+            
+            <!-- Header & Action with Dynamic Subtitle -->
+            <div class="flex justify-between items-center gap-3 shrink-0">
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h2 class="font-display-lg text-xl lg:text-2xl font-bold text-primary flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[24px] text-primary notranslate" translate="no">history_toggle_off</span>
+                            Historial de Llamadas de Emergencia
+                        </h2>
+                        <button (click)="toggleKpis()" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/15 transition-all font-semibold text-xs cursor-pointer select-none" title="Alternar Resumen de Métricas">
+                            <span class="material-symbols-outlined text-[15px] transition-transform duration-300 notranslate" [ngClass]="{'rotate-180': !showKpis}" translate="no">expand_less</span>
+                            <span>{{ showKpis ? 'Ocultar Resumen' : 'Mostrar Resumen' }}</span>
+                        </button>
+                    </div>
+                    <p class="text-xs text-secondary font-medium mt-1 flex items-center gap-1.5">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary/60"></span>
+                        <span>Telemetría de llamadas, triaje de prioridades, bitácora de despacho y vinculación con casos judiciales.</span>
+                    </p>
+                </div>
+                <button (click)="clearFilters()" class="bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/80 font-bold py-2 px-3.5 rounded-lg flex items-center gap-2 transition-all shadow-xs cursor-pointer text-xs">
+                    <span class="material-symbols-outlined text-sm notranslate" translate="no">restart_alt</span>
+                    Restablecer Filtros
+                </button>
+            </div>
+
+            <!-- Modern Collapsible KPI Ribbon -->
+            <div class="collapsible-grid shrink-0" [ngClass]="{'expanded': showKpis}">
+                <div class="collapsible-content">
+                    <section class="grid grid-cols-2 sm:grid-cols-4 gap-3 pb-1 animate-fade-in">
+                        <!-- Total Calls -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex items-center gap-3 hover:border-primary/30 transition-all group">
+                            <div class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">call</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-[11px] font-bold text-secondary uppercase tracking-wider truncate">Llamadas Totales</span>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container inline-flex items-center shrink-0">REGISTRADAS</span>
+                                </div>
+                                <span class="text-lg font-black text-on-surface block leading-tight mt-0.5">{{ totalCallsCount }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Critical Calls -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex items-center gap-3 hover:border-error/30 transition-all group">
+                            <div class="w-9 h-9 rounded-lg bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[20px] notranslate text-error" translate="no">crisis_alert</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-[11px] font-bold text-secondary uppercase tracking-wider truncate">Llamadas Críticas</span>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full bg-error-container text-on-error-container inline-flex items-center shrink-0">URGENTE</span>
+                                </div>
+                                <span class="text-lg font-black text-on-surface block leading-tight mt-0.5">{{ criticalCallsCount }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Active Dispatches -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex items-center gap-3 hover:border-orange-500/30 transition-all group">
+                            <div class="w-9 h-9 rounded-lg bg-orange-500/10 text-orange-600 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all shrink-0">
+                                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">local_police</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-[11px] font-bold text-secondary uppercase tracking-wider truncate">Despachos</span>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-600 inline-flex items-center shrink-0">DESPACHADO</span>
+                                </div>
+                                <span class="text-lg font-black text-on-surface block leading-tight mt-0.5">{{ activeDispatchesCount }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Linked Cases -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex items-center gap-3 hover:border-purple-500/30 transition-all group">
+                            <div class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-all shrink-0">
+                                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">link</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-[11px] font-bold text-secondary uppercase tracking-wider truncate">Casos Vinculados</span>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-600 inline-flex items-center shrink-0">CASOS</span>
+                                </div>
+                                <span class="text-lg font-black text-on-surface block leading-tight mt-0.5">{{ linkedCasesCount }}</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Filters & Search Toolbar -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex flex-col gap-2.5 shadow-sm shrink-0">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 w-full">
+                    <!-- Date Start -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Fecha de Inicio</label>
+                        <input type="date" [(ngModel)]="filters.start_date" (ngModelChange)="loadHistory()" 
+                               class="bg-surface-container border border-outline-variant text-on-surface text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary">
+                    </div>
+                    <!-- Date End -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Fecha de Fin</label>
+                        <input type="date" [(ngModel)]="filters.end_date" (ngModelChange)="loadHistory()" 
+                               class="bg-surface-container border border-outline-variant text-on-surface text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary">
+                    </div>
+                    <!-- Priority -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Prioridad</label>
+                        <select [(ngModel)]="filters.priority" (ngModelChange)="loadHistory()" 
+                                class="bg-surface-container border border-outline-variant text-on-surface text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary cursor-pointer">
+                            <option value="all">Todas las Prioridades</option>
+                            <option value="critical">Crítica</option>
+                            <option value="high">Alta</option>
+                            <option value="medium">Media</option>
+                            <option value="low">Baja</option>
+                        </select>
+                    </div>
+                    <!-- Status -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Estado</label>
+                        <select [(ngModel)]="filters.status" (ngModelChange)="loadHistory()" 
+                                class="bg-surface-container border border-outline-variant text-on-surface text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary cursor-pointer">
+                            <option value="all">Todos los Estados</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="despachado">Despachado</option>
+                            <option value="en_sitio">En Sitio</option>
+                            <option value="resuelto">Resuelto</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Text Search -->
+                <div class="relative w-full">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+                    <input type="text" [(ngModel)]="filters.search" (ngModelChange)="loadHistory()" 
+                           class="pl-9 pr-4 py-1.5 bg-surface-container border border-outline-variant rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary w-full transition-all" 
+                           placeholder="Buscar por teléfono, descripción o dirección..."/>
+                </div>
+            </div>
+
+            <!-- High-Density Calls Grid / Table -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-3.5 lg:p-4 flex-1 min-h-0 flex flex-col animate-fade-in">
+                @if (isLoading) {
+                    <div class="flex-1 flex flex-col items-center justify-center p-8 text-secondary">
+                        <span class="material-symbols-outlined text-3xl animate-spin mb-2 text-primary">sync</span>
+                        <p class="text-xs font-semibold">Cargando historial de llamadas...</p>
+                    </div>
+                } @else if (calls.length === 0) {
+                    <div class="flex-1 flex flex-col items-center justify-center p-8 text-secondary">
+                        <span class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant">call_end</span>
+                        <p class="text-xs font-bold text-on-surface">No se encontraron llamadas de emergencia</p>
+                        <p class="text-[11px] text-secondary mt-1">Intente ajustar el rango de fechas o los términos de búsqueda.</p>
+                    </div>
+                } @else {
+                    <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                <tr class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider select-none">
+                                    <th (click)="sortCalls('id_llamada')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            ID / Prioridad
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'id_llamada' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortCalls('fecha_hora_llamada')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Fecha y Hora
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'fecha_hora_llamada' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+
+                                    <th (click)="sortCalls('direccion')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Dirección
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'direccion' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortCalls('descripcion_inicial')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Descripción Inicial
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'descripcion_inicial' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+
+                                    <th (click)="sortCalls('estado')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Estado
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'estado' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortCalls('case_number')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Caso Vinculado
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'case_number' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th class="py-2.5 px-3.5 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant/40 text-xs">
+                                @for (call of calls; track call.id_llamada) {
+                                    <tr class="hover:bg-surface-bright transition-colors group">
+                                        <!-- ID / Priority -->
+                                        <td class="py-2.5 px-3.5">
+                                             <div class="flex items-center gap-2">
+                                                 <span class="font-bold font-data-mono text-xs text-primary">#{{ call.id_llamada }}</span>
+                                                 <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider" [ngClass]="getPriorityClass(call.nivel_prioridad)">
+                                                     {{ call.nivel_prioridad === 'CRITICAL' ? 'CRÍTICO' : 
+                                                        call.nivel_prioridad === 'HIGH' ? 'ALTO' : 
+                                                        call.nivel_prioridad === 'MEDIUM' ? 'MEDIO' : 
+                                                        call.nivel_prioridad === 'LOW' ? 'BAJO' : call.nivel_prioridad }}
+                                                 </span>
+                                             </div>
+                                        </td>
+                                        <!-- Date / Time -->
+                                        <td class="py-2.5 px-3.5 font-data-mono text-on-surface text-xs">
+                                            {{ call.fecha_hora_llamada | date:'d MMM, y HH:mm:ss' }}
+                                        </td>
+
+                                        <!-- Address -->
+                                        <td class="py-2.5 px-3.5 text-xs text-secondary max-w-[200px] truncate" [title]="call.direccion">
+                                            {{ call.direccion }}
+                                        </td>
+                                        <!-- Initial Description -->
+                                        <td class="py-2.5 px-3.5 text-xs text-on-surface font-medium max-w-[280px] truncate" [title]="call.descripcion_inicial">
+                                            {{ call.descripcion_inicial }}
+                                        </td>
+
+                                        <!-- Status -->
+                                        <td class="py-2.5 px-3.5">
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase border" [ngClass]="getStatusClass(call.estado)">
+                                                {{ translateStatus(call.estado) }}
+                                            </span>
+                                        </td>
+                                        <!-- Linked Incident -->
+                                        <td class="py-2.5 px-3.5">
+                                            @if (call.case_number) {
+                                                <div class="flex items-center gap-1.5">
+                                                    <a [routerLink]="['/incidents', call.case_number]" 
+                                                       class="text-primary hover:underline font-bold text-xs flex items-center gap-1">
+                                                        <span class="material-symbols-outlined text-[15px]">feed</span>
+                                                        {{ call.case_number }}
+                                                    </a>
+                                                    <a [routerLink]="['/incidents', call.case_number, 'edit']"
+                                                       class="text-secondary hover:text-primary transition-colors flex items-center ml-1"
+                                                       title="Editar Caso">
+                                                        <span class="material-symbols-outlined text-[15px]">edit</span>
+                                                    </a>
+                                                </div>
+                                            } @else {
+                                                <span class="text-secondary text-[11px] italic">No Vinculado</span>
+                                            }
+                                        </td>
+                                        <!-- Actions -->
+                                        <td class="py-2.5 px-3.5 text-right">
+                                            <div class="flex items-center justify-end">
+                                                <button (click)="viewCallDetails(call)" class="w-7.5 h-7.5 rounded-full border border-outline-variant text-outline hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-xs bg-surface-container-lowest cursor-pointer" title="Ver Detalles">
+                                                    <span class="material-symbols-outlined text-[15px]">visibility</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Compact Footer -->
+                    <div class="border-t border-outline-variant/60 pt-2.5 mt-2.5 flex items-center justify-between shrink-0 text-xs text-on-surface-variant">
+                        <div>
+                            Mostrando
+                            <span class="font-bold text-on-surface">{{ calls.length }}</span>
+                            registros de emergencia
+                        </div>
+                    </div>
+                }
+            </div>
+        </main>
+    </div>
+
+    <!-- Call Details Modal -->
+    @if (selectedCallDetails) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant w-full max-w-lg overflow-hidden flex flex-col">
+                <div class="flex justify-between items-center p-4 border-b border-outline-variant bg-surface-container-low">
+                    <h3 class="text-base font-bold text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">visibility</span>
+                        Detalles de la Llamada #{{ selectedCallDetails.id_llamada }}
+                    </h3>
+                    <button (click)="closeCallDetails()" class="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer w-7 h-7 rounded-full flex items-center justify-center hover:bg-surface-container-high">
+                        <span class="material-symbols-outlined text-[18px] notranslate" translate="no">close</span>
+                    </button>
+                </div>
+                
+                <div class="p-5 overflow-y-auto max-h-[70vh] flex flex-col gap-3.5 text-xs">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Prioridad</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide w-max" [ngClass]="getPriorityClass(selectedCallDetails.nivel_prioridad)">
+                                {{ selectedCallDetails.nivel_prioridad === 'CRITICAL' ? 'CRÍTICO' : 
+                                   selectedCallDetails.nivel_prioridad === 'HIGH' ? 'ALTO' : 
+                                   selectedCallDetails.nivel_prioridad === 'MEDIUM' ? 'MEDIO' : 
+                                   selectedCallDetails.nivel_prioridad === 'LOW' ? 'BAJO' : selectedCallDetails.nivel_prioridad }}
+                            </span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Estado</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide w-max" [ngClass]="getStatusClass(selectedCallDetails.estado)">
+                                {{ translateStatus(selectedCallDetails.estado) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Fecha y Hora</span>
+                            <span class="font-semibold font-data-mono text-on-surface">{{ selectedCallDetails.fecha_hora_llamada | date:'d MMM, y HH:mm:ss' }}</span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Teléfono del Informante</span>
+                            <span class="font-semibold font-data-mono text-on-surface">{{ selectedCallDetails.telefono_origen }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Ubicación</span>
+                        <span class="font-semibold text-on-surface">{{ selectedCallDetails.direccion }}</span>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Descripción Completa</span>
+                        <div class="bg-surface-container p-3 rounded-lg border border-outline-variant/60 text-xs text-on-surface whitespace-pre-wrap leading-relaxed">
+                            {{ selectedCallDetails.descripcion_inicial }}
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Unidad Despachada</span>
+                        @if (selectedCallDetails.id_vehiculo > 0) {
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[18px] notranslate" translate="no">local_police</span>
+                                <span class="font-semibold text-on-surface">{{ selectedCallDetails.vehicle_plate }} (Sector: {{ selectedCallDetails.vehicle_beat }})</span>
+                            </div>
+                        } @else {
+                            <span class="text-secondary italic">Ninguna</span>
+                        }
+                    </div>
+                </div>
+                
+                <div class="p-3.5 border-t border-outline-variant bg-surface-container-low flex justify-end">
+                    <button (click)="closeCallDetails()" class="bg-primary hover:bg-primary/90 text-on-primary font-bold py-1.5 px-5 rounded-lg transition-colors cursor-pointer text-xs">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>

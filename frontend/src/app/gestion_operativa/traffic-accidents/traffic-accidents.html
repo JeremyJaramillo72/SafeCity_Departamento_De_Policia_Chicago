@@ -1,0 +1,780 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full relative">
+  <app-sidebar></app-sidebar>
+
+  <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+    <main class="p-4 lg:p-6 flex flex-col gap-4 w-full pb-16" *ngIf="!showForm">
+        
+        <!-- Header & Action with Dynamic Subtitle -->
+        <div class="flex justify-between items-center gap-3 shrink-0">
+            <div>
+                <div class="flex items-center gap-2.5">
+                    <h2 class="font-display-lg text-xl lg:text-2xl font-bold text-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[24px] text-primary notranslate" translate="no">car_crash</span>
+                        Accidentes de Tránsito
+                    </h2>
+                    <button (click)="toggleKpis()" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/15 transition-all font-semibold text-xs cursor-pointer select-none" title="Alternar Resumen KPI">
+                        <span class="material-symbols-outlined text-[15px] transition-transform duration-300 notranslate" [ngClass]="{'rotate-180': !showKpis}" translate="no">expand_less</span>
+                        <span>{{ showKpis ? 'Ocultar Resumen' : 'Mostrar Resumen' }}</span>
+                    </button>
+                </div>
+                <p class="text-xs text-secondary font-medium mt-1 flex items-center gap-1.5">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary/60"></span>
+                    <span>Informes de colisión, telemetría de víctimas, triaje de gravedad y evaluación de daños vehiculares.</span>
+                </p>
+            </div>
+            <button (click)="openNewForm()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-2 px-3.5 rounded-lg flex items-center gap-2 transition-all shadow-xs cursor-pointer text-xs">
+                <span class="material-symbols-outlined text-sm font-black notranslate" translate="no">add</span>
+                Registrar Accidente
+            </button>
+        </div>
+
+        <!-- Modern Collapsible KPI Ribbon -->
+        <div class="collapsible-grid shrink-0" [ngClass]="{'expanded': showKpis}">
+            <div class="collapsible-content">
+                <section class="grid grid-cols-2 sm:grid-cols-4 gap-3 pb-1 animate-fade-in">
+                    <!-- Total Collisions -->
+                    <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex items-center gap-3 hover:border-primary/30 transition-all group">
+                        <div class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">car_crash</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-[11px] font-bold text-secondary uppercase tracking-wider truncate">Total Colisiones</span>
+                                <span class="font-bold text-[9px] px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container inline-flex items-center shrink-0">REGISTRADO</span>
+                            </div>
+                            <span class="text-lg font-black text-on-surface block leading-tight mt-0.5">{{ totalAccidentsCount }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Injuries Reported -->
+                    <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex items-center gap-3 hover:border-orange-500/30 transition-all group">
+                        <div class="w-9 h-9 rounded-lg bg-orange-500/10 text-orange-600 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all shrink-0">
+                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">medical_services</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-[11px] font-bold text-secondary uppercase tracking-wider truncate">Heridos</span>
+                                <span class="font-bold text-[9px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-600 inline-flex items-center shrink-0">MÉDICO</span>
+                            </div>
+                            <span class="text-lg font-black text-on-surface block leading-tight mt-0.5">{{ injuriesAccidentsCount }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Fatal Incidents -->
+                    <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex items-center gap-3 hover:border-error/30 transition-all group">
+                        <div class="w-9 h-9 rounded-lg bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[20px] notranslate text-error" translate="no">dangerous</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-[11px] font-bold text-secondary uppercase tracking-wider truncate">Fallecidos</span>
+                                <span class="font-bold text-[9px] px-2 py-0.5 rounded-full bg-error-container text-on-error-container inline-flex items-center shrink-0">CRÍTICO</span>
+                            </div>
+                            <span class="text-lg font-black text-on-surface block leading-tight mt-0.5">{{ fatalAccidentsCount }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Vehicles Impacted -->
+                    <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex items-center gap-3 hover:border-secondary/30 transition-all group">
+                        <div class="w-9 h-9 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center group-hover:bg-secondary group-hover:text-on-secondary transition-all shrink-0">
+                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">directions_car</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-[11px] font-bold text-secondary uppercase tracking-wider truncate">Vehículos Impactados</span>
+                                <span class="font-bold text-[9px] px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container inline-flex items-center shrink-0">IMPACTADOS</span>
+                            </div>
+                            <span class="text-lg font-black text-on-surface block leading-tight mt-0.5">{{ totalVehiclesInvolved }}</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Success/Error Feedback Banners -->
+        <div *ngIf="success" class="bg-success-container border border-success/30 text-on-success-container px-3.5 py-2 rounded-lg flex items-center gap-2 text-xs font-semibold shrink-0 animate-fade-in">
+            <span class="material-symbols-outlined text-[16px] text-success notranslate" translate="no">check_circle</span>
+            {{ success }}
+        </div>
+        <div *ngIf="error" class="bg-error-container border border-error/30 text-on-error-container px-3.5 py-2 rounded-lg flex items-center gap-2 text-xs font-semibold shrink-0 animate-fade-in">
+            <span class="material-symbols-outlined text-[16px] text-error notranslate" translate="no">error</span>
+            {{ error }}
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 flex flex-wrap lg:flex-nowrap gap-3 items-end shadow-sm shrink-0">
+            <div class="w-full lg:w-1/3 min-w-[200px]">
+                <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Ubicación</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs notranslate" translate="no">location_on</span>
+                  <input [(ngModel)]="filters.search_location" (ngModelChange)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-1.5 pl-8 pr-3 text-xs focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-container" placeholder="Buscar por ubicación..." type="text"/>
+                </div>
+            </div>
+            <div class="w-full lg:w-2/3 flex flex-wrap sm:flex-nowrap gap-2.5">
+                <div class="flex-1 min-w-[140px]">
+                    <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Gravedad</label>
+                    <select [(ngModel)]="filters.gravedad" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-1.5 px-3 text-xs focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-container cursor-pointer">
+                        <option value="All">Todas las Gravedades</option>
+                        <option value="Minor">Leve</option>
+                        <option value="Moderate">Moderado</option>
+                        <option value="Severe">Grave</option>
+                        <option value="Fatal">Fatal</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[120px]">
+                    <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Rango de Fechas</label>
+                    <select [(ngModel)]="filters.date_range" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-1.5 px-3 text-xs focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-container cursor-pointer">
+                        <option value="All Time">Todo el Tiempo</option>
+                        <option value="24h">Últimas 24 Horas</option>
+                        <option value="7d">Últimos 7 Días</option>
+                        <option value="30d">Últimos 30 Días</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- High-Density Table Card -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-3.5 lg:p-4 flex-1 min-h-0 animate-fade-in">
+            <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
+                    <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                        <tr class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+                            <th (click)="sortAccidents('id_accidente')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                <div class="flex items-center gap-1">
+                                    ID Accidente
+                                    <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                        {{ sortField === 'id_accidente' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th (click)="sortAccidents('fecha_hora')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                <div class="flex items-center gap-1">
+                                    Fecha/Hora
+                                    <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                        {{ sortField === 'fecha_hora' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th (click)="sortAccidents('ubicacion')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                <div class="flex items-center gap-1">
+                                    Ubicación
+                                    <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                        {{ sortField === 'ubicacion' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th (click)="sortAccidents('gravedad')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                <div class="flex items-center gap-1">
+                                    Gravedad
+                                    <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                        {{ sortField === 'gravedad' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th (click)="sortAccidents('vehiculos_involucrados')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none text-center">
+                                <div class="flex items-center gap-1 justify-center">
+                                    Vehículos
+                                    <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                        {{ sortField === 'vehiculos_involucrados' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th (click)="sortAccidents('heridos')" class="py-2.5 px-3.5 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none text-center">
+                                <div class="flex items-center gap-1 justify-center">
+                                    Víctimas (Heridos / Fallecidos)
+                                    <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                        {{ sortField === 'heridos' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                    </span>
+                                </div>
+                            </th>
+                            <th class="py-2.5 px-3.5 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/40 text-xs">
+                        <tr *ngFor="let acc of filteredAccidents" class="hover:bg-surface-bright transition-colors group">
+                            <td class="py-2.5 px-3.5 font-data-mono text-primary font-bold text-xs">#{{ acc.id_accidente | slice:0:8 }}</td>
+                            <td class="py-2.5 px-3.5 font-body-sm text-on-surface">{{ acc.fecha_hora | date:'MMM d, y HH:mm' }}</td>
+                            <td class="py-2.5 px-3.5 font-body-sm text-secondary truncate max-w-[220px]" [title]="acc.ubicacion">{{ acc.ubicacion }}</td>
+                            <td class="py-2.5 px-3.5">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                                      [ngClass]="{
+                                          'bg-secondary-container text-on-secondary-container border-secondary/20': acc.gravedad === 'Minor' || acc.gravedad === 'Leve',
+                                          'bg-primary-container text-on-primary-container border-primary/20': acc.gravedad === 'Moderate' || acc.gravedad === 'Moderado',
+                                          'bg-orange-500/10 text-orange-600 border-orange-500/20': acc.gravedad === 'Severe' || acc.gravedad === 'Grave',
+                                          'bg-error-container text-on-error-container border-error/20 font-black': acc.gravedad === 'Fatal' || (acc.fallecidos && acc.fallecidos > 0)
+                                      }">
+                                    {{ acc.gravedad === 'Leve' ? 'Leve' : (acc.gravedad === 'Moderado' ? 'Moderado' : (acc.gravedad === 'Grave' ? 'Grave' : acc.gravedad)) }}
+                                </span>
+                            </td>
+                            <td class="py-2.5 px-3.5 font-body-sm text-on-surface font-bold text-center">{{ acc.vehiculos_involucrados }}</td>
+                            <td class="py-2.5 px-3.5 font-body-sm text-center">
+                                <span class="text-orange-600 font-bold">{{ acc.heridos || 0 }}</span>
+                                <span class="text-secondary mx-1">/</span>
+                                <span class="font-bold" [ngClass]="acc.fallecidos > 0 ? 'text-error' : 'text-on-surface'">{{ acc.fallecidos || 0 }}</span>
+                            </td>
+                            <td class="py-2.5 px-3.5 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <button (click)="viewAccident(acc)" class="w-7.5 h-7.5 rounded-full border border-outline-variant text-outline hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-xs bg-surface-container-lowest cursor-pointer" title="Ver detalles">
+                                        <span class="material-symbols-outlined text-[15px] notranslate" translate="no">visibility</span>
+                                    </button>
+                                    <button (click)="editAccident(acc)" class="w-7.5 h-7.5 rounded-full border border-outline-variant text-outline hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-xs bg-surface-container-lowest cursor-pointer" title="Editar">
+                                        <span class="material-symbols-outlined text-[15px] notranslate" translate="no">edit</span>
+                                    </button>
+                                    <button (click)="deleteAccident(acc.id_accidente, $event)" class="w-7.5 h-7.5 rounded-full border border-error/30 text-error/70 hover:text-error hover:bg-error/10 hover:border-error transition-colors flex items-center justify-center shadow-xs bg-surface-container-lowest cursor-pointer" title="Eliminar">
+                                        <span class="material-symbols-outlined text-[15px] notranslate" translate="no">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="filteredAccidents.length === 0">
+                            <td colspan="7" class="py-6 text-center text-secondary font-body-md text-xs">No se encontraron registros de accidentes de tránsito.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Compact Pagination Footer -->
+            <div class="border-t border-outline-variant/60 pt-2.5 mt-2.5 flex items-center justify-between shrink-0 text-xs text-on-surface-variant">
+                <div>
+                    Mostrando
+                    <span class="font-bold text-on-surface">{{ filteredAccidents.length }}</span>
+                    resultados
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FORM VIEW -->
+    <main class="p-lg pb-16 bg-surface" *ngIf="showForm">
+        <div class="max-w-[1240px] w-full mx-auto flex flex-col gap-lg animate-fade-in">
+            
+            <!-- Page Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-outline-variant pb-md">
+                <div>
+                    <div class="flex items-center gap-2.5 mb-1.5">
+                        <span class="material-symbols-outlined text-primary text-[28px] notranslate" translate="no">post_add</span>
+                        <h1 class="font-display-lg text-display-lg text-on-surface font-extrabold tracking-tight">
+                            {{ editingId ? 'Actualizar Informe de Accidente' : 'Reportar Accidente de Tránsito' }}
+                        </h1>
+                    </div>
+                    <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Complete todos los campos obligatorios marcados con * para ingresar el informe operativo.
+                    </p>
+                </div>
+                <div class="flex gap-3 mt-4 md:mt-0 shrink-0">
+                    <button type="button" (click)="closeForm()"
+                        class="px-4 py-2.5 rounded-lg border border-outline text-on-surface font-body-sm font-semibold hover:bg-surface-container-low transition-colors cursor-pointer text-xs">
+                        Cancelar
+                    </button>
+                    <button type="button" (click)="submitAccident()" [disabled]="loading"
+                        class="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-on-primary font-body-sm font-bold shadow-md transition-colors flex items-center gap-2 disabled:opacity-60 min-w-[150px] justify-center cursor-pointer text-xs">
+                        <span class="material-symbols-outlined text-sm notranslate" translate="no">save</span>
+                        Guardar Informe
+                    </button>
+                </div>
+            </div>
+
+            <div *ngIf="error" class="flex items-center gap-3 bg-error-container border border-error/30 text-on-error-container rounded-xl px-md py-3.5 shadow-sm animate-fade-in">
+                <span class="material-symbols-outlined text-xl notranslate" translate="no">error</span>
+                <span class="font-body-md font-bold">{{ error }}</span>
+            </div>
+            <div *ngIf="success" class="flex items-center gap-3 bg-secondary-container border border-secondary-container/50 text-on-secondary-container rounded-xl px-md py-3.5 shadow-sm animate-fade-in">
+                <span class="material-symbols-outlined text-xl notranslate" translate="no">check_circle</span>
+                <span class="font-body-md font-semibold">{{ success }}</span>
+            </div>
+
+            <!-- Form Layout -->
+            <form (ngSubmit)="submitAccident()" class="grid grid-cols-12 gap-lg pb-xl">
+                
+                <!-- LEFT: Form Core (8 Columns) -->
+                <div class="col-span-12 lg:col-span-8 flex flex-col gap-lg">
+                    
+                    <!-- CARD 1: Detalles de Location y Severity -->
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col">
+                        <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low rounded-t-lg flex items-center justify-between select-none">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">location_on</span>
+                                <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Detalles de Ubicación</h2>
+                            </div>
+                            <button type="button" (click)="openMapModal()"
+                                class="px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary/5 transition-all flex items-center gap-1.5 cursor-pointer text-xs font-bold shrink-0">
+                                <span class="material-symbols-outlined text-sm notranslate" translate="no">map</span>
+                                Ubicar en el Mapa
+                            </button>
+                        </div>
+                        <div class="p-lg grid grid-cols-2 gap-y-4 gap-x-md">
+                            
+                            <div class="col-span-2 flex flex-col gap-1.5">
+                                <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Ubicación Exacta *</label>
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg pointer-events-none notranslate" translate="no">location_on</span>
+                                    <input [(ngModel)]="newAccident.ubicacion" name="ubicacion" placeholder="Dirección confirmada (seleccione en el mapa)" type="text" readonly
+                                        class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright disabled:opacity-75 disabled:cursor-not-allowed"/>
+                                </div>
+                            </div>
+
+                            <div class="col-span-2 sm:col-span-1 flex flex-col gap-1.5">
+                                <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Gravedad *</label>
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg pointer-events-none notranslate" translate="no">warning</span>
+                                    <select [(ngModel)]="newAccident.gravedad" name="gravedad" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+                                        <option value="Minor">Leve (Solo daños materiales)</option>
+                                        <option value="Moderate">Moderado (Heridos leves)</option>
+                                        <option value="Severe">Grave (Heridos graves o fallecidos)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-span-2 flex flex-col gap-1.5 mt-2">
+                                <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Causa Probable</label>
+                                <div class="relative flex items-start border border-outline-variant rounded-lg p-3 bg-surface-bright">
+                                    <span class="material-symbols-outlined text-on-surface-variant mr-2 mt-0.5 notranslate" translate="no">description</span>
+                                    <textarea [(ngModel)]="newAccident.causa_probable" name="causa_probable" rows="3" placeholder="Breve descripción de los hechos..." class="w-full bg-transparent outline-none font-body-sm text-body-sm text-on-surface resize-none focus:ring-0 p-0 border-none"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Photographic evidence -->
+                            <div class="col-span-2 flex flex-col gap-1.5 mt-2">
+                                <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Evidencia Fotográfica (Cloudinary)</label>
+                                <div class="flex flex-wrap items-center gap-4 border border-outline-variant rounded-lg p-3 bg-surface-bright">
+                                    <label class="flex items-center gap-2 px-3 py-1.5 border border-primary/20 rounded-lg bg-primary/5 hover:bg-primary/10 text-primary transition-colors cursor-pointer text-xs font-bold select-none">
+                                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">upload</span>
+                                        {{ isUploading ? 'Subiendo...' : 'Adjuntar Foto' }}
+                                        <input type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden" [disabled]="isUploading">
+                                    </label>
+                                    <div *ngIf="newAccident.evidencia_url" class="flex items-center gap-2">
+                                        <a [href]="newAccident.evidencia_url" target="_blank" class="text-xs text-primary font-bold hover:underline flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">image</span>
+                                            Ver foto adjunta
+                                        </a>
+                                        <button type="button" (click)="newAccident.evidencia_url = ''" class="text-error font-bold text-xs hover:underline cursor-pointer">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                    <div *ngIf="!newAccident.evidencia_url && !isUploading" class="text-xs text-slate-400 italic">
+                                        No hay imagen de evidencia registrada
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- CARD 2: Vehicles Involucrados -->
+                    <div class="premium-panel-card flex flex-col">
+                        <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low rounded-t-lg flex items-center justify-between select-none">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">directions_car</span>
+                                <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Vehículos Involucrados ({{newAccident.vehiculos_involucrados}})</h2>
+                            </div>
+                            <button type="button" (click)="addVehiculo()"
+                                class="px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary/5 transition-all flex items-center gap-1.5 cursor-pointer text-xs font-bold shrink-0">
+                                <span class="material-symbols-outlined text-sm notranslate" translate="no">add</span>
+                                Agregar Vehículo
+                            </button>
+                        </div>
+                        <div class="p-lg flex flex-col gap-4 bg-surface-container-lowest">
+                
+                            <div *ngFor="let veh of newAccident.vehiculos_detalle; let i = index" class="border border-outline-variant rounded-xl p-4 relative group bg-surface-bright">
+                                <button type="button" (click)="removeVehiculo(i)" class="absolute top-2 right-2 text-error hover:bg-error-container p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Placa</label>
+                                        <input type="text" [(ngModel)]="veh.placa" name="veh_placa_{{i}}" placeholder="ABC-1234" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Marca / Modelo</label>
+                                        <input type="text" [(ngModel)]="veh.marca" name="veh_marca_{{i}}" placeholder="Toyota Yaris" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Color</label>
+                                        <input type="text" [(ngModel)]="veh.color" name="veh_color_{{i}}" placeholder="Rojo" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Cédula Conductor</label>
+                                        <input type="text" [(ngModel)]="veh.identificacion_conductor" name="veh_id_{{i}}" placeholder="1712345678" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Nombre Conductor</label>
+                                        <input type="text" [(ngModel)]="veh.conductor" name="veh_conductor_{{i}}" placeholder="Juan Pérez" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="newAccident.vehiculos_detalle.length === 0" class="text-center py-6 text-on-surface-variant italic bg-surface-container-low rounded-lg border border-dashed border-outline-variant text-sm">
+                                No se han agregado vehículos. Registre al menos uno.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 3: Injured and Victims -->
+                    <div class="premium-panel-card flex flex-col">
+                        <div class="px-md py-3 border-b border-error/20 bg-error/5 rounded-t-lg flex items-center justify-between select-none">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-error text-[20px] notranslate" translate="no">local_hospital</span>
+                                <h2 class="font-headline-sm text-headline-sm text-error font-bold">Personas Heridas / Víctimas ({{newAccident.heridos}})</h2>
+                            </div>
+                            <button type="button" (click)="addHerido()"
+                                class="px-3 py-1.5 rounded-lg border border-error text-error hover:bg-error/10 transition-all flex items-center gap-1.5 cursor-pointer text-xs font-bold shrink-0">
+                                <span class="material-symbols-outlined text-sm notranslate" translate="no">add</span>
+                                Agregar Víctima
+                            </button>
+                        </div>
+                        <div class="p-lg flex flex-col gap-4 bg-surface-container-lowest">
+                            <div *ngFor="let herido of newAccident.heridos_detalle; let i = index" class="border border-error/30 bg-error/5 rounded-xl p-4 relative group">
+                                <button type="button" (click)="removeHerido(i)" class="absolute top-2 right-2 text-error hover:bg-error-container p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-start mt-2">
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Nombre (o Desconocido)</label>
+                                        <input type="text" [(ngModel)]="herido.nombre" name="herido_nombre_{{i}}" placeholder="NN" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Identificación</label>
+                                        <input type="text" [(ngModel)]="herido.identificacion" name="herido_identificacion_{{i}}" placeholder="1712345678" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Edad</label>
+                                        <input type="number" [(ngModel)]="herido.edad" name="herido_edad_{{i}}" placeholder="35" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Género</label>
+                                        <select [(ngModel)]="herido.genero" name="herido_genero_{{i}}" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                            <option value="">Seleccione</option>
+                                            <option value="Male">Masculino</option>
+                                            <option value="Female">Femenino</option>
+                                            <option value="Unknown">Desconocido</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="block font-label-caps text-xs font-bold text-on-surface-variant mb-1">Condición Médica</label>
+                                        <select [(ngModel)]="herido.condicion" (change)="updateVictimCounters()" name="herido_condicion_{{i}}" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                            <option value="Minor">Leve</option>
+                                            <option value="Moderate">Moderado</option>
+                                            <option value="Critical">Crítico</option>
+                                            <option value="Deceased">Fallecido</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center mt-3 border-t border-error/10 pt-3">
+                                    <div class="flex items-center gap-2 col-span-1">
+                                        <input type="checkbox" [(ngModel)]="herido.trasladado_hospital" name="herido_hospital_{{i}}" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary accent-primary cursor-pointer">
+                                        <label class="text-sm font-medium text-on-surface cursor-pointer select-none">¿Trasladado a Hospital?</label>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5 col-span-1 md:col-span-4" *ngIf="herido.trasladado_hospital">
+                                        <label class="block font-label-caps text-[10px] font-bold text-on-surface-variant mb-0.5">Ubicación / Centro de Traslado</label>
+                                        <input type="text" [(ngModel)]="herido.ubicacion_traslado" name="herido_ubicacion_traslado_{{i}}" placeholder="Ej: Hospital de Especialidades Eugenio Espejo" class="w-full border border-outline-variant rounded-lg py-1.5 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright">
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="newAccident.heridos_detalle.length === 0" class="text-center py-6 text-on-surface-variant italic bg-surface-container-low rounded-lg border border-dashed border-outline-variant text-sm">
+                                No se han registrado personas heridas.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Resumen y Actions (4 Columns) -->
+                <div class="col-span-12 lg:col-span-4 flex flex-col gap-lg">
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm sticky top-[80px]">
+                        <div class="p-lg flex flex-col gap-4">
+                            <h3 class="font-headline-sm font-bold text-primary border-b border-outline-variant pb-2">Resumen Operativo</h3>
+                            
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-on-surface-variant">Gravedad:</span>
+                                <span class="font-bold font-data-mono" [ngClass]="{'text-error': newAccident.gravedad === 'Severe', 'text-secondary': newAccident.gravedad === 'Moderate', 'text-tertiary': newAccident.gravedad === 'Minor'}">{{ newAccident.gravedad }}</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-on-surface-variant">Vehículos:</span>
+                                <span class="font-bold font-data-mono text-on-surface">{{ newAccident.vehiculos_involucrados }}</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-on-surface-variant">Heridos:</span>
+                                <span class="font-bold font-data-mono text-error">{{ newAccident.heridos }}</span>
+                            </div>
+
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-on-surface-variant">Fallecidos:</span>
+                                <span class="font-bold font-data-mono text-neutral-900">{{ newAccident.fallecidos }}</span>
+                            </div>
+
+                            <div class="border-t border-outline-variant mt-2 pt-4">
+                                <button type="submit" [disabled]="loading" class="w-full py-3 rounded-lg bg-primary hover:bg-primary/95 text-on-primary font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+                                    <span class="material-symbols-outlined text-sm notranslate" translate="no">upload</span>
+                                    Registrar Accidente
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Map Modal -->
+    @if (showMapModal) {
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+                
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                            <span class="material-symbols-outlined text-[24px] notranslate" translate="no">my_location</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline-sm text-on-surface font-bold text-base leading-tight">Seleccionar Ubicación del Accidente</h3>
+                            <p class="font-body-sm text-secondary text-xs">Busque una calle para navegar, luego haga clic en el mapa para colocar el marcador exacto.</p>
+                        </div>
+                    </div>
+                    <button type="button" (click)="closeMapModal()" class="text-on-surface-variant hover:text-on-surface p-1.5 rounded-full hover:bg-surface-container-high transition-colors cursor-pointer flex items-center justify-center">
+                        <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                    </button>
+                </div>
+
+                <!-- Modal Body (Leaflet Map + Search Overlay + Guidance) -->
+                <div class="flex-1 relative bg-surface-container-low flex flex-col">
+                    <!-- Search overlay -->
+                    <div class="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-md z-[1000] px-4">
+                        <div class="bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant/80 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                            <div class="flex items-center relative">
+                                <span class="material-symbols-outlined absolute left-3.5 text-primary text-[20px] notranslate" translate="no">search</span>
+                                <input type="text" 
+                                       placeholder="Buscar calle, avenida o sector en Chicago..." 
+                                       class="w-full py-3 pl-11 pr-10 outline-none font-body-sm text-xs text-on-surface bg-transparent placeholder:text-on-surface-variant/50"
+                                       [(ngModel)]="mapSearchQuery"
+                                       (input)="onSearchQueryChange()"
+                                       (keydown.enter)="searchLocation()">
+                                
+                                @if (isSearchingMap) {
+                                    <div class="absolute right-3.5 w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                } @else {
+                                    @if (mapSearchQuery) {
+                                        <button type="button" 
+                                                class="absolute right-2.5 text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-variant transition-colors cursor-pointer"
+                                                (click)="clearMapSearch()">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">close</span>
+                                        </button>
+                                    }
+                                }
+                            </div>
+
+                            <!-- Suggestions Dropdown -->
+                            @if (mapSearchResults.length > 0) {
+                                <ul class="border-t border-outline-variant/50 max-h-56 overflow-y-auto divide-y divide-outline-variant/20">
+                                    @for (sug of mapSearchResults; track sug.display_name) {
+                                        <li class="px-4 py-2.5 hover:bg-primary/5 cursor-pointer flex items-start gap-3 transition-colors group"
+                                            (click)="selectLocation(sug)">
+                                            <span class="material-symbols-outlined text-primary/60 group-hover:text-primary mt-0.5 text-[18px] shrink-0 notranslate" translate="no">near_me</span>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="font-body-sm text-xs font-bold text-on-surface group-hover:text-primary truncate">{{ sug.display_name.split(',')[0] }}</div>
+                                                <div class="text-[10px] text-secondary truncate">{{ sug.display_name }}</div>
+                                            </div>
+                                            <span class="text-[10px] text-primary font-bold shrink-0 self-center">Ir a la Calle</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Floating Guidance Pill -->
+                    @if (isPinningLocation || newAccident.ubicacion) {
+                        <div class="absolute top-20 left-1/2 -translate-x-1/2 z-[1000] bg-surface-container-lowest/95 backdrop-blur-md border border-primary/40 text-on-surface px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 text-xs select-none animate-fade-in pointer-events-none">
+                            <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                            <span class="font-medium text-primary">¡Calle centrada! Haga clic en cualquier parte del mapa para marcar la ubicación exacta.</span>
+                        </div>
+                    }
+
+                    <div id="modal-accident-map" class="w-full h-full"></div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-3.5 border-t border-outline-variant bg-surface-container-low flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+                    <div class="flex items-center gap-2.5 max-w-md w-full min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">pin_drop</span>
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-secondary">Ubicación Seleccionada</span>
+                            <span class="text-xs font-bold text-on-surface truncate">
+                                {{ newAccident.ubicacion || 'Haga clic en el mapa para colocar un marcador o busque una calle' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
+                        <button type="button" 
+                                (click)="closeMapModal()" 
+                                class="px-4 py-2 rounded-xl border border-outline-variant hover:bg-surface-variant text-on-surface transition-colors cursor-pointer text-xs font-semibold">
+                            Cancelar
+                        </button>
+                        <button type="button" 
+                                (click)="confirmMapLocation()" 
+                                [disabled]="!newAccident.ubicacion"
+                                class="px-5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                            <span class="material-symbols-outlined text-[17px] notranslate" translate="no">check_circle</span>
+                            Confirmar Ubicación
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+
+    <!-- TAB 9: Detail Modal for Selected Accident -->
+    @if (showDetailModal && selectedAccident) {
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in text-on-surface">
+            <div class="bg-surface border border-outline rounded-2xl w-[90%] max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden relative">
+                
+                <!-- Modal Header -->
+                <div class="px-md py-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center select-none">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">car_crash</span>
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface font-black">Detalles del Accidente de Tránsito</h3>
+                    </div>
+                    <button type="button" (click)="closeDetailModal()" class="text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-container-high transition-colors cursor-pointer flex items-center justify-center">
+                        <span class="material-symbols-outlined text-lg notranslate" translate="no">close</span>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="flex-1 p-6 overflow-y-auto flex flex-col gap-6">
+                    
+                    <!-- General Info Grid -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/60">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">ID Accidente</span>
+                            <span class="font-data-mono text-xs text-primary font-bold">{{ selectedAccident.id_accidente }}</span>
+                        </div>
+                        <div class="bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/60">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Fecha / Hora</span>
+                            <span class="font-body-sm text-xs text-primary font-bold">{{ selectedAccident.fecha_hora | date:'MMM d, y HH:mm:ss' }}</span>
+                        </div>
+                        <div class="col-span-2 bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/60">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Ubicación Exacta</span>
+                            <span class="font-body-sm text-xs text-primary font-semibold flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-primary text-[16px] notranslate" translate="no">location_on</span>
+                                {{ selectedAccident.ubicacion }}
+                            </span>
+                        </div>
+                        <div class="bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/60">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Gravedad</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase inline-block"
+                                  [ngClass]="{
+                                      'bg-secondary-container text-on-secondary-container border border-secondary/10': selectedAccident.gravedad === 'Minor' || selectedAccident.gravedad === 'Leve',
+                                      'bg-primary-container text-on-primary-container border border-primary/10': selectedAccident.gravedad === 'Moderate' || selectedAccident.gravedad === 'Moderado',
+                                      'bg-error-container text-on-error-container border border-error/10': selectedAccident.gravedad === 'Severe' || selectedAccident.gravedad === 'Grave'
+                                  }">
+                                {{ selectedAccident.gravedad === 'Leve' ? 'Leve' : (selectedAccident.gravedad === 'Moderado' ? 'Moderado' : (selectedAccident.gravedad === 'Grave' ? 'Grave' : selectedAccident.gravedad)) }}
+                            </span>
+                        </div>
+                        <div class="bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/60">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-1">Causa Probable</span>
+                            <span class="font-body-sm text-xs text-primary font-bold">{{ selectedAccident.causa_probable || 'No especificada' }}</span>
+                        </div>
+
+                        <!-- Photographic evidence -->
+                        <div *ngIf="selectedAccident.evidencia_url" class="col-span-2 bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/60">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary mb-2">Evidencia Fotográfica</span>
+                            <a [href]="selectedAccident.evidencia_url" target="_blank" class="relative block rounded-lg overflow-hidden border border-outline-variant max-h-[220px] bg-slate-900 flex items-center justify-center group">
+                                <img [src]="selectedAccident.evidencia_url" (error)="onImageError($event)" alt="Evidencia del accidente" class="max-w-full max-h-[220px] object-contain group-hover:scale-[1.02] transition-transform duration-300" />
+                                <div *ngIf="!imageLoadError" class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
+                                    <span class="material-symbols-outlined text-sm">open_in_new</span>
+                                    Abrir en nueva pestaña
+                                </div>
+                            </a>
+                            <div *ngIf="imageLoadError" class="mt-2 p-2 bg-error-container text-on-error-container rounded-lg text-[11px] font-bold flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px]">warning</span>
+                                No se pudo cargar la imagen. La URL puede ser inválida o haber expirado.
+                                <a [href]="selectedAccident.evidencia_url" target="_blank" class="underline ml-auto">Abrir directamente</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats & Victims Info -->
+                    <div class="border-t border-outline-variant/50 pt-4 flex gap-4 justify-around text-center select-none">
+                        <div class="flex-1 bg-surface-container-high/40 p-3 rounded-xl border border-outline-variant/40">
+                            <span class="material-symbols-outlined text-primary text-[20px] notranslate mb-1" translate="no">directions_car</span>
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary">Vehículos</span>
+                            <span class="text-lg font-black text-primary">{{ selectedAccident.vehiculos_involucrados }}</span>
+                        </div>
+                        <div class="flex-1 bg-surface-container-high/40 p-3 rounded-xl border border-outline-variant/40">
+                            <span class="material-symbols-outlined text-error text-[20px] notranslate mb-1" translate="no">personal_injury</span>
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary">Heridos</span>
+                            <span class="text-lg font-black text-error">{{ selectedAccident.heridos }}</span>
+                        </div>
+                        <div class="flex-1 bg-surface-container-high/40 p-3 rounded-xl border border-outline-variant/40">
+                            <span class="material-symbols-outlined text-on-surface text-[20px] notranslate mb-1" translate="no">skull</span>
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-secondary">Fallecidos</span>
+                            <span class="text-lg font-black text-on-surface">{{ selectedAccident.fallecidos }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Vehicles Details Section -->
+                    <div class="flex flex-col gap-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-1 border-b border-outline-variant/30">
+                            <span class="material-symbols-outlined text-[16px] text-primary notranslate" translate="no">directions_car</span>
+                            Vehículos Involucrados
+                        </h4>
+                        <div class="flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1">
+                            <div *ngFor="let veh of selectedAccident.parsed_vehiculos; let idx = index" 
+                                 class="bg-surface-container-lowest border border-outline-variant p-3 rounded-xl flex flex-col gap-1.5 text-xs">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-primary">Vehículo #{{ idx + 1 }}</span>
+                                    <span class="font-data-mono text-[10px] bg-slate-100 px-2 py-0.5 rounded text-secondary border border-outline-variant">Placa: {{ veh.placa || 'S/N' }}</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-secondary">
+                                    <div><span class="font-semibold text-on-surface">Marca/Modelo:</span> {{ veh.marca || '--' }} {{ veh.modelo || '' }}</div>
+                                    <div><span class="font-semibold text-on-surface">Color:</span> {{ veh.color || '--' }}</div>
+                                    <div class="col-span-2"><span class="font-semibold text-on-surface">Conductor:</span> {{ veh.conductor || 'Desconocido' }} <span *ngIf="veh.identificacion_conductor" class="text-[10px] opacity-75 font-mono">({{ veh.identificacion_conductor }})</span></div>
+                                </div>
+                            </div>
+                            <div *ngIf="!selectedAccident.parsed_vehiculos || selectedAccident.parsed_vehiculos.length === 0" class="text-xs italic text-slate-400 py-2 text-center">
+                                No hay detalles de vehículos registrados.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Injured/Victims Details Section -->
+                    <div class="flex flex-col gap-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-1 border-b border-outline-variant/30">
+                            <span class="material-symbols-outlined text-[16px] text-error notranslate" translate="no">personal_injury</span>
+                            Detalles de Víctimas / Heridos
+                        </h4>
+                        <div class="flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1">
+                            <div *ngFor="let victim of selectedAccident.parsed_heridos; let idx = index" 
+                                 class="bg-surface-container-lowest border border-outline-variant p-3 rounded-xl flex flex-col gap-1.5 text-xs">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-primary">Persona #{{ idx + 1 }}: {{ victim.nombre || 'N/A' }}</span>
+                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded font-semibold"
+                                          [ngClass]="victim.condicion === 'Severe' || victim.condicion === 'Critical' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-slate-100 text-slate-600 border border-slate-200'">
+                                        Condición: {{ victim.condicion || 'Leve' }}
+                                    </span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-secondary">
+                                    <div><span class="font-semibold text-on-surface">Identificación:</span> {{ victim.identificacion || 'No registrada' }}</div>
+                                    <div><span class="font-semibold text-on-surface">Género/Edad:</span> {{ victim.genero || 'N/A' }} <span *ngIf="victim.edad">({{ victim.edad }} años)</span></div>
+                                    <div class="col-span-2"><span class="font-semibold text-on-surface">Hospitalizado:</span> {{ victim.trasladado_hospital ? 'Sí' : 'No' }} <span *ngIf="victim.trasladado_hospital && victim.ubicacion_traslado" class="font-semibold text-primary font-body-sm"> - Trasladado a: {{ victim.ubicacion_traslado }}</span></div>
+                                </div>
+                            </div>
+                            <div *ngIf="!selectedAccident.parsed_heridos || selectedAccident.parsed_heridos.length === 0" class="text-xs italic text-slate-400 py-2 text-center">
+                                No hay detalles de heridos registrados.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 border-t border-outline-variant bg-surface-container flex justify-end shrink-0">
+                    <button type="button" (click)="closeDetailModal()" class="px-5 py-2 bg-primary text-white rounded-lg font-headline-sm text-xs hover:bg-primary/95 shadow-sm transition-colors cursor-pointer font-semibold">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    }

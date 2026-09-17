@@ -1,0 +1,211 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+        <!-- List View Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-4 w-full pb-16">
+            <!-- Page Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
+                <div>
+                    <h2 class="font-display-lg text-display-lg text-primary">Mis Expedientes de Investigación</h2>
+                    <p class="font-body-md text-body-md text-secondary mt-1">Lista completa de casos críticos bajo su supervisión directa.</p>
+                </div>
+                <button (click)="openRequestsModal()" class="relative bg-surface-container border border-outline-variant hover:bg-surface-container-high text-on-surface font-headline-sm text-headline-sm px-5 py-2.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm select-none">
+                    <span class="material-symbols-outlined text-lg notranslate" translate="no">history_toggle_off</span>
+                    Mis Solicitudes
+                    @if (myRequests.length > 0) {
+                        <span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-on-secondary animate-pulse">
+                            {{ myRequests.length }}
+                        </span>
+                    }
+                </button>
+            </div>
+
+            <!-- Filter & Search Toolbar -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-wrap lg:flex-nowrap gap-md items-end shadow-sm shrink-0">
+                <div class="w-full lg:w-1/2">
+                    <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Buscar Caso</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg notranslate" translate="no">search</span>
+                        <input [(ngModel)]="filters.search" (ngModelChange)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="Buscar por número de caso o tipo de delito..." type="text"/>
+                    </div>
+                </div>
+                <div class="w-full lg:w-1/2 flex gap-md">
+                    <div class="flex-1">
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Estado del Caso</label>
+                        <select [(ngModel)]="filters.estado" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+                            <option value="All">Todos los Estados</option>
+                            <option value="In Progress">En Progreso</option>
+                            <option value="Closed">Cerrado</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Prioridad</label>
+                        <select [(ngModel)]="filters.prioridad" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
+                            <option value="Todas">Todas las Prioridades</option>
+                            <option value="Caso Mayor">🚨 Solo Casos Mayores</option>
+                            <option value="Normal">Casos Estándar</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-md shrink-0 select-none">
+                <div class="bg-surface-container-low border border-outline-variant rounded-lg p-3 text-center">
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Total Asignados</div>
+                    <div class="text-xl font-bold text-on-surface mt-1">{{ allCases.length }}</div>
+                </div>
+                <div class="bg-surface-container-low border border-outline-variant rounded-lg p-3 text-center">
+                    <div class="text-[10px] uppercase font-bold text-tertiary">En Progreso</div>
+                    <div class="text-xl font-bold text-on-surface mt-1">{{ allCases.filter(c => c.estado === 'In Progress').length }}</div>
+                </div>
+                <div class="bg-surface-container-low border border-outline-variant rounded-lg p-3 text-center">
+                    <div class="text-[10px] uppercase font-bold text-secondary">Cerrados</div>
+                    <div class="text-xl font-bold text-on-surface mt-1">{{ allCases.filter(c => c.estado === 'Closed').length }}</div>
+                </div>
+                <div class="bg-surface-container-low border border-outline-variant rounded-lg p-3 text-center">
+                    <div class="text-[10px] uppercase font-bold text-error">Casos Mayores</div>
+                    <div class="text-xl font-bold text-on-surface mt-1">{{ allCases.filter(c => c.es_caso_mayor).length }}</div>
+                </div>
+            </div>
+
+            <!-- Grid View (Premium Cards layout) -->
+            <div class="flex-1 min-h-0">
+                @if (filteredCases.length > 0) {
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md pb-md">
+                        @for (c of filteredCases; track c.case_number) {
+                            <div (click)="viewIncident(c.case_number)" class="group block p-5 rounded-xl border border-outline-variant bg-surface-container-lowest hover:bg-surface-bright hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden">
+                                
+                                <!-- Background accent for major cases -->
+                                @if (c.es_caso_mayor) {
+                                    <div class="absolute top-0 left-0 right-0 h-1 bg-error"></div>
+                                }
+                                
+                                <div>
+                                    <div class="flex justify-between items-start mb-3">
+                                        <span class="font-data-mono text-data-mono bg-primary-container text-on-primary-container px-2 py-0.5 rounded font-bold text-xs">#{{ c.case_number }}</span>
+                                        <span [class]="'text-[10.5px] font-bold px-2 py-0.5 rounded border ' + 
+                                            (c.estado === 'Closed' 
+                                                ? 'bg-secondary-container text-on-secondary-container border-secondary-container/20' 
+                                                : 'bg-tertiary-container text-on-tertiary-container border-tertiary-container/20')">
+                                            {{ c.estado === 'Closed' ? 'CERRADO' : 'EN PROGRESO' }}
+                                        </span>
+                                    </div>
+                                    <h3 class="font-headline-sm text-[17px] font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">{{ c.primary_type }}</h3>
+                                    
+                                    <div class="space-y-1.5 text-xs text-on-surface-variant mt-4">
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[14px] text-outline notranslate" translate="no">calendar_today</span>
+                                            <span>Asignado: {{ c.fecha_asignacion | date:'mediumDate' }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[14px] text-outline notranslate" translate="no">history</span>
+                                            <span>Fecha del Delito: {{ c.date | date:'medium' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-5 pt-3 border-t border-outline-variant flex items-center justify-between">
+                                    <div class="flex items-center gap-1.5">
+                                        @if (c.es_caso_mayor) {
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-error bg-error/10 border border-error/25 px-1.5 py-0.5 rounded">
+                                                <span class="material-symbols-outlined text-[12px] notranslate" translate="no">warning</span>
+                                                CASO MAYOR
+                                            </span>
+                                        } @else {
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-400/10 border border-slate-400/25 px-1.5 py-0.5 rounded">
+                                                ESTÁNDAR
+                                            </span>
+                                        }
+                                    </div>
+                                    
+                                    <span class="text-xs font-semibold text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                                        Ver Expediente
+                                        <span class="material-symbols-outlined text-[14px] notranslate" translate="no">arrow_forward</span>
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                } @else {
+                    <div class="p-10 text-center text-on-surface-variant bg-surface-container-lowest rounded-xl border border-outline-variant border-dashed">
+                        <span class="material-symbols-outlined text-5xl mb-3 opacity-50 notranslate" translate="no">inbox</span>
+                        <p class="font-headline-sm text-headline-sm text-on-surface">No se encontraron expedientes</p>
+                        <p class="font-body-md text-body-md mt-1.5">Intente cambiar la búsqueda o los filtros de estado.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Modal Mis Solicitudes de Asignación Pendientes -->
+            @if (showRequestsModal) {
+              <div class="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4 overflow-y-auto" (click)="closeRequestsModal()">
+                <div class="bg-surface-container-low border border-outline-variant rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden animate-fade-in flex flex-col max-h-[85vh]" (click)="$event.stopPropagation()">
+                  <!-- Header -->
+                  <div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-bright shrink-0">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-primary notranslate" translate="no">history_toggle_off</span>
+                      <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Mis Solicitudes de Asignación Pendientes</h3>
+                    </div>
+                    <button (click)="closeRequestsModal()" class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 p-2 rounded-full transition-colors cursor-pointer border-0 bg-transparent flex items-center">
+                      <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+                    </button>
+                  </div>
+                  <!-- Content -->
+                  <div class="p-6 overflow-y-auto flex-1">
+                    @if (myRequests.length > 0) {
+                      <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                          <thead>
+                            <tr class="border-b border-outline-variant text-left">
+                              <th class="py-2.5 px-3 font-label-md text-label-md text-on-surface-variant font-bold">Número de Caso</th>
+                              <th class="py-2.5 px-3 font-label-md text-label-md text-on-surface-variant font-bold">Solicitado Por</th>
+                              <th class="py-2.5 px-3 font-label-md text-label-md text-on-surface-variant font-bold">Fecha de Solicitud</th>
+                              <th class="py-2.5 px-3 text-right font-label-md text-label-md text-on-surface-variant font-bold">Estado</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (sol of myRequests; track sol.id_solicitud) {
+                              <tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+                                <td class="py-3 px-3">
+                                  <a [routerLink]="['/incidents', sol.case_number]" (click)="closeRequestsModal()" class="font-data-mono text-data-mono text-primary font-bold hover:underline">
+                                    {{ sol.case_number }}
+                                  </a>
+                                </td>
+                                <td class="py-3 px-3 font-body-sm text-body-sm text-on-surface font-medium">
+                                  {{ sol.nombre_detective }} <span class="text-xs text-outline">(#{{ sol.id_detective }})</span>
+                                </td>
+                                <td class="py-3 px-3 font-body-sm text-body-sm text-on-surface-variant">
+                                  {{ sol.fecha_solicitud | date:'medium' }}
+                                </td>
+                                <td class="py-3 px-3 text-right">
+                                  <span class="inline-flex items-center gap-1 text-[10px] font-bold text-secondary bg-secondary-container/40 border border-secondary/20 px-2 py-0.5 rounded animate-pulse">
+                                    PENDIENTE DE APROBACIÓN
+                                  </span>
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    } @else {
+                      <div class="p-12 text-center text-on-surface-variant bg-surface rounded-xl border border-outline-variant border-dashed">
+                        <span class="material-symbols-outlined text-5xl mb-3 opacity-50 notranslate" translate="no">history_toggle_off</span>
+                        <p class="font-headline-sm text-headline-sm text-on-surface">Sin solicitudes pendientes</p>
+                        <p class="font-body-md text-body-md text-on-surface-variant mt-2">Todas las solicitudes de asignación han sido procesadas por el Sheriff.</p>
+                      </div>
+                    }
+                  </div>
+                  <!-- Footer -->
+                  <div class="px-6 py-4 bg-surface-container border-t border-outline-variant flex justify-end shrink-0">
+                    <button (click)="closeRequestsModal()" class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-label-lg text-label-lg font-bold hover:bg-primary/95 transition-all cursor-pointer shadow-sm hover:shadow-md">
+                      Cerrar Ventana
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+        </main>
+    </div>
+</div>

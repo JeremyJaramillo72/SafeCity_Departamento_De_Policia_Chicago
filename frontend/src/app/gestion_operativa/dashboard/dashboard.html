@@ -1,118 +1,672 @@
-<div class="flex bg-background font-body-md text-on-background min-h-screen w-full">
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
     <app-sidebar></app-sidebar>
     
     <!-- Main Content Area -->
-    <div class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden">
-        <!-- TopNavBar Component -->
-        <header class="sticky top-0 bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-on-surface-variant flex justify-between items-center h-16 w-full px-lg z-40">
-            <!-- Brand / Active Tab Context -->
-            <div class="flex items-center gap-4">
-                <span class="font-headline-md text-headline-md font-black tracking-tight text-primary dark:text-primary-fixed">SafeCity Intelligence</span>
-            </div>
-            <!-- Actions & Profile -->
-            <div class="flex items-center gap-6">
-                <!-- Search -->
-                <div class="relative hidden lg:block">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
-                    <input class="pl-9 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Search database..." type="text"/>
-                </div>
-                <!-- Icons -->
-                <div class="flex items-center gap-2">
-                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out relative">
-                        <span class="material-symbols-outlined notranslate" translate="no">notifications</span>
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
-                    </button>
-                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out">
-                        <span class="material-symbols-outlined notranslate" translate="no">history</span>
-                    </button>
-                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out">
-                        <span class="material-symbols-outlined notranslate" translate="no">help</span>
-                    </button>
-                </div>
-                <!-- Profile -->
-                <div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
-                    <img alt="Officer Profile Image" class="w-8 h-8 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd54ODAP3Bjje77wB6QRkzeQ1koW55x8bO2dE0oihOp_4cAMPGOx8BlRQud6wH2vz_hckg9urO3KLddfrC1oL4BsnyTWhKq8-p2NYy8EdegCm0zvn4gUQHWJnQun1tRC3HvnoyVMFyxM32tqTaoweXi4feZtuV2HqQhprl648l5Rg9xROYyld0RJav19UxG0MFVWsxPQzl8DZUERMee3-C8xNK3F7IDIRJS380_0JqnGtFcyZHfVurFzUZ4hEeyrsytFT1fjQ06-a0"/>
-                </div>
-            </div>
-        </header>
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <!-- Dashboard Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-4 w-full pb-16">
 
-        <!-- Dashboard Canvas -->
-        <main class="flex-1 overflow-y-auto p-lg gap-grid flex flex-col">
-            <!-- KPI Top Row -->
+
+            @if (profile === 'administrador_sistema') {
+            <!-- Admin Hero Banner -->
+            <section class="mb-4">
+                <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                            <span class="material-symbols-outlined text-2xl notranslate" translate="no">admin_panel_settings</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">Consola de Seguridad del Sistema</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success border border-success/20 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                                    Todos los Sistemas Operativos • 99.98% Disponibilidad
+                                </span>
+                            </div>
+                            <h1 class="font-headline-sm text-xl font-black text-on-surface">Departamento de Seguridad y Administración del Sistema</h1>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-[11px] font-bold text-primary transition-all flex items-center gap-2 shadow-sm uppercase tracking-wider">
+                            <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                            Sincronización Automática (En Vivo)
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stat Cards Row (Sleek, compact 4 KPI Cards layout with real System Security data) -->
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
+                <!-- Card 1: TOTAL AUDIT LOGS -->
+                <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex flex-col justify-between hover:border-primary/30 transition-all group">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-secondary">Total de Registros de Auditoría</span>
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">receipt_long</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2 mt-1.5">
+                        <span class="text-xl lg:text-2xl font-black text-on-surface leading-tight">{{ adminStats.totalLogsCount }}</span>
+                        <span class="text-xs text-secondary font-medium">Eventos Registrados</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: SECURITY SESSIONS -->
+                <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex flex-col justify-between hover:border-primary/30 transition-all group">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-secondary">Sesiones de Seguridad</span>
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">vpn_key</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2 mt-1.5">
+                        <span class="text-xl lg:text-2xl font-black text-on-surface leading-tight">{{ adminStats.activeSessionsCount }} <span class="text-xs font-bold text-success">Activas</span></span>
+                        <span class="text-xs text-secondary font-medium">de {{ adminStats.registeredUsersCount }} cuentas</span>
+                    </div>
+                </div>
+
+                <!-- Card 3: BACKUPS DEPLOYED -->
+                <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex flex-col justify-between hover:border-primary/30 transition-all group">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-secondary">Copias de Seguridad Desplegadas</span>
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">cloud_done</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2 mt-1.5">
+                        <span class="text-xl lg:text-2xl font-black text-on-surface leading-tight">24 <span class="text-xs font-semibold text-secondary">Instantáneas</span></span>
+                        <span class="text-xs text-secondary font-medium">Diario 04:00 AM</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: FAILED LOGINS -->
+                <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex flex-col justify-between hover:border-error/30 transition-all group">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-error">Inicios de Sesión Fallidos</span>
+                        <div class="w-8 h-8 rounded-lg bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[18px] text-error notranslate" translate="no">warning</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2.5 mt-1.5">
+                        <span class="text-xl lg:text-2xl font-black text-error leading-tight">3</span>
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-error-container text-on-error-container inline-flex items-center shrink-0">
+                            SIN RESOLVER
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content Split (70% Left / 30% Right) -->
+            <section class="grid grid-cols-1 lg:grid-cols-12 gap-md mb-6">
+                <!-- Left Column (8 cols): Cyan Area Chart + Administrative Use Cases -->
+                <div class="lg:col-span-8 flex flex-col gap-md">
+                    <!-- Cyan Area Chart: Audit Event Activity Trend -->
+                    <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 shadow-sm">
+                        <div class="flex items-center justify-between pb-4 border-b border-outline-variant/40 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-xl notranslate" translate="no">bar_chart</span>
+                                <h3 class="font-headline-sm text-base font-black text-on-surface">Tendencia de Actividad de Eventos de Auditoría</h3>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/60 ml-2">Total: {{ adminStats.totalLogsCount }} Eventos</span>
+                            </div>
+                            <div class="flex items-center bg-surface-container-low p-1 rounded-lg border border-outline-variant/60 text-xs font-bold">
+                                <button (click)="setAdminChartTimeframe('24h')" [class.bg-surface-container-lowest]="adminChartTimeframe === '24h'" [class.shadow-sm]="adminChartTimeframe === '24h'" class="px-3 py-1 rounded transition-all cursor-pointer text-on-surface">24 Horas</button>
+                                <button (click)="setAdminChartTimeframe('7d')" [class.bg-surface-container-lowest]="adminChartTimeframe === '7d'" [class.shadow-sm]="adminChartTimeframe === '7d'" class="px-3 py-1 rounded transition-all cursor-pointer text-primary">7 Días</button>
+                            </div>
+                        </div>
+
+                        <!-- Canvas Chart Container -->
+                        <div class="h-72 relative w-full">
+                            <canvas id="auditTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- System Launchpad Grid (Administrative Use Cases) -->
+                    <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 shadow-sm">
+                        <div class="flex items-center justify-between pb-3 border-b border-outline-variant/40 mb-4">
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-headline-sm text-base font-black text-on-surface">Casos de Uso de Administración y Seguridad del Sistema</h3>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/60 ml-2">5 Módulos Configurados</span>
+                            </div>
+                            <button class="px-3 py-1 bg-surface-container-low hover:bg-surface-container-high border border-outline-variant rounded-lg text-xs font-bold text-on-surface transition-all uppercase">
+                                SISTEMA ACTIVO
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                            <!-- Case 1: Manage Users & Roles -->
+                            <div routerLink="/admin/users" class="bg-surface-container-low/50 border border-outline-variant/50 rounded-xl p-4 hover:border-primary/60 transition-all cursor-pointer group flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <span class="material-symbols-outlined text-xl notranslate" translate="no">manage_accounts</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors">Gestión de Usuarios y Roles</h4>
+                                        <span class="text-[10px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded">7 Cuentas</span>
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant font-medium mt-1">Configure cuentas de oficiales, privilegios y roles del sistema.</p>
+                                </div>
+                            </div>
+
+                            <!-- Case 2: Audit Logs -->
+                            <div routerLink="/admin/logs" class="bg-surface-container-low/50 border border-outline-variant/50 rounded-xl p-4 hover:border-success/60 transition-all cursor-pointer group flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-success/10 text-success border border-success/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <span class="material-symbols-outlined text-xl notranslate" translate="no">receipt_long</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-bold text-xs text-on-surface group-hover:text-success transition-colors">Registros de Auditoría y Trazabilidad</h4>
+                                        <span class="text-[10px] font-bold bg-success/10 text-success px-1.5 py-0.5 rounded">142 Eventos</span>
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant font-medium mt-1">Rastree todas las acciones del sistema, llamadas API y flujos de auditoría.</p>
+                                </div>
+                            </div>
+
+                            <!-- Case 3: Backups & Recovery -->
+                            <div routerLink="/admin/backups" class="bg-surface-container-low/50 border border-outline-variant/50 rounded-xl p-4 hover:border-warning/60 transition-all cursor-pointer group flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-warning/10 text-warning border border-warning/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <span class="material-symbols-outlined text-xl notranslate" translate="no">backup</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-bold text-xs text-on-surface group-hover:text-warning transition-colors">Copias de Seguridad y Recuperación</h4>
+                                        <span class="text-[10px] font-bold bg-warning/10 text-warning px-1.5 py-0.5 rounded">Auto-Copia ACTIVA</span>
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant font-medium mt-1">Administre instantáneas de ClickHouse y SQLite y restaure datos.</p>
+                                </div>
+                            </div>
+
+                            <!-- Case 4: Global Parameters -->
+                            <div routerLink="/admin/settings" class="bg-surface-container-low/50 border border-outline-variant/50 rounded-xl p-4 hover:border-secondary/60 transition-all cursor-pointer group flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary border border-secondary/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <span class="material-symbols-outlined text-xl notranslate" translate="no">settings_applications</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-bold text-xs text-on-surface group-hover:text-secondary transition-colors">Parámetros Globales</h4>
+                                        <span class="text-[10px] font-bold bg-secondary/10 text-secondary px-1.5 py-0.5 rounded">Política Activa</span>
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant font-medium mt-1">Configure tiempos de inactividad de sesión y reglas globales del sistema.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (4 cols): Real-time Security Audit Feed -->
+                <div class="lg:col-span-4 bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <!-- Feed Header -->
+                        <div class="flex items-center justify-between pb-4 border-b border-outline-variant/40 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-error animate-ping"></span>
+                                <h3 class="font-headline-sm text-base font-black text-on-surface">Flujo de Auditoría de Seguridad en Tiempo Real</h3>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-error/10 text-error border border-error/20 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-error"></span> EN VIVO
+                            </span>
+                        </div>
+
+                        <!-- Real Security Audit Feed Cards (Matching screenshot layout) -->
+                        <div class="space-y-3">
+                            @for (event of recentAuditEvents; track event.id) {
+                                <div class="bg-surface-container-low/60 border border-outline-variant/50 rounded-xl p-4 hover:border-primary/40 transition-all">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span [class]="'px-2 py-0.5 rounded text-[11px] font-bold font-data-mono ' + (event.severityLabel === 'CRITICAL' ? 'bg-error/15 text-error' : (event.severityLabel === 'WARNING' ? 'bg-warning/15 text-warning' : 'bg-primary/15 text-primary'))">
+                                            {{ event.badge }}
+                                        </span>
+                                        <span class="text-xs font-data-mono text-on-surface-variant">{{ event.time }}</span>
+                                    </div>
+                                    <h4 class="font-black text-sm text-on-surface uppercase tracking-tight">{{ event.title }}</h4>
+                                    <p class="text-xs text-on-surface-variant font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-sm opacity-70 notranslate" translate="no">shield</span>
+                                        {{ event.details }}
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-outline-variant/40 flex justify-between items-center text-xs mt-4">
+                        <span class="text-on-surface-variant font-medium">Monitoreando {{ recentAuditEvents.length }} eventos de seguridad</span>
+                        <a routerLink="/admin/logs" class="font-bold text-primary hover:underline flex items-center gap-1">
+                            Ver Todos los Registros de Auditoría <span class="material-symbols-outlined text-sm notranslate" translate="no">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+            } @else if (profile === 'recursos_humanos') {
+            <!-- HR Hero Banner -->
+            <section class="mb-4">
+                <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                            <span class="material-symbols-outlined text-2xl notranslate" translate="no">groups</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">Departamento de Recursos Humanos</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success border border-success/20 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                                    Sistemas de Personal Activos
+                                </span>
+                            </div>
+                            <h1 class="font-headline-sm text-xl font-black text-on-surface">Control de Personal y Recursos Humanos</h1>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <a routerLink="/rrhh" class="px-4 py-2 bg-primary hover:bg-primary-container text-white rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-sm no-underline">
+                            <span class="material-symbols-outlined text-sm notranslate" translate="no">open_in_new</span>
+                            Abrir Centro de Control de RRHH
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stat Cards Row (Matching 4 KPI Cards layout for HR Department) -->
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
+                <!-- Card 1: TOTAL PERSONNEL -->
+                <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex flex-col justify-between hover:border-primary/30 transition-all group">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-secondary">Total de Personal</span>
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">badge</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2 mt-1.5">
+                        <span class="text-xl lg:text-2xl font-black text-on-surface leading-tight">{{ hrStats.totalPersonnel }}</span>
+                        <span class="text-xs text-secondary font-medium">Oficiales Activos</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: OFFICERS ON SHIFT -->
+                <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex flex-col justify-between hover:border-primary/30 transition-all group">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-secondary">Oficiales en Turno</span>
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">timer</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2 mt-1.5">
+                        <span class="text-xl lg:text-2xl font-black text-success leading-tight">{{ hrStats.officersOnShift }} <span class="text-xs font-bold text-success">Activos</span></span>
+                        <span class="text-xs text-secondary font-medium">En Servicio</span>
+                    </div>
+                </div>
+
+                <!-- Card 3: PENDING PERMITS -->
+                <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex flex-col justify-between hover:border-primary/30 transition-all group">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-secondary">Permisos Pendientes</span>
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">assignment_late</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2 mt-1.5">
+                        <span class="text-xl lg:text-2xl font-black text-on-surface leading-tight">{{ hrStats.pendingPermits }}</span>
+                        <span class="text-xs text-secondary font-medium">Requiere Revisión</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: PERSONNEL NOTICES -->
+                <div class="bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-3.5 shadow-xs flex flex-col justify-between hover:border-error/30 transition-all group">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-error">Notificaciones de Personal</span>
+                        <div class="w-8 h-8 rounded-lg bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[18px] text-error notranslate" translate="no">military_tech</span>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2.5 mt-1.5">
+                        <span class="text-xl lg:text-2xl font-black text-error leading-tight">{{ hrStats.sanctionsAndAwards }}</span>
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-error-container text-on-error-container inline-flex items-center shrink-0">
+                            {{ hrStats.urgentNoticesCount }} URGENTE
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content Split (70% Left / 30% Right) -->
+            <section class="grid grid-cols-1 lg:grid-cols-12 gap-md mb-6">
+                <!-- Left Column (8 cols): Cyan Area Chart + HR Administrative Launchpad -->
+                <div class="lg:col-span-8 flex flex-col gap-md">
+                    <!-- Cyan Area Chart: Personnel Shift & Attendance Trend -->
+                    <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 shadow-sm">
+                        <div class="flex items-center justify-between pb-4 border-b border-outline-variant/40 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-xl notranslate" translate="no">bar_chart</span>
+                                <h3 class="font-headline-sm text-base font-black text-on-surface">Tendencia de Turnos y Asistencia del Personal</h3>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/60 ml-2">Total: {{ hrStats.totalPersonnel }} Oficiales</span>
+                            </div>
+                            <div class="flex items-center bg-surface-container-low p-1 rounded-lg border border-outline-variant/60 text-xs font-bold">
+                                <button (click)="setAdminChartTimeframe('24h')" [class.bg-surface-container-lowest]="adminChartTimeframe === '24h'" [class.shadow-sm]="adminChartTimeframe === '24h'" class="px-3 py-1 rounded transition-all cursor-pointer text-on-surface">24 Horas</button>
+                                <button (click)="setAdminChartTimeframe('7d')" [class.bg-surface-container-lowest]="adminChartTimeframe === '7d'" [class.shadow-sm]="adminChartTimeframe === '7d'" class="px-3 py-1 rounded transition-all cursor-pointer text-primary">7 Días</button>
+                            </div>
+                        </div>
+
+                        <!-- Canvas Chart Container -->
+                        <div class="h-72 relative w-full">
+                            <canvas id="auditTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- System Launchpad Grid (Human Resources Use Cases) -->
+                    <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 shadow-sm">
+                        <div class="flex items-center justify-between pb-3 border-b border-outline-variant/40 mb-4">
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-headline-sm text-base font-black text-on-surface">Casos de Uso Administrativo de Recursos Humanos</h3>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/60 ml-2">5 Módulos Configurados</span>
+                            </div>
+                            <a routerLink="/rrhh" class="px-3 py-1 bg-surface-container-low hover:bg-surface-container-high border border-outline-variant rounded-lg text-xs font-bold text-on-surface transition-all uppercase no-underline">
+                                ABRIR SUITE DE RRHH
+                            </a>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                            <!-- Module 1: Attendance Kiosk -->
+                            <div routerLink="/rrhh" [queryParams]="{ tab: 'asistencias' }" class="bg-surface-container-low/50 border border-outline-variant/50 rounded-xl p-4 hover:border-primary/60 transition-all cursor-pointer group flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <span class="material-symbols-outlined text-xl notranslate" translate="no">fingerprint</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors">Asistencia y Reloj Checador</h4>
+                                        <span class="text-[10px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded">{{ hrStats.officersOnShift }} Activos</span>
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant font-medium mt-1">Registros de entrada/salida, marcas de turno y bitácora biométrica.</p>
+                                </div>
+                            </div>
+
+                            <!-- Module 2: Permits & Leaves -->
+                            <div routerLink="/rrhh" [queryParams]="{ tab: 'permisos' }" class="bg-surface-container-low/50 border border-outline-variant/50 rounded-xl p-4 hover:border-warning/60 transition-all cursor-pointer group flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-warning/10 text-warning border border-warning/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <span class="material-symbols-outlined text-xl notranslate" translate="no">event_available</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-bold text-xs text-on-surface group-hover:text-warning transition-colors">Permisos y Licencias</h4>
+                                        <span class="text-[10px] font-bold bg-warning/10 text-warning px-1.5 py-0.5 rounded">{{ hrStats.pendingPermits }} Pendientes</span>
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant font-medium mt-1">Gestione solicitudes de incapacidad médica, permisos personales y vacaciones.</p>
+                                </div>
+                            </div>
+
+                            <!-- Module 3: Briefings & Handovers -->
+                            <div routerLink="/rrhh" [queryParams]="{ tab: 'briefings' }" class="bg-surface-container-low/50 border border-outline-variant/50 rounded-xl p-4 hover:border-success/60 transition-all cursor-pointer group flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-success/10 text-success border border-success/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <span class="material-symbols-outlined text-xl notranslate" translate="no">assignment_turned_in</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-bold text-xs text-on-surface group-hover:text-success transition-colors">Instrucciones de Turno y Relevos</h4>
+                                        <span class="text-[10px] font-bold bg-success/10 text-success px-1.5 py-0.5 rounded">Pase de Lista ACTIVO</span>
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant font-medium mt-1">Instrucciones del Pase de Lista y lista de cotejo para el relevo de turno.</p>
+                                </div>
+                            </div>
+
+                            <!-- Module 4: Certifications & Training -->
+                            <div routerLink="/rrhh" [queryParams]="{ tab: 'certificaciones' }" class="bg-surface-container-low/50 border border-outline-variant/50 rounded-xl p-4 hover:border-secondary/60 transition-all cursor-pointer group flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary border border-secondary/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <span class="material-symbols-outlined text-xl notranslate" translate="no">school</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-bold text-xs text-on-surface group-hover:text-secondary transition-colors">Capacitación y Diplomas</h4>
+                                        <span class="text-[10px] font-bold bg-secondary/10 text-secondary px-1.5 py-0.5 rounded">Certificado</span>
+                                    </div>
+                                    <p class="text-[11px] text-on-surface-variant font-medium mt-1">Seguimiento a cursos de la academia y certificaciones de competencias.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (4 cols): Real-time Live Personnel Feed -->
+                <div class="lg:col-span-4 bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <!-- Feed Header -->
+                        <div class="flex items-center justify-between pb-4 border-b border-outline-variant/40 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-success animate-ping"></span>
+                                <h3 class="font-headline-sm text-base font-black text-on-surface">Flujo en Vivo de Actividad de Personal</h3>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-success/10 text-success border border-success/20 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-success"></span> EN VIVO
+                            </span>
+                        </div>
+
+                        <!-- Real Live HR Activity Feed Cards -->
+                        <div class="space-y-3">
+                            @for (event of recentHrEvents; track event.id) {
+                                <div class="bg-surface-container-low/60 border border-outline-variant/50 rounded-xl p-4 hover:border-primary/40 transition-all">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span [class]="'px-2 py-0.5 rounded text-[11px] font-bold font-data-mono ' + event.statusClass">
+                                            {{ event.badge }}
+                                        </span>
+                                        <span class="text-xs font-data-mono text-on-surface-variant">{{ event.time }}</span>
+                                    </div>
+                                    <h4 class="font-black text-sm text-on-surface uppercase tracking-tight">{{ event.title }}</h4>
+                                    <p class="text-xs text-on-surface-variant font-medium mt-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-sm opacity-70 notranslate" translate="no">person</span>
+                                        {{ event.details }}
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-outline-variant/40 flex justify-between items-center text-xs mt-4">
+                        <span class="text-on-surface-variant font-medium">Monitoreando {{ recentHrEvents.length }} actividades de personal</span>
+                        <a routerLink="/rrhh" class="font-bold text-primary hover:underline flex items-center gap-1">
+                            Ver Todo el Flujo de RRHH <span class="material-symbols-outlined text-sm notranslate" translate="no">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+            } @else {
+            <!-- KPI Top Row: 6 Executive Cards for Commander/Sheriff, 4 Standard Cards for Officers -->
+            @if (isCommanderOrSheriff()) {
+            <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-md">
+                <!-- KPI Card 1: TOTAL CRIMES -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Total de Delitos</span>
+                        <span class="material-symbols-outlined text-error opacity-80 notranslate" translate="no">local_fire_department</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-display-lg text-2xl font-black text-on-surface">{{ (sheriffData?.crime?.total_crimes || kpis.total_incidents) | number }}</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-outline mt-1">{{ sheriffData?.crime?.arrest_rate || kpis.arrest_rate || 0 }}% tasa de arrestos</span>
+                </div>
+                <!-- KPI Card 2: ACTIVE CAMERAS -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Cámaras Activas</span>
+                        <span class="material-symbols-outlined text-warning opacity-80 notranslate" translate="no">videocam</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-display-lg text-2xl font-black text-on-surface">1,402</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-surface-tint mt-1">Vigilancia Urbana</span>
+                </div>
+                <!-- KPI Card 3: FLEET STATUS -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Estado de la Flota</span>
+                        <span class="material-symbols-outlined text-primary opacity-80 notranslate" translate="no">directions_car</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-display-lg text-2xl font-black text-on-surface">{{ sheriffData?.fleet?.availability_percentage || 0 }}%</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-surface-tint mt-1">Operativo</span>
+                </div>
+                <!-- KPI Card 4: ACTIVE FORCE -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Fuerza Activa</span>
+                        <span class="material-symbols-outlined text-success opacity-80 notranslate" translate="no">groups</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-display-lg text-2xl font-black text-on-surface">{{ (sheriffData?.human_resources?.total_officers || kpis.active_officers) | number }}</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-surface-tint mt-1">En Servicio</span>
+                </div>
+                <!-- KPI Card 5: WARRANTS -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Órdenes Judiciales</span>
+                        <span class="material-symbols-outlined text-tertiary opacity-80 notranslate" translate="no">gavel</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-display-lg text-2xl font-black text-on-surface">{{ sheriffData?.judicial?.pending_warrants || 0 }}</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-surface-tint mt-1">Pendientes</span>
+                </div>
+                <!-- KPI Card 6: HIGH-RISK THREATS -->
+                <div class="bg-error-container/20 border border-error/30 rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-error font-bold uppercase tracking-wider">Amenazas de Alto Riesgo</span>
+                        <span class="material-symbols-outlined text-error opacity-90 notranslate" translate="no">warning</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-display-lg text-2xl font-black text-on-surface">{{ (sheriffData?.high_risk_threats?.active_threats || kpis.unresolved_cases) | number }}</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-error font-semibold mt-1">Casos No Resueltos</span>
+                </div>
+            </section>
+            } @else {
+            <!-- KPI Top Row (Standard Officers / Detectives) -->
             <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
                 <!-- KPI Card 1 -->
                 <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Total Incidents</span>
+                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Total de Incidentes</span>
                         <span class="material-symbols-outlined text-on-surface-variant opacity-70 notranslate" translate="no">assessment</span>
                     </div>
                     <div class="flex items-baseline gap-2">
                         <span class="font-display-lg text-display-lg text-on-surface">{{ kpis.total_incidents | number }}</span>
-                        <span class="font-body-sm text-body-sm text-surface-tint">Total Recorded</span>
+                        <span class="font-body-sm text-body-sm text-surface-tint">Total Registrado</span>
                     </div>
                 </div>
                 <!-- KPI Card 2 -->
                 <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Active Arrests</span>
+                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Arrestos Efectivos</span>
                         <span class="material-symbols-outlined text-on-surface-variant opacity-70 notranslate" translate="no">gavel</span>
                     </div>
                     <div class="flex items-baseline gap-2">
                         <span class="font-display-lg text-display-lg text-on-surface">{{ kpis.total_arrests | number }}</span>
-                        <span class="font-body-sm text-body-sm text-outline">{{ kpis.arrest_rate }}% rate</span>
+                        <span class="font-body-sm text-body-sm text-outline">{{ kpis.arrest_rate }}% tasa</span>
                     </div>
                 </div>
                 <!-- KPI Card 3 -->
                 <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Patrols Deployed</span>
+                        <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Patrullajes Desplegados</span>
                         <span class="material-symbols-outlined text-on-surface-variant opacity-70 notranslate" translate="no">directions_car</span>
                     </div>
                     <div class="flex items-baseline gap-2">
                         <span class="font-display-lg text-display-lg text-on-surface">{{ kpis.total_domestic | number }}</span>
-                        <span class="font-body-sm text-body-sm text-surface-tint">Domestic cases</span>
+                        <span class="font-body-sm text-body-sm text-surface-tint">Casos domésticos</span>
                     </div>
                 </div>
                 <!-- KPI Card 4 (Alert) -->
                 <div class="bg-error-container border border-error/20 rounded-lg p-md shadow-sm flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all duration-200 cursor-default">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="font-label-caps text-label-caps text-on-error-container uppercase tracking-wider">High-Risk Threats</span>
+                        <span class="font-label-caps text-label-caps text-on-error-container uppercase tracking-wider">Amenazas de Alto Riesgo</span>
                         <span class="material-symbols-outlined text-error fill-icon notranslate" translate="no">warning</span>
                     </div>
                     <div class="flex items-baseline gap-2">
                         <span class="font-display-lg text-display-lg text-on-surface">{{ kpis.unresolved_cases | number }}</span>
-                        <span class="font-label-caps text-label-caps bg-error text-on-error px-2 py-0.5 rounded-sm">UNRESOLVED</span>
+                        <span class="font-label-caps text-label-caps bg-error text-on-error px-2 py-0.5 rounded-sm">SIN RESOLVER</span>
                     </div>
                 </div>
             </section>
+            }
+
+            <!-- My Investigations (Only for Detective) -->
+            @if (isDetective()) {
+              <section class="mt-4">
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm">
+                  <div class="flex items-center justify-between border-b border-outline-variant pb-3 mb-3">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-primary notranslate" translate="no">policy</span>
+                      <h2 class="font-headline-sm text-headline-sm text-on-surface">Mis Investigaciones (Detective)</h2>
+                    </div>
+                    <a routerLink="/my-cases" class="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+                      Ver todas
+                      <span class="material-symbols-outlined text-[16px] notranslate" translate="no">arrow_forward</span>
+                    </a>
+                  </div>
+                  @if (myCases.length > 0) {
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+                      @for (c of myCases; track c.case_number) {
+                        <a [routerLink]="['/incidents', c.case_number]" class="block p-3 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container-low transition-colors group">
+                          <div class="flex justify-between items-start mb-1">
+                            <span class="font-label-caps text-label-caps bg-primary-container text-on-primary-container px-2 py-0.5 rounded font-bold">{{ c.case_number }}</span>
+                            <span [class]="'text-[10px] font-bold px-2 py-0.5 rounded ' + (c.estado === 'Cerrado' ? 'bg-secondary-container text-on-secondary-container' : 'bg-tertiary-container text-on-tertiary-container')">
+                              {{ (c.estado === 'Cerrado' ? 'Cerrado' : (c.estado === 'Abierto' ? 'Abierto' : c.estado)) | uppercase }}
+                            </span>
+                          </div>
+                          <div class="font-headline-sm text-headline-sm text-on-surface mb-1 group-hover:text-primary transition-colors">{{ c.primary_type }}</div>
+                          <div class="text-[11px] text-on-surface-variant flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px] notranslate" translate="no">calendar_today</span>
+                            Asignado: {{ c.fecha_asignacion | date:'mediumDate' }}
+                          </div>
+                          @if (c.es_caso_mayor) {
+                            <div class="mt-2 flex items-center gap-1 text-[10px] font-bold text-error">
+                              <span class="material-symbols-outlined text-[12px] notranslate" translate="no">warning</span> CASO MAYOR
+                            </div>
+                          }
+                        </a>
+                      }
+                    </div>
+                  } @else {
+                    <div class="p-6 text-center text-on-surface-variant bg-surface rounded-lg border border-outline-variant border-dashed">
+                      <span class="material-symbols-outlined text-4xl mb-2 opacity-50 notranslate" translate="no">inbox</span>
+                      <p class="font-body-md text-body-md">No tiene investigaciones especiales asignadas en este momento.</p>
+                      <p class="font-body-sm text-body-sm mt-1">Abra un incidente y asígnelo a su perfil para comenzar a investigar.</p>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+
+
 
             <!-- Main Layout: 2/3 Map/Chart, 1/3 Feed -->
             <section class="flex flex-col lg:flex-row gap-lg flex-1 mt-4">
                 <!-- Left Column (Map & Chart) -->
                 <div class="w-full lg:w-2/3 flex flex-col gap-lg h-full">
-                    <!-- Map Module -->
+                    <!-- Yearly Chart Module -->
                     <div class="bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col flex-1 min-h-[400px]">
-                        <div class="border-b border-outline-variant p-md flex justify-between items-center">
-                            <h2 class="font-headline-sm text-headline-sm text-on-surface">Live Heatmap: Chicago Operations</h2>
+                        <div class="border-b border-outline-variant p-md flex justify-between items-center bg-surface-container-lowest sticky top-0 z-10">
+                            <div class="flex items-baseline gap-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary notranslate" translate="no">insert_chart</span>
+                                    <h2 class="font-headline-sm text-headline-sm text-on-surface">Incidentes Históricos por Año</h2>
+                                </div>
+                                <span class="font-body-sm text-sm text-secondary bg-surface-container-high px-2 py-0.5 rounded-md font-medium">Total: {{ kpis.total_incidents | number }}</span>
+                            </div>
                             <div class="flex gap-2">
-                                <button class="p-1 text-on-surface-variant hover:bg-surface-container-low rounded"><span class="material-symbols-outlined text-sm notranslate" translate="no">filter_list</span></button>
-                                <button class="p-1 text-on-surface-variant hover:bg-surface-container-low rounded"><span class="material-symbols-outlined text-sm notranslate" translate="no">fullscreen</span></button>
+                                <span class="bg-primary/10 text-primary border border-primary/25 font-label-caps text-[10px] px-2 py-0.5 rounded-full flex items-center select-none font-bold">
+                                    <span class="material-symbols-outlined text-[13px] mr-1 notranslate" translate="no">timeline</span>
+                                    Historial Multi-Anual Completo
+                                </span>
                             </div>
                         </div>
-                        <div class="flex-1 relative bg-surface-container overflow-hidden rounded-b-lg">
-                            <div id="tacticalMap" class="w-full h-full z-0"></div>
-                            <div class="absolute bottom-4 left-4 bg-surface-container-lowest/90 backdrop-blur border border-outline-variant p-3 rounded shadow-sm z-10">
-                                <div class="font-label-caps text-label-caps text-on-surface-variant mb-2">Legend</div>
-                                <div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 rounded-full bg-error"></span> <span class="font-body-sm text-body-sm">Critical</span></div>
-                                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-primary-container"></span> <span class="font-body-sm text-body-sm">Patrols</span></div>
-                            </div>
+                        <div class="flex-1 p-4 pb-2 relative flex items-end">
+                            <canvas id="yearlyChart" class="w-full h-full"></canvas>
                         </div>
                     </div>
                     <!-- Chart Module -->
                     <div class="bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col h-64">
                         <div class="border-b border-outline-variant p-md flex justify-between items-center">
-                            <h2 class="font-headline-sm text-headline-sm text-on-surface">Crimes by District (24h)</h2>
-                            <button class="font-label-caps text-label-caps text-primary border border-outline-variant px-3 py-1 rounded hover:bg-surface-container-low">EXPORT</button>
+                            <div class="flex items-baseline gap-3">
+                                <h2 class="font-headline-sm text-headline-sm text-on-surface">Tiempo de Respuesta SLA (OT6)</h2>
+                                <span class="font-body-sm text-sm text-secondary bg-surface-container-high px-2 py-0.5 rounded-md font-medium text-warning flex items-center gap-1"><span class="material-symbols-outlined text-[14px] notranslate" translate="no">timer</span> Prom: 6.8 min</span>
+                            </div>
+                            <button class="font-label-caps text-label-caps text-primary border border-outline-variant px-3 py-1 rounded hover:bg-surface-container-low">EXPORTAR</button>
                         </div>
                         <div class="flex-1 p-md flex items-end gap-2 overflow-hidden">
                             <canvas id="districtChart" class="w-full h-full"></canvas>
@@ -121,24 +675,25 @@
                 </div>
 
                 <!-- Right Column (Feed) -->
-                <div class="w-full lg:w-1/3 bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col h-[calc(100vh-140px)] overflow-hidden">
+                <div class="w-full lg:w-1/3 bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col min-h-[450px] max-h-[720px] overflow-hidden">
                     <div class="border-b border-outline-variant p-md flex justify-between items-center bg-surface-container-lowest sticky top-0 z-10">
                         <div class="flex items-center gap-2">
                             <span class="relative flex h-2 w-2">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2 w-2 bg-error"></span>
                             </span>
-                            <h2 class="font-headline-sm text-headline-sm text-on-surface">Real-time 911 Feed</h2>
+                            <h2 class="font-headline-sm text-headline-sm text-on-surface">Flujo de Emergencias en Tiempo Real</h2>
                         </div>
                         <span class="bg-error/10 text-error border border-error/25 font-label-caps text-[9px] px-2 py-0.5 rounded-full flex items-center gap-1 select-none">
                             <span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse inline-block"></span>
-                            LIVE
+                            EN VIVO
                         </span>
                     </div>
                     <div class="flex-1 overflow-y-auto bg-surface-container-low p-2 space-y-2">
                         <!-- Feed Items -->
                         @for (feed of kpis.recent_feed; track feed.case_number) {
                             <div class="bg-surface-container-lowest border-l-4 p-3 shadow-sm rounded-r flex flex-col gap-1 hover:bg-surface-bright transition-colors cursor-pointer"
+                                 [routerLink]="['/incidents', feed.case_number]"
                                  [ngClass]="{'border-error': feed.type.includes('HOMICIDE') || feed.type.includes('ASSAULT') || feed.type.includes('ROBBERY'), 'border-surface-tint': !(feed.type.includes('HOMICIDE') || feed.type.includes('ASSAULT') || feed.type.includes('ROBBERY'))}">
                                 <div class="flex justify-between items-start">
                                     <span class="font-label-caps text-label-caps px-1.5 py-0.5 rounded"
@@ -155,10 +710,11 @@
                         }
                     </div>
                     <div class="p-2 border-t border-outline-variant bg-surface-container-lowest text-center">
-                        <button class="font-label-caps text-label-caps text-primary hover:underline">VIEW ALL LOGS</button>
+                        <button class="font-label-caps text-label-caps text-primary hover:underline">VER TODAS LAS BITÁCORAS</button>
                     </div>
                 </div>
             </section>
+            }
         </main>
     </div>
 </div>

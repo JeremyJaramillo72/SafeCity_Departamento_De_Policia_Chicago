@@ -1,0 +1,75 @@
+@startuml Módulo 01 - Gestión Operativa de Incidentes
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam actorStyle helio
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam package {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor White
+  BorderColor Black
+}
+
+title Módulo 01: Gestión Operativa de Incidentes\n(Gestión Operativa de Incidentes)
+
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "Sistema SafeCity Intelligence Ops" {
+
+  actor "Oficial de Patrulla" as Officer
+  actor "Operador de Emergencias" as Operator
+
+  package "Módulo: Gestión Operativa de Incidentes" as mod1 {
+    usecase "CU-O01: Registrar Ubicación GPS\nde Incidente" as UC01
+    usecase "CU-O02: Clasificar Tipo Penal\n(IUCR / FBI)" as UC02
+    usecase "CU-O04: Registrar Tiempo de\nRespuesta" as UC04
+    usecase "CU-O05: Ingresar Número de\nVíctimas Afectadas" as UC05
+    usecase "CU-O06: Detallar Uso o\nDetonación de Armas" as UC06
+    usecase "CU-O07: Adjuntar Fotografías\nPanorámicas y Detalle" as UC07
+    usecase "CU-O08: Registrar Estado\nClimático y Visibilidad" as UC08
+    usecase "CU-O03: Despachar y Trazar\nRuta de Llegada" as UC03
+    usecase "CU-O09: Clasificar Nivel de\nGravedad (Triage 911)" as UC09
+  }
+
+  Officer --> UC01
+  Officer --> UC02
+  Officer --> UC04
+  Officer --> UC05
+  Officer --> UC06
+  Officer --> UC07
+  Officer --> UC08
+
+  Operator --> UC03
+  Operator --> UC09
+
+  UC03 ..> UC04 : <<trigger>>
+}
+
+note right of mod1
+  <b>Actor principal:</b> Oficial de Patrulla
+  <b>Objetivo:</b> Registro completo de incidentes
+  <b>Tablas Fact:</b> Fact_Chicago_Crimes,
+  Fact_Llamada_Emergencia
+  <b>Tablas Dim:</b> Dim_Catalogo_Ubicacion,
+  Dim_Codigo_Penal
+end note
+
+@enduml

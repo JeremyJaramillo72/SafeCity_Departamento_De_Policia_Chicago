@@ -1,0 +1,64 @@
+@startuml Módulo 08 - Auditoría, Seguridad y Backups
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam actorStyle helio
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam package {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor White
+  BorderColor Black
+}
+
+title Módulo 08: Auditoría, Seguridad y Backups\n(Auditoría, Seguridad y Backups)
+
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "Sistema SafeCity Intelligence Ops" {
+
+  actor "Administrador de\nSistema" as Admin
+
+  package "Módulo: Auditoría y Seguridad" as mod8 {
+    usecase "CU-O33: Rastrear Inicio de\nSesión Web/Móvil" as UC33
+    usecase "CU-O35: Ejecutar Respaldo\nde Base de Datos" as UC35
+    usecase "CU-O36: Etiquetar Huella Digital\nen Acceso a Evidencia" as UC36
+    usecase "CU-O37: Bloquear Cuenta por\nIntentos Fallidos" as UC37
+  }
+
+  Admin --> UC33
+  Admin --> UC35
+  Admin --> UC36
+  Admin --> UC37
+
+  UC33 ..> UC37 : <<alerta>>
+}
+
+note right of mod8
+  <b>Actor principal:</b> Administrador de Sistema
+  <b>Objetivo:</b> Logs de accesos, respaldos,
+  auditoría forense CJIS
+  <b>Tablas Fact:</b> Fact_Historial_Sesion,
+  Fact_Auditoria_Sistema,
+  Fact_Registro_Respaldo
+  <b>Cumplimiento:</b> ISO 27001, CJIS
+end note
+
+@enduml

@@ -1,48 +1,27 @@
-<div class="flex bg-background font-body-md text-on-background min-h-screen w-full">
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
     <app-sidebar></app-sidebar>
 
     <!-- Main Content Area -->
-    <div class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden relative">
-        <!-- TopNavBar Component -->
-        <header class="sticky top-0 bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-on-surface-variant flex justify-between items-center h-16 w-full px-lg z-40">
-            <!-- Brand / Active Tab Context -->
-            <div class="flex items-center gap-4">
-                <span class="font-headline-md text-headline-md font-black tracking-tight text-primary dark:text-primary-fixed">SafeCity Intelligence</span>
-            </div>
-            <!-- Actions & Profile -->
-            <div class="flex items-center gap-6">
-                <!-- Search -->
-                <div class="relative hidden lg:block">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
-                    <input class="pl-9 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Buscar logística..." type="text"/>
-                </div>
-                <!-- Icons -->
-                <div class="flex items-center gap-2">
-                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out relative">
-                        <span class="material-symbols-outlined notranslate" translate="no">notifications</span>
-                    </button>
-                </div>
-                <!-- Profile -->
-                <div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
-                    <img alt="Officer Profile Image" class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVZCFb_VW_PmEcwto3luZFMSKOxh1BHw879119sxZhYwIrmO9gD3gU6wCFhyQPaE0p7UwDvmKcuA0pe4KJ0hCmJkogNz_1vjSxrGayA7Iyx6QhFgrACkEY6WoqCi15tET9WVhdmPknHND6q_ba-yajyLWTPaJp4Nyl9nnNKB_GYbaRSpi95tdm1o0xa2pMJEyRK7GHikT9TaQbIH-VuEbryhgYBr6VbBfABW8ADzdESdw9mbQr9iV85a6uQQXs6dz16IEh3emy_-vA"/>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Canvas -->
-        <main class="flex-1 overflow-hidden p-md lg:p-lg flex flex-col gap-md max-w-[1600px] w-full mx-auto">
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+        <!-- Main Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-3.5 w-full pb-16">
             
-            <div class="flex justify-between items-center gap-4 shrink-0">
-                <div>
-                    <div class="flex items-center gap-3">
-                        <h2 class="font-display-lg text-display-lg text-primary">Logística del Departamento</h2>
-                        <button (click)="toggleKpis()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 transition-all font-semibold text-xs cursor-pointer select-none" title="Alternar Resumen de KPIs">
-                            <span class="material-symbols-outlined text-[16px] transition-transform duration-300 notranslate" [ngClass]="{'rotate-180': !showKpis}" translate="no">expand_less</span>
-                            <span>{{ showKpis ? 'Ocultar Resumen' : 'Mostrar Resumen' }}</span>
-                        </button>
-                    </div>
-                    <p class="font-body-sm text-body-sm text-secondary mt-0.5">Gestión integral de personal policial, flota de vehículos y asignación de rutas de patrullaje.</p>
+            <div class="flex justify-between items-center gap-2 shrink-0">
+                <div class="flex flex-col">
+                    <h2 class="text-xl lg:text-2xl font-black text-primary tracking-tight">Logística Policial y Operativa</h2>
+                    <p class="font-body-xs text-xs text-secondary mt-0.5">
+                        @switch (activeTab) {
+                            @case ('vehicles') { Seguimiento de inventario, operatividad de unidades y asignación de patrullas. }
+                            @case ('officers') { Listado de personal activo, despliegue de turnos y monitoreo predictivo de bienestar (IA). }
+                            @case ('patrols') { Cobertura de cuadrantes en tiempo real, turnos programados y seguimiento de rutas en vivo. }
+                            @case ('maintenance') { Cronogramas de inspección, historial vehicular y análisis predictivo de fallas (IA). }
+                        }
+                    </p>
                 </div>
+                <button (click)="toggleKpis()" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 transition-all font-semibold text-[11px] cursor-pointer select-none" title="Alternar Resumen KPI">
+                    <span class="material-symbols-outlined text-[15px] transition-transform duration-300 notranslate" [ngClass]="{'rotate-180': !showKpis}" translate="no">expand_less</span>
+                    <span>{{ showKpis ? 'Ocultar Resumen' : 'Mostrar Resumen' }}</span>
+                </button>
             </div>
 
             <!-- Modern Collapsible KPI & Analytics Panel using pure CSS grid transition -->
@@ -55,143 +34,285 @@
                             }
                         </div>
                     } @else {
-                        <!-- KPI Section -->
-                        <section class="grid grid-cols-1 md:grid-cols-3 gap-md pb-xs">
-                            <!-- Vehicles KPI -->
-                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
-                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">directions_car</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Estado de Flota</span>
-                                        <div class="flex items-baseline gap-1.5 mt-0.5">
-                                            <span class="text-lg font-black text-on-surface">{{ kpis.operational_vehicles }}</span>
-                                            <span class="text-[11px] text-on-surface-variant">/ {{ kpis.total_vehicles }}</span>
+                        <!-- DYNAMIC KPI SECTION BASED ON ACTIVE TAB -->
+                        @switch (activeTab) {
+                            @case ('vehicles') {
+                                <section class="grid grid-cols-1 md:grid-cols-2 gap-2 pb-1">
+                                    <!-- Vehicles KPI -->
+                                    <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-2 px-3 shadow-xs flex items-center justify-between hover:shadow-sm hover:border-primary/20 transition-all duration-200 group">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">directions_car</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-[9px] font-bold text-secondary uppercase tracking-wider block">Estado de Flota</span>
+                                                <div class="flex items-baseline gap-1 mt-0.2">
+                                                    <span class="text-base font-black text-on-surface">{{ kpis.operational_vehicles }}</span>
+                                                    <span class="text-[10px] text-on-surface-variant">/ {{ kpis.total_vehicles }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-[8.5px] px-2 py-0.5 rounded-full tracking-wide inline-flex items-center" [ngClass]="{'bg-error-container text-on-error-container border border-error/10': getVehicleMaintenancePercentage() > 20, 'bg-secondary-container text-on-secondary-container border border-secondary/10': getVehicleMaintenancePercentage() <= 20}">
+                                                <span class="w-1 h-1 rounded-full mr-1" [ngClass]="getVehicleMaintenancePercentage() > 20 ? 'bg-error' : 'bg-secondary'"></span>
+                                                {{ getVehicleMaintenancePercentage() }}% EN MANTENIMIENTO
+                                            </span>
                                         </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide inline-flex items-center" [ngClass]="{'bg-error-container text-on-error-container border border-error/10': getVehicleMaintenancePercentage() > 20, 'bg-secondary-container text-on-secondary-container border border-secondary/10': getVehicleMaintenancePercentage() <= 20}">
-                                        <span class="w-1 h-1 rounded-full mr-1" [ngClass]="getVehicleMaintenancePercentage() > 20 ? 'bg-error' : 'bg-secondary'"></span>
-                                        {{ getVehicleMaintenancePercentage() }}% EN MANTENIMIENTO
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Officers KPI -->
-                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
-                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">badge</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Oficiales Registrados</span>
-                                        <span class="text-lg font-black text-on-surface block mt-0.5">{{ kpis.total_officers }}</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide bg-secondary-container text-on-secondary-container border border-secondary/10 inline-flex items-center">
-                                        <span class="w-1 h-1 rounded-full mr-1 bg-secondary animate-pulse"></span>
-                                        ROSTER ACTIVO
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Equipment KPI -->
-                            <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-3 shadow-sm flex items-center justify-between hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
-                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">inventory_2</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider block">Equipamiento Operativo</span>
-                                        <div class="flex items-baseline gap-1.5 mt-0.5">
-                                            <span class="text-lg font-black text-on-surface">{{ kpis.operational_equipment }}</span>
-                                            <span class="text-[11px] text-on-surface-variant">/ {{ kpis.total_equipment }}</span>
+                                    <!-- Equipment KPI -->
+                                    <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-2 px-3 shadow-xs flex items-center justify-between hover:shadow-sm hover:border-primary/20 transition-all duration-200 group">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">inventory_2</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-[9px] font-bold text-secondary uppercase tracking-wider block">Equipamiento Operativo</span>
+                                                <div class="flex items-baseline gap-1 mt-0.2">
+                                                    <span class="text-base font-black text-on-surface">{{ kpis.operational_equipment }}</span>
+                                                    <span class="text-[10px] text-on-surface-variant">/ {{ kpis.total_equipment }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-[8.5px] px-2 py-0.5 rounded-full tracking-wide inline-flex items-center" [ngClass]="{'bg-error-container text-on-error-container border border-error/10': getEquipmentMaintenancePercentage() > 10, 'bg-secondary-container text-on-secondary-container border border-secondary/10': getEquipmentMaintenancePercentage() <= 10}">
+                                                <span class="w-1 h-1 rounded-full mr-1" [ngClass]="getEquipmentMaintenancePercentage() > 10 ? 'bg-error' : 'bg-secondary'"></span>
+                                                {{ getEquipmentMaintenancePercentage() }}% EXTRAVIADO/DAÑADO
+                                            </span>
                                         </div>
                                     </div>
+                                </section>
+                            }
+                            @case ('officers') {
+                                <section class="grid grid-cols-1 md:grid-cols-3 gap-2 pb-1">
+                                    <!-- Officers KPI 1: Registered Officers -->
+                                    <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-2 px-3 shadow-xs flex items-center justify-between hover:shadow-sm hover:border-primary/20 transition-all duration-200 group">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">badge</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-[9px] font-bold text-secondary uppercase tracking-wider block">Oficiales Registrados</span>
+                                                <span class="text-base font-black text-on-surface block mt-0.2">{{ kpis.total_officers }}</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-[8.5px] px-2 py-0.5 rounded-full tracking-wide bg-secondary-container text-on-secondary-container border border-secondary/10 inline-flex items-center">
+                                                <span class="w-1 h-1 rounded-full mr-1 bg-secondary animate-pulse"></span>
+                                                PLANTILLA ACTIVA
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Officers KPI 2: On-Duty Deployment -->
+                                    <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-2 px-3 shadow-xs flex items-center justify-between hover:shadow-sm hover:border-primary/20 transition-all duration-200 group">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">local_police</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-[9px] font-bold text-secondary uppercase tracking-wider block">Despliegue en Servicio</span>
+                                                <div class="flex items-baseline gap-1 mt-0.2">
+                                                    <span class="text-base font-black text-on-surface">{{ officersOnDutyTodayCount }}</span>
+                                                    <span class="text-[10px] text-on-surface-variant">/ {{ kpis.total_officers }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-[8.5px] px-2 py-0.5 rounded-full tracking-wide bg-secondary-container text-on-secondary-container border border-secondary/10 inline-flex items-center">
+                                                <span class="w-1 h-1 rounded-full mr-1 bg-secondary"></span>
+                                                {{ getOfficersOnDutyPercentage() }}% EN SERVICIO
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Officers KPI 3: Fatigue & Overtime Risk (AI) -->
+                                    <div (click)="toggleBurnoutPredictiveMode()"
+                                         class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-2 px-3 shadow-xs flex items-center justify-between hover:shadow-sm hover:border-primary/40 transition-all duration-200 group cursor-pointer"
+                                         title="Clic para ver Análisis Predictivo de Fatiga (IA)">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">psychology</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-[9px] font-bold text-secondary uppercase tracking-wider block">Fatiga y Horas Extra (IA)</span>
+                                                <div class="flex items-baseline gap-1 mt-0.2">
+                                                    <span class="text-base font-black" [ngClass]="totalBurnoutAlertsCount > 0 ? 'text-error' : 'text-on-surface'">
+                                                        {{ totalBurnoutAlertsCount }}
+                                                    </span>
+                                                    <span class="text-[10px] text-on-surface-variant">/ {{ kpis.total_officers }} alertas</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-[8.5px] px-2 py-0.5 rounded-full tracking-wide inline-flex items-center gap-1"
+                                                  [ngClass]="criticalBurnoutRiskCount > 0 ? 'bg-error-container text-on-error-container border border-error/20' : (warningBurnoutRiskCount > 0 ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-secondary-container text-on-secondary-container border border-secondary/10')">
+                                                <span class="w-1 h-1 rounded-full" [ngClass]="criticalBurnoutRiskCount > 0 ? 'bg-error animate-pulse' : (warningBurnoutRiskCount > 0 ? 'bg-amber-600' : 'bg-secondary')"></span>
+                                                {{ criticalBurnoutRiskCount }} CRÍTICO · {{ warningBurnoutRiskCount }} ADVERTENCIA
+                                            </span>
+                                        </div>
+                                    </div>
+                                </section>
+                            }
+                            @case ('patrols') {
+                                <section class="grid grid-cols-1 md:grid-cols-3 gap-2 pb-1">
+                                    <!-- Today's Shifts -->
+                                    <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-2 px-3 flex items-center justify-between shadow-xs">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">today</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-[9px] font-bold text-secondary uppercase tracking-wider block">Turnos de Hoy</span>
+                                                <span class="text-base font-black text-on-surface block mt-0.2">{{ quadrantKpis.total_shifts_today }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Covered Quadrants -->
+                                    <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-2 px-3 flex items-center justify-between shadow-xs">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center font-bold">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">map</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-[9px] font-bold text-secondary uppercase tracking-wider block">Cuadrantes Cubiertos</span>
+                                                <span class="text-base font-black text-on-surface block mt-0.2">{{ quadrantKpis.covered_quadrants_count }} / {{ availableQuadrantsList.length }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Unassigned Quadrants -->
+                                    <div class="bg-surface-container-lowest border border-outline-variant/65 rounded-xl p-2 px-3 flex items-center justify-between shadow-xs">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center font-bold">
+                                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">domain_disabled</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-[9px] font-bold text-secondary uppercase tracking-wider block">Cuadrantes Sin Asignar</span>
+                                                <span class="text-base font-black text-on-surface block mt-0.2">{{ quadrantKpis.unassigned_quadrants_count }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            }
+                            @case ('maintenance') {
+                                <!-- OT3: MONTHLY FLEET AVAILABILITY SLIM RIBBON -->
+                                <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-2 px-3 shadow-xs flex items-center justify-between gap-3 overflow-x-auto custom-scrollbar w-full mb-1">
+                                    <div class="flex items-center gap-2 shrink-0 border-r border-outline-variant/60 pr-3">
+                                        <div class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">show_chart</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-[10px] uppercase tracking-wider text-on-surface leading-tight">Tendencia de Flota</span>
+                                            <span class="text-[9px] text-on-surface-variant font-medium">{{ fleetTrend?.current_fleet_size || 17 }} Unidades</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-1 justify-between min-w-[520px]">
+                                        @for (m of fleetTrend.monthly_trend; track m.month) {
+                                        <div class="flex items-center gap-2 bg-surface-container-low border border-outline-variant/50 rounded-lg px-2.5 py-1 hover:border-primary/30 transition-all shrink-0">
+                                            <span class="text-[10px] font-bold text-on-surface-variant uppercase">{{ m.month | date:'MMM yyyy' }}</span>
+                                            <span class="text-xs font-black text-on-surface">{{ m.availability_percentage }}%</span>
+                                            <span class="text-[9px] text-secondary font-medium hidden sm:inline">({{ m.operational }}/{{ m.total_fleet }})</span>
+                                            <div class="w-12 bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+                                                <div class="h-full rounded-full transition-all duration-500" [ngClass]="m.availability_percentage >= 85 ? 'bg-secondary' : 'bg-warning'" [style.width.%]="m.availability_percentage"></div>
+                                            </div>
+                                        </div>
+                                        } @empty {
+                                        <div class="w-full text-center text-on-surface-variant">
+                                            <p class="text-xs font-medium">No se encontraron datos históricos de disponibilidad.</p>
+                                        </div>
+                                        }
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide inline-flex items-center" [ngClass]="{'bg-error-container text-on-error-container border border-error/10': getEquipmentMaintenancePercentage() > 10, 'bg-secondary-container text-on-secondary-container border border-secondary/10': getEquipmentMaintenancePercentage() <= 10}">
-                                        <span class="w-1 h-1 rounded-full mr-1" [ngClass]="getEquipmentMaintenancePercentage() > 10 ? 'bg-error' : 'bg-secondary'"></span>
-                                        {{ getEquipmentMaintenancePercentage() }}% EXTRAVIADO/DAÑADO
-                                    </span>
-                                </div>
-                            </div>
-                        </section>
+                            }
+                        }
                     }
                 </div>
             </div>
 
             <!-- TAB SEGMENTED NAVIGATION BAR -->
-            <div class="bg-surface-container-low border border-outline-variant/65 p-1 rounded-xl flex gap-1 self-start shadow-sm shrink-0 z-10">
-                <button (click)="setActiveTab('vehicles')" class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'vehicles' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
-                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">directions_car</span>
-                    Flota de Vehículos
+            <div class="bg-surface-container-low border border-outline-variant/65 p-0.5 rounded-lg flex gap-1 self-start shadow-xs shrink-0 z-10">
+                <button (click)="setActiveTab('vehicles')" class="px-3 py-1.5 rounded-md font-semibold flex items-center gap-1.5 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'vehicles' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">directions_car</span>
+                    Flota Vehicular
                 </button>
-                <button (click)="setActiveTab('officers')" class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'officers' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
-                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">badge</span>
+                <button (click)="setActiveTab('officers')" class="px-3 py-1.5 rounded-md font-semibold flex items-center gap-1.5 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'officers' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">badge</span>
                     Oficiales de Policía
                 </button>
-                <button (click)="setActiveTab('patrols')" class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'patrols' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
-                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">map</span>
+                <button (click)="setActiveTab('patrols')" class="px-3 py-1.5 rounded-md font-semibold flex items-center gap-1.5 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'patrols' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">map</span>
                     Rutas de Patrullaje
                 </button>
+                <button (click)="setActiveTab('maintenance')" class="px-3 py-1.5 rounded-md font-semibold flex items-center gap-1.5 transition-all cursor-pointer text-xs" [ngClass]="activeTab === 'maintenance' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">build</span>
+                    Mantenimiento Preventivo
+                </button>
             </div>
+
 
                 <!-- ======================================================== -->
                 <!-- VEHICLES PANEL -->
                 <!-- ======================================================== -->
                 @if (activeTab === 'vehicles') {
-                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg flex-1 min-h-0 animate-fade-in">
-                    <div class="flex justify-between items-center mb-4 shrink-0">
-                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
-                            <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">directions_car</span>
-                            Administración de Flota de Vehículos
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-3 lg:p-3.5 flex-1 min-h-0 animate-fade-in">
+                    <div class="flex flex-wrap justify-between items-center gap-3 mb-2.5 shrink-0">
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold text-sm">
+                            <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">directions_car</span>
+                            Gestión de Flota Vehicular
                         </h3>
-                        <button (click)="openCreateVehicleModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm scale-98 active:scale-95 cursor-pointer">
-                            <span class="material-symbols-outlined text-sm font-black notranslate" translate="no">add</span> Añadir Vehículo
-                        </button>
+                        <div class="flex items-center gap-2.5">
+                            <!-- Live Search Input -->
+                            <div class="relative min-w-[220px]">
+                                <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[15px] notranslate pointer-events-none" translate="no">search</span>
+                                <input type="text" [(ngModel)]="globalSearchQuery" placeholder="Buscar placa, tipo, cuadrante..." class="w-full bg-surface-container border border-outline-variant rounded-lg pl-8 pr-7 py-1.5 text-on-surface text-xs focus:outline-none focus:border-primary transition-all placeholder:text-on-surface-variant/60" />
+                                @if (globalSearchQuery) {
+                                    <button (click)="globalSearchQuery = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-error transition-colors p-0.5 bg-transparent border-0 cursor-pointer flex items-center" title="Limpiar">
+                                        <span class="material-symbols-outlined text-[14px] notranslate" translate="no">close</span>
+                                    </button>
+                                }
+                            </div>
+                            <button (click)="openCreateVehicleModal()" class="bg-primary hover:bg-primary/90 text-on-primary font-bold py-1.5 px-3.5 rounded-lg flex items-center gap-1.5 transition-all shadow-xs text-xs cursor-pointer">
+                                <span class="material-symbols-outlined text-xs font-black notranslate" translate="no">add</span> Agregar Vehículo
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
                         <table class="w-full text-left border-collapse whitespace-nowrap">
                             <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
                                 <tr>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Placa</th>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Tipo de Vehículo</th>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Beat Asignado</th>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Estado Operativo</th>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4 text-right">Acciones</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Placa</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Tipo de Vehículo</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Cuadrante Asignado</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Estado Operativo</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-surface-variant">
-                                @for (v of vehicles; track v.id_vehiculo) {
+                                @for (v of filteredVehicles; track v.id_vehiculo) {
                                 <tr class="hover:bg-surface-bright/50 transition-colors group">
-                                    <td class="py-3.5 px-4 font-data-mono text-data-mono font-bold text-primary">{{ v.placa_vehiculo }}</td>
-                                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-on-surface">{{ v.tipo_vehiculo }}</td>
-                                    <td class="py-3.5 px-4 font-body-sm text-body-sm text-secondary">{{ v.codigo_beat }}</td>
-                                    <td class="py-3.5 px-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-caps text-[10px] font-bold tracking-wider"
-                                              [ngClass]="v.estado_mantenimiento === 'operativo' ? 'bg-secondary-container text-on-secondary-container border border-secondary/20' : 'bg-error-container text-on-error-container border border-error/20'">
-                                            <span class="w-1.5 h-1.5 rounded-full mr-1.5" [ngClass]="v.estado_mantenimiento === 'operativo' ? 'bg-secondary' : 'bg-error'"></span>
-                                            {{ v.estado_mantenimiento | uppercase }}
+                                    <td class="py-2 px-3 font-data-mono text-data-mono font-bold text-primary">{{ v.placa_vehiculo }}</td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface">{{ v.tipo_vehiculo }}</td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-secondary">{{ v.codigo_beat }}</td>
+                                    <td class="py-2 px-3">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] font-bold tracking-wider"
+                                              [ngClass]="getVehicleStatusClass(v.estado_mantenimiento)">
+                                            <span class="w-1.5 h-1.5 rounded-full mr-1" [ngClass]="getVehicleStatusDotClass(v.estado_mantenimiento)"></span>
+                                            {{ getVehicleStatusLabel(v.estado_mantenimiento) }}
                                         </span>
                                     </td>
-                                    <td class="py-3.5 px-4 text-right">
-                                        <button (click)="openEditVehicleModal(v)" class="text-primary hover:text-primary/80 mr-3 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Editar">
-                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">edit</span>
+                                    <td class="py-2 px-3 text-right">
+                                        <button (click)="openEditVehicleModal(v)" class="text-primary hover:text-primary/80 mr-2 transition-colors p-1 hover:bg-surface-container-high rounded-full cursor-pointer" title="Editar">
+                                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
                                         </button>
-                                        <button (click)="deleteVehicle(v.id_vehiculo, $event)" class="text-error hover:text-error/80 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Eliminar">
-                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">delete</span>
+                                        <button (click)="deleteVehicle(v, $event)" class="text-error hover:text-error/80 transition-colors p-1 hover:bg-surface-container-high rounded-full cursor-pointer" title="Dar de Baja / Eliminar">
+                                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
                                         </button>
                                     </td>
                                 </tr>
                                 } @empty {
                                     <tr>
-                                        <td colspan="5" class="py-12 text-center text-on-surface-variant font-body-md">
-                                            <span class="material-symbols-outlined text-[48px] text-outline mb-2 notranslate" translate="no">directions_car</span>
-                                            <p>No se encontraron vehículos registrados en la flota.</p>
+                                        <td colspan="5" class="py-6 text-center text-on-surface-variant font-body-md">
+                                            <span class="material-symbols-outlined text-[36px] text-outline mb-1 notranslate" translate="no">directions_car</span>
+                                            <p class="text-xs">No se encontraron vehículos registrados en la flota.</p>
                                         </td>
                                     </tr>
                                 }
@@ -205,56 +326,297 @@
                 <!-- OFFICERS PANEL -->
                 <!-- ======================================================== -->
                 @if (activeTab === 'officers') {
-                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg flex-1 min-h-0 animate-fade-in">
-                    <div class="flex justify-between items-center mb-4 shrink-0">
-                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
-                            <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">badge</span>
-                            Roster de Oficiales de Policía
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-3 lg:p-3.5 flex-1 min-h-0 animate-fade-in">
+                    <div class="flex flex-wrap justify-between items-center gap-3 mb-2.5 shrink-0">
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold text-sm">
+                            <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">badge</span>
+                            Plantilla de Oficiales de Policía
                         </h3>
-                        <button (click)="openCreateOfficerModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm scale-98 active:scale-95 cursor-pointer">
-                            <span class="material-symbols-outlined text-sm font-black notranslate" translate="no">add</span> Registrar Oficial
-                        </button>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <!-- Live Search Input -->
+                            <div class="relative min-w-[200px]">
+                                <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[15px] notranslate pointer-events-none" translate="no">search</span>
+                                <input type="text" [(ngModel)]="globalSearchQuery" placeholder="Buscar oficial, placa, rol..." class="w-full bg-surface-container border border-outline-variant rounded-lg pl-8 pr-7 py-1.5 text-on-surface text-xs focus:outline-none focus:border-primary transition-all placeholder:text-on-surface-variant/60" />
+                                @if (globalSearchQuery) {
+                                    <button (click)="globalSearchQuery = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-error transition-colors p-0.5 bg-transparent border-0 cursor-pointer flex items-center" title="Limpiar">
+                                        <span class="material-symbols-outlined text-[14px] notranslate" translate="no">close</span>
+                                    </button>
+                                }
+                            </div>
+
+                            <!-- Toggle Burnout AI -->
+                            <div class="flex items-center gap-1.5 bg-surface-container-high rounded-lg p-1 pr-2.5 border border-outline-variant shadow-xs">
+                                <button (click)="toggleBurnoutPredictiveMode()" 
+                                        class="relative flex items-center justify-center w-9 h-5 rounded-full transition-colors duration-300 cursor-pointer"
+                                        [ngClass]="isBurnoutPredictiveMode ? 'bg-primary' : 'bg-surface-variant'">
+                                    <div class="absolute left-0.5 w-3.5 h-3.5 rounded-full bg-surface transition-transform duration-300"
+                                         [class.translate-x-4]="isBurnoutPredictiveMode"></div>
+                                </button>
+                                <span class="text-xs font-semibold transition-colors"
+                                      [ngClass]="isBurnoutPredictiveMode ? 'text-primary font-bold' : 'text-on-surface-variant'">
+                                    <span class="material-symbols-outlined align-middle text-[15px] mr-0.5 notranslate" translate="no">psychology</span>
+                                    Predicción de Fatiga (IA)
+                                </span>
+                            </div>
+                            
+                            <button (click)="openCreateOfficerModal()" class="bg-primary hover:bg-primary/90 text-on-primary font-bold py-1.5 px-3.5 rounded-lg flex items-center gap-1.5 transition-all shadow-xs text-xs cursor-pointer">
+                                <span class="material-symbols-outlined text-xs font-black notranslate" translate="no">add</span> Registrar Oficial
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                        
+                        @if (!isBurnoutPredictiveMode) {
                         <table class="w-full text-left border-collapse whitespace-nowrap">
                             <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
                                 <tr>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Oficial</th>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Placa Policial</th>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Correo Electrónico</th>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Teléfono</th>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4">Fecha Ingreso</th>
-                                    <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3.5 px-4 text-right">Acciones</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Oficial</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Número de Placa</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Correo Electrónico</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Teléfono</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Fecha de Ingreso</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-surface-variant">
-                                @for (o of officers; track o.id_oficial) {
+                                @for (o of filteredOfficerRoster; track o.id_oficial) {
                                 <tr class="hover:bg-surface-bright/50 transition-colors group">
-                                    <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-3">
-                                        <img [src]="o.url_fotografia || '/assets/avatars/default.jpg'" alt="Ofc" class="w-9 h-9 rounded-full object-cover border border-outline-variant shadow-inner" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuAVZCFb_VW_PmEcwto3luZFMSKOxh1BHw879119sxZhYwIrmO9gD3gU6wCFhyQPaE0p7UwDvmKcuA0pe4KJ0hCmJkogNz_1vjSxrGayA7Iyx6QhFgrACkEY6WoqCi15tET9WVhdmPknHND6q_ba-yajyLWTPaJp4Nyl9nnNKB_GYbaRSpi95tdm1o0xa2pMJEyRK7GHikT9TaQbIH-VuEbryhgYBr6VbBfABW8ADzdESdw9mbQr9iV85a6uQQXs6dz16IEh3emy_-vA'"/>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-2.5">
+                                        <img [src]="o.url_fotografia || '/assets/avatars/default.jpg'" alt="Ofc" class="w-8 h-8 rounded-full object-cover border border-outline-variant shadow-inner" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuAVZCFb_VW_PmEcwto3luZFMSKOxh1BHw879119sxZhYwIrmO9gD3gU6wCFhyQPaE0p7UwDvmKcuA0pe4KJ0hCmJkogNz_1vjSxrGayA7Iyx6QhFgrACkEY6WoqCi15tET9WVhdmPknHND6q_ba-yajyLWTPaJp4Nyl9nnNKB_GYbaRSpi95tdm1o0xa2pMJEyRK7GHikT9TaQbIH-VuEbryhgYBr6VbBfABW8ADzdESdw9mbQr9iV85a6uQQXs6dz16IEh3emy_-vA'"/>
                                         <div class="flex flex-col">
                                             <span class="font-bold text-on-surface capitalize">Ofc. {{ o.nombres }} {{ o.apellidos }}</span>
-                                            <span class="text-[10px] text-on-surface-variant tracking-wider uppercase font-semibold">{{ o.id_rol === 1 ? 'Comandante' : 'Patrullero' }}</span>
+                                            <div class="flex items-center gap-1.5 mt-0.2">
+                                                <span class="text-[9px] text-on-surface-variant tracking-wider uppercase font-semibold">{{ o.id_rol === 1 ? 'Comandante' : 'Patrullero' }}</span>
+                                                @if (getOfficerBurnoutPrediction(o.id_oficial); as pred) {
+                                                    <span class="text-[8.5px] font-bold px-1.5 py-0.2 rounded-full inline-flex items-center gap-1 cursor-help"
+                                                          [ngClass]="{
+                                                              'bg-emerald-100 text-emerald-800 border border-emerald-300': pred.ia_prediction.nivel_estres === 'OPTIMAL',
+                                                              'bg-amber-100 text-amber-800 border border-amber-300': pred.ia_prediction.nivel_estres === 'WARNING',
+                                                              'bg-red-100 text-red-800 border border-red-300': pred.ia_prediction.nivel_estres === 'CRITICAL'
+                                                          }"
+                                                          [title]="pred.ia_prediction.motivo_principal">
+                                                        <span class="w-1.5 h-1.5 rounded-full"
+                                                              [ngClass]="{
+                                                                  'bg-emerald-600': pred.ia_prediction.nivel_estres === 'OPTIMAL',
+                                                                  'bg-amber-600': pred.ia_prediction.nivel_estres === 'WARNING',
+                                                                  'bg-red-600 animate-pulse': pred.ia_prediction.nivel_estres === 'CRITICAL'
+                                                              }"></span>
+                                                        {{ pred.ia_prediction.nivel_estres === 'OPTIMAL' ? 'Óptimo' : (pred.ia_prediction.nivel_estres === 'CRITICAL' ? 'Crítico' : 'Alerta Sobrecarga') }}
+                                                    </span>
+                                                }
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="py-3 px-4 font-data-mono text-data-mono text-primary font-bold">{{ o.placa_policial }}</td>
-                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ o.correo_electronico }}</td>
-                                    <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface-variant">{{ o.telefono_contacto }}</td>
-                                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">{{ o.fecha_ingreso }}</td>
-                                    <td class="py-3 px-4 text-right">
-                                        <button (click)="openEditOfficerModal(o)" class="text-primary hover:text-primary/80 mr-3 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Editar">
-                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">edit</span>
+                                    <td class="py-2 px-3 font-data-mono text-data-mono text-primary font-bold">{{ o.placa_policial }}</td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-secondary">{{ o.correo_electronico }}</td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface-variant">{{ o.telefono_contacto }}</td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-secondary">{{ o.fecha_ingreso }}</td>
+                                    <td class="py-2 px-3 text-right">
+                                        <button (click)="openEditOfficerModal(o)" class="text-primary hover:text-primary/80 mr-2 transition-colors p-1 hover:bg-surface-container-high rounded-full cursor-pointer" title="Editar">
+                                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
                                         </button>
-                                        <button (click)="deleteOfficer(o.id_oficial, $event)" class="text-error hover:text-error/80 transition-colors p-1.5 hover:bg-surface-container-high rounded-full cursor-pointer" title="Eliminar">
-                                            <span class="material-symbols-outlined text-[20px] notranslate" translate="no">delete</span>
+                                        <button (click)="deleteOfficer(o.id_oficial, $event)" class="text-error hover:text-error/80 transition-colors p-1 hover:bg-surface-container-high rounded-full cursor-pointer" title="Eliminar">
+                                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
                                         </button>
                                     </td>
                                 </tr>
                                 } @empty {
                                     <tr>
-                                        <td colspan="6" class="py-12 text-center text-on-surface-variant font-body-md">
-                                            <span class="material-symbols-outlined text-[48px] text-outline mb-2 notranslate" translate="no">badge</span>
-                                            <p>No se encontraron oficiales registrados en el roster.</p>
+                                        <td colspan="6" class="py-6 text-center text-on-surface-variant font-body-md">
+                                            <span class="material-symbols-outlined text-[36px] text-outline mb-1 notranslate" translate="no">badge</span>
+                                            <p class="text-xs">No se encontraron oficiales registrados que coincidan con la búsqueda.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        } @else {
+                            @if (isPredictingBurnout) {
+                                <div class="flex flex-col items-center justify-center py-12 text-on-surface-variant">
+                                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-2"></div>
+                                    <h3 class="font-title-sm font-bold mb-0.5 text-xs">Analizando Telemetría de RRHH...</h3>
+                                    <p class="text-[11px]">Procesando turnos, horas extra y días de descanso (Random Forest)</p>
+                                </div>
+                            } @else {
+                                <table class="w-full text-left border-collapse whitespace-nowrap animate-fade-in">
+                                    <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                        <tr>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Oficial</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-center">Turnos (30d)</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-center">Horas Extra</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-center">Días Sin Descanso</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-center">Prob. Fatiga</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-center">Nivel de Estrés</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-right">Diagnóstico IA</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-surface-variant">
+                                        @for (o of filteredBurnoutPredictions; track o.id_oficial) {
+                                        <tr class="hover:bg-surface-bright/50 transition-colors group">
+                                            <td class="py-2 px-3">
+                                                <div class="flex flex-col">
+                                                    <span class="font-bold text-on-surface text-xs">Ofc. {{ o.nombre_completo }}</span>
+                                                    <span class="text-[9px] text-primary tracking-wider uppercase font-data-mono">{{ o.placa_policial }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="py-2 px-3 font-data-mono text-center text-xs text-on-surface">{{ o.telemetria.turnos_30d }}</td>
+                                            <td class="py-2 px-3 font-data-mono text-center text-xs" [ngClass]="o.telemetria.horas_overtime > 20 ? 'text-error font-bold' : 'text-on-surface'">
+                                                {{ o.telemetria.horas_overtime }} hrs
+                                            </td>
+                                            <td class="py-2 px-3 font-data-mono text-center text-xs" [ngClass]="o.telemetria.dias_sin_vacaciones > 150 ? 'text-amber-600 font-bold' : 'text-on-surface'">
+                                                {{ o.telemetria.dias_sin_vacaciones }}
+                                            </td>
+                                            <td class="py-2 px-3 text-center">
+                                                <div class="inline-flex items-center gap-1.5">
+                                                    <div class="w-14 bg-surface-container-highest rounded-full h-1.5 overflow-hidden shadow-inner">
+                                                        <div class="h-full rounded-full transition-all duration-500"
+                                                             [ngClass]="{
+                                                                 'bg-error': o.ia_prediction.probabilidad_burnout >= 75,
+                                                                 'bg-amber-500': o.ia_prediction.probabilidad_burnout >= 50 && o.ia_prediction.probabilidad_burnout < 75,
+                                                                 'bg-emerald-500': o.ia_prediction.probabilidad_burnout < 50
+                                                             }"
+                                                             [style.width]="o.ia_prediction.probabilidad_burnout + '%'"></div>
+                                                    </div>
+                                                    <span class="font-data-mono text-[10px] font-bold" 
+                                                          [ngClass]="{
+                                                              'text-error': o.ia_prediction.probabilidad_burnout >= 75,
+                                                              'text-amber-600': o.ia_prediction.probabilidad_burnout >= 50 && o.ia_prediction.probabilidad_burnout < 75,
+                                                              'text-emerald-600': o.ia_prediction.probabilidad_burnout < 50
+                                                          }">
+                                                        {{ o.ia_prediction.probabilidad_burnout }}%
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="py-2 px-3 text-center">
+                                                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider border"
+                                                      [ngClass]="{
+                                                          'bg-error/10 text-error border-error/20': o.ia_prediction.nivel_estres === 'CRITICAL',
+                                                          'bg-amber-500/10 text-amber-600 border-amber-500/20': o.ia_prediction.nivel_estres === 'WARNING',
+                                                          'bg-emerald-500/10 text-emerald-600 border-emerald-500/20': o.ia_prediction.nivel_estres === 'OPTIMAL'
+                                                      }">
+                                                    {{ o.ia_prediction.nivel_estres === 'CRITICAL' ? 'CRÍTICO' : (o.ia_prediction.nivel_estres === 'WARNING' ? 'ADVERTENCIA' : 'ÓPTIMO') }}
+                                                </span>
+                                            </td>
+                                            <td class="py-2 px-3 text-right">
+                                                <button (click)="openBurnoutModal(o)" class="text-primary hover:bg-primary-container px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors border border-transparent hover:border-primary/20 flex items-center gap-1 inline-flex cursor-pointer">
+                                                    <span class="material-symbols-outlined text-[15px] notranslate" translate="no">psychiatry</span> Detalle IA
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        }
+                    </div>
+                </div>
+                }
+
+                <!-- ======================================================== -->
+                <!-- PATROL SHIFTS & INTERACTIVE ROUTE MAP PANEL (OT15) -->
+                <!-- ======================================================== -->
+                @if (activeTab === 'patrols') {
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-3 lg:p-3.5 flex-1 min-h-0 animate-fade-in">
+                    <!-- Tab Header & Filter Actions -->
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 mb-2.5 shrink-0">
+                        <div>
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold text-sm">
+                                <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">map</span>
+                                Planificación de Turnos por Cuadrante
+                            </h3>
+                            <p class="font-body-xs text-[11px] text-on-surface-variant mt-0.2">Filtre asignaciones de patrullaje y rutas activas por cuadrante policial.</p>
+                        </div>
+                        
+                        <div class="flex flex-row flex-wrap items-center gap-2 w-full lg:w-auto overflow-x-auto custom-scrollbar pb-0.5">
+                            <!-- Live Search Input -->
+                            <div class="relative min-w-[200px]">
+                                <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[15px] notranslate pointer-events-none" translate="no">search</span>
+                                <input type="text" [(ngModel)]="globalSearchQuery" placeholder="Buscar turno, oficial, vehículo..." class="w-full bg-surface-container border border-outline-variant rounded-lg pl-8 pr-7 py-1.5 text-on-surface text-xs focus:outline-none focus:border-primary transition-all placeholder:text-on-surface-variant/60" />
+                                @if (globalSearchQuery) {
+                                    <button (click)="globalSearchQuery = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-error transition-colors p-0.5 bg-transparent border-0 cursor-pointer flex items-center" title="Limpiar">
+                                        <span class="material-symbols-outlined text-[14px] notranslate" translate="no">close</span>
+                                    </button>
+                                }
+                            </div>
+
+                            <!-- Quadrant Select Dropdown -->
+                            <div class="flex items-center gap-1.5 bg-surface-container border border-outline-variant/60 rounded-lg px-2.5 py-1 text-xs">
+                                <span class="material-symbols-outlined text-xs text-secondary notranslate" translate="no">grid_view</span>
+                                <span class="font-semibold text-on-surface-variant text-[11px]">Cuadrante:</span>
+                                <select [ngModel]="selectedQuadrantFilter" (ngModelChange)="onQuadrantFilterChange($event)" class="bg-transparent text-on-surface font-bold text-xs focus:outline-none cursor-pointer">
+                                    <option value="ALL">Todos los Cuadrantes</option>
+                                    @for (q of dynamicQuadrantsList; track q) {
+                                        <option [value]="q">{{ q }}</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Horizontal Buttons -->
+                            <button (click)="openLiveMapModal()" class="bg-surface-variant hover:bg-surface-bright text-on-surface font-bold py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-all shadow-xs border border-outline-variant/50 text-xs cursor-pointer whitespace-nowrap">
+                                <span class="material-symbols-outlined text-primary text-[16px] notranslate" translate="no">public</span> Mapa en Vivo
+                            </button>
+                            <button (click)="openCreateShiftModal()" class="bg-primary hover:bg-primary/90 text-on-primary font-bold py-1.5 px-3.5 rounded-lg flex items-center gap-1.5 transition-all shadow-xs text-xs cursor-pointer whitespace-nowrap">
+                                <span class="material-symbols-outlined text-xs font-black notranslate" translate="no">add</span> Asignar Turno
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Table Container -->
+                    <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg flex flex-col">
+                        <table class="w-full text-left border-collapse min-w-max">
+                            <thead class="bg-surface-container-low border-b border-outline-variant/60 sticky top-0 z-10">
+                                <tr>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 font-bold">Oficial a Cargo</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 font-bold">Vehículo y Cuadrante</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 font-bold">Horario</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 font-bold">Estado del Turno</th>
+                                    <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 font-bold text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-surface-variant">
+                                @for (shift of displayQuadrantShifts; track $index) {
+                                    <tr class="hover:bg-surface-bright/50 transition-colors group">
+
+                                        <td class="py-2 px-3">
+                                            <div class="flex flex-col">
+                                                <span class="font-bold text-xs text-on-surface capitalize">Ofc. {{ shift.officer_name }}</span>
+                                                <span class="text-[9px] text-on-surface-variant tracking-wider uppercase font-semibold">Oficial Principal</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="font-data-mono text-data-mono text-[10.5px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-bold">{{ shift.vehicle_plate }}</span>
+                                                <span class="text-[11px] text-secondary-variant font-bold bg-surface-container-high px-2 py-0.2 rounded-full border border-outline-variant/40">Cuadrante: {{ shift.codigo_beat || shift.beat || 'N/A' }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <div class="flex flex-col">
+                                                <span class="font-body-sm text-xs text-secondary font-bold">{{ shift.hora_inicio }} - {{ shift.hora_fin }}</span>
+                                                <span class="text-[9px] text-on-surface-variant">{{ shift.fecha_turno }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] tracking-wider" [ngClass]="getShiftStatusBadgeClass(getShiftStatus(shift))">
+                                                <span class="w-1.5 h-1.5 rounded-full mr-1" [ngClass]="getShiftStatusDotClass(getShiftStatus(shift))"></span>
+                                                {{ getShiftStatus(shift) === 'ACTIVE' ? 'ACTIVO' : (getShiftStatus(shift) === 'UPCOMING' ? 'PRÓXIMO' : (getShiftStatus(shift) === 'COMPLETED' ? 'COMPLETADO' : 'PROGRAMADO')) }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <div class="flex justify-end items-center opacity-80 group-hover:opacity-100 transition-opacity">
+                                                <button (click)="openEditShiftModal(shift)" class="text-primary hover:text-primary/80 mr-2 p-1 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer" title="Editar Turno">
+                                                    <span class="material-symbols-outlined text-[17px] notranslate" translate="no">edit</span>
+                                                </button>
+                                                <button (click)="deleteShift(shift.id_turno, $event)" class="text-error hover:text-error/80 p-1 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer" title="Eliminar Turno">
+                                                    <span class="material-symbols-outlined text-[17px] notranslate" translate="no">delete</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                } @empty {
+                                    <tr>
+                                        <td colspan="5" class="py-6 text-center text-on-surface-variant font-body-md bg-surface-container-lowest/50">
+                                            <span class="material-symbols-outlined text-[36px] text-outline mb-1 notranslate" translate="no">map</span>
+                                            <p class="text-xs">No se encontraron turnos de patrullaje para el cuadrante seleccionado.</p>
                                         </td>
                                     </tr>
                                 }
@@ -264,163 +626,481 @@
                 </div>
                 }
 
-                <!-- ======================================================== -->
-                <!-- PATROL SHIFTS & INTERACTIVE ROUTE MAP PANEL -->
-                <!-- ======================================================== -->
-                @if (activeTab === 'patrols') {
-                <div class="flex flex-col lg:flex-row gap-md flex-1 min-h-0 animate-fade-in">
-                    <!-- Shift list & edit panel -->
-                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col w-full lg:w-4/12 h-full overflow-hidden">
-                        @if (!showShiftModal) {
-                            <!-- List panel header -->
-                            <div class="px-md py-4 border-b border-outline-variant flex justify-between items-center shrink-0 bg-surface-container-low">
-                                <div class="flex flex-col">
-                                    <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">map</span>
-                                        Rutas Asignadas
-                                    </h3>
-                                    <span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mt-0.5">Turnos de Patrullaje Activos</span>
-                                </div>
-                                <button (click)="openCreateShiftModal()" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-all text-body-sm shadow-sm cursor-pointer scale-98 active:scale-95">
-                                    <span class="material-symbols-outlined text-sm font-black notranslate" translate="no">add</span> Asignar Turno
+                <!-- Reusable Row Template for Shifts -->
+                <ng-template #shiftRowTemplate let-shift>
+                    <tr class="hover:bg-surface-bright/50 transition-colors group">
+                        <td class="py-3 px-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-sm text-on-surface capitalize">Ofc. {{ shift.officer_name }}</span>
+                                <span class="text-[10px] text-on-surface-variant tracking-wider uppercase font-semibold">Oficial Principal</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-2">
+                                <span class="font-data-mono text-data-mono text-[11px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">{{ shift.vehicle_plate }}</span>
+                                <span class="text-xs text-secondary-variant">Cuadrante: <strong>{{ shift.beat || shift.codigo_beat || 'N/A' }}</strong></span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="flex flex-col">
+                                <span class="font-body-sm text-body-sm text-secondary font-bold">{{ shift.hora_inicio }} - {{ shift.hora_fin }}</span>
+                                <span class="text-[10px] text-on-surface-variant">{{ shift.fecha_turno }}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                            <div class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">group</span>
+                                {{ shift.oficiales_adicionales ? shift.oficiales_adicionales.length : 0 }} Oficiales de Apoyo
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="flex justify-end items-center opacity-80 group-hover:opacity-100 transition-opacity">
+                                <button (click)="openEditShiftModal(shift)" class="text-primary hover:text-primary/80 mr-2 p-1.5 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer" title="Editar Turno">
+                                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
+                                </button>
+                                <button (click)="deleteShift(shift.id_turno, $event)" class="text-error hover:text-error/80 p-1.5 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer" title="Eliminar Turno">
+                                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
                                 </button>
                             </div>
-                            
-                            <!-- List container -->
-                            <div class="overflow-y-auto flex-1 divide-y divide-surface-variant">
-                                @for (shift of patrolShifts; track shift.id_turno) {
-                                <div (click)="selectShift(shift)" class="p-md hover:bg-surface-bright/50 transition-all cursor-pointer flex justify-between items-center border-l-4 group relative" [ngClass]="selectedShiftId === shift.id_turno ? 'border-primary bg-primary/5' : 'border-transparent'">
-                                    <div class="flex flex-col gap-0.5">
-                                        <span class="font-body-md text-body-md text-on-surface font-bold capitalize">Ofc. {{ shift.officer_name }}</span>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            <span class="font-data-mono text-data-mono text-[11px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">{{ shift.vehicle_plate }}</span>
-                                            <span class="text-xs text-secondary-variant">Beat: <strong>{{ shift.beat }}</strong></span>
+                        </td>
+                    </tr>
+                </ng-template>
+
+    <!-- Live Map View Modal -->
+    @if (showLiveMapModal) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center animate-fade-in p-4 sm:p-6 lg:p-8">
+        <div class="fixed inset-0 bg-surface-container-highest/80 backdrop-blur-sm transition-opacity" (click)="closeLiveMapModal()"></div>
+        
+        <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full h-full max-w-7xl max-h-[90vh] flex flex-col relative z-10 border border-outline-variant overflow-hidden animate-slide-up">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">public</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-on-surface">Mapa de Patrullaje en Vivo</h2>
+                        <p class="text-xs text-on-surface-variant">Vista en tiempo real de todas las unidades de patrulla activas y sus rutas asignadas.</p>
+                    </div>
+                </div>
+                <button (click)="closeLiveMapModal()" class="text-on-surface-variant hover:bg-surface-variant p-2 rounded-full transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                </button>
+            </div>
+            
+            <!-- Map Container -->
+            <div class="flex-1 bg-surface-container-lowest relative">
+                <div id="live-patrol-map" class="w-full h-full z-0"></div>
+                <!-- Optional Overlays -->
+                <div class="absolute bottom-6 left-6 z-[999] bg-surface-container/90 backdrop-blur-md px-4 py-3 rounded-xl border border-outline-variant shadow-lg flex flex-col gap-2 pointer-events-none">
+                    <span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Unidades Activas</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-primary animate-pulse"></span>
+                        <span class="text-sm font-bold text-on-surface">{{ patrolSimulations.length }} Patrullas en servicio</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Assign Shift Modal -->
+    @if (showShiftModal) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center animate-fade-in p-4 sm:p-6 lg:p-8">
+        <div class="fixed inset-0 bg-surface-container-highest/80 backdrop-blur-sm transition-opacity" (click)="closeShiftModal()"></div>
+        
+        <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[90vh] flex flex-col relative z-10 border border-outline-variant overflow-hidden animate-slide-up">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">route</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-on-surface">{{ isEditingShift ? 'Editar Turno de Patrullaje' : 'Asignar Turno de Patrullaje' }}</h2>
+                        <p class="text-xs text-on-surface-variant">Seleccione el personal, asigne un vehículo y trace la ruta de patrullaje en el mapa.</p>
+                    </div>
+                </div>
+                <button (click)="closeShiftModal()" class="text-on-surface-variant hover:bg-surface-variant p-2 rounded-full transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                </button>
+            </div>
+            
+            <!-- Modal Body (Split Layout) -->
+            <div class="flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
+                <!-- Left: Form -->
+                <div class="w-full lg:w-5/12 xl:w-4/12 flex flex-col h-full border-r border-outline-variant bg-surface-container-lowest overflow-y-auto relative z-10 shadow-lg">
+                    <div class="p-md flex flex-col gap-4">
+                        <!-- Interactive drawing guidelines -->
+                        <div class="bg-primary-container/15 border border-primary/20 p-3 rounded-xl flex gap-2.5 text-on-surface shrink-0">
+                            <span class="material-symbols-outlined text-[#3b82f6] text-[24px] shrink-0 animate-pulse notranslate" translate="no">gesture</span>
+                            <div class="font-body-sm text-body-sm leading-snug">
+                                <span class="font-bold text-[#3b82f6] text-xs">Instrucciones de Trazado:</span>
+                                <p class="text-on-surface-variant text-[11px] mt-0.5">Complete el formulario y luego **haga clic directamente sobre el mapa a la derecha** para trazar la ruta de patrullaje.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-4 relative">
+                            <!-- Lead Officer -->
+                            <div class="relative z-[95]">
+                                <label class="block font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold mb-1">Oficial Principal a Cargo</label>
+                                @if (currentShift.id_oficial !== 0) {
+                                    <div class="flex items-center justify-between bg-primary/10 text-on-surface border border-primary/20 px-3 py-2 rounded-lg text-sm font-bold shadow-sm">
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-primary text-[18px] notranslate" translate="no">local_police</span>
+                                            {{ getOfficerName(currentShift.id_oficial) }}
                                         </div>
-                                        <div class="flex items-center gap-1 text-[11px] text-on-surface-variant font-medium mt-1">
-                                            <span class="material-symbols-outlined text-xs notranslate" translate="no">schedule</span>
-                                            <span>{{ shift.hora_inicio }} - {{ shift.hora_fin }}</span>
-                                            <span class="mx-1">•</span>
-                                            <span>{{ shift.fecha_turno }}</span>
+                                        <button type="button" (click)="removeLeadOfficer()" class="flex items-center justify-center hover:bg-error/10 hover:text-error rounded-full w-6 h-6 transition-colors cursor-pointer text-on-surface-variant">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">close</span>
+                                        </button>
+                                    </div>
+                                } @else {
+                                    <div class="premium-input-container bg-surface-container border-outline-variant relative" (click)="$event.stopPropagation()">
+                                        <span class="material-symbols-outlined notranslate" translate="no">search</span>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Buscar y seleccionar oficial a cargo..." 
+                                            [(ngModel)]="leadOfficerSearchQuery" 
+                                            name="leadOfficerSearchQuery" 
+                                            (focus)="showLeadOfficerDropdown = true"
+                                            (input)="showLeadOfficerDropdown = true"
+                                            (blur)="hideLeadOfficerDropdown()"
+                                            autocomplete="off"
+                                        />
+                                    </div>
+
+                                    @if (showLeadOfficerDropdown) {
+                                        <div class="w-full mt-1.5 bg-surface-container-low border border-outline-variant rounded-lg shadow-sm max-h-48 overflow-y-auto relative z-[96]" (mousedown)="$event.preventDefault()" (click)="$event.stopPropagation()">
+                                            @if (leadOfficerSearchQuery.trim()) {
+                                                <div class="px-3 py-1.5 bg-surface-container text-[10px] text-on-surface-variant font-bold uppercase tracking-wider border-b border-outline-variant sticky top-0 z-10">
+                                                    Mostrando {{ getFilteredLeadOfficers().length }} resultados
+                                                </div>
+                                            }
+                                            <div class="divide-y divide-surface-variant">
+                                                @for (o of getFilteredLeadOfficers(); track o.id_oficial) {
+                                                    <div (click)="selectLeadOfficer(o)" class="p-3 hover:bg-surface-bright/50 cursor-pointer flex justify-between items-center transition-colors">
+                                                        <div class="flex flex-col">
+                                                            <span class="font-bold text-sm text-on-surface capitalize">Ofc. {{ o.nombres }} {{ o.apellidos }}</span>
+                                                            <span class="text-xs text-secondary-variant">{{ o.placa_policial }}</span>
+                                                        </div>
+                                                        <span class="material-symbols-outlined text-outline-variant text-[18px] notranslate" translate="no">add_circle</span>
+                                                    </div>
+                                                }
+                                                @if (getFilteredLeadOfficers().length === 0) {
+                                                    <div class="p-4 text-center text-on-surface-variant text-xs italic">
+                                                        No hay oficiales disponibles
+                                                    </div>
+                                                }
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="flex items-center shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-                                        <button (click)="openEditShiftModal(shift)" class="text-primary hover:text-primary/80 mr-2 p-1.5 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer" title="Editar Turno">
-                                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
-                                        </button>
-                                        <button (click)="deleteShift(shift.id_turno, $event)" class="text-error hover:text-error/80 p-1.5 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer" title="Eliminar Turno">
-                                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                } @empty {
-                                    <div class="py-16 text-center text-on-surface-variant font-body-md flex flex-col items-center justify-center h-full">
-                                        <span class="material-symbols-outlined text-[48px] text-outline mb-2 notranslate" translate="no">map</span>
-                                        <p class="px-6 text-sm">No hay turnos con rutas de patrullaje asignadas actualmente.</p>
-                                    </div>
+                                    }
                                 }
                             </div>
-                        } @else {
-                            <!-- CREATE/EDIT FORM DIRECTLY IN SIDEBAR PANEL (No backdrop overlay blocker) -->
-                            <div class="px-md py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low shrink-0">
-                                <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
-                                    <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">route</span>
-                                    {{ isEditingShift ? 'Editar Turno' : 'Asignar Turno' }}
-                                </h3>
-                                <button (click)="closeShiftModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
-                                    <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
-                                </button>
-                            </div>
-                            <div class="p-md overflow-y-auto flex-1 flex flex-col gap-4">
-                                <!-- Interactive drawing guidelines -->
-                                <div class="bg-primary-container/15 border border-primary/20 p-3 rounded-xl flex gap-2.5 text-on-surface shrink-0">
-                                    <span class="material-symbols-outlined text-[#3b82f6] text-[24px] shrink-0 animate-pulse notranslate" translate="no">gesture</span>
-                                    <div class="font-body-sm text-body-sm leading-snug">
-                                        <span class="font-bold text-[#3b82f6] text-xs">Instrucciones de Trazado:</span>
-                                        <p class="text-on-surface-variant text-[11px] mt-0.5">Completa el formulario y luego **haz clic directo sobre el mapa oscuro a la derecha** para dibujar la ruta de patrullaje.</p>
-                                    </div>
-                                </div>
 
-                                <div>
-                                    <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Oficial de Policía</label>
-                                    <select [(ngModel)]="currentShift.id_oficial" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2.5 py-1.5 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-xs font-semibold">
-                                        <option [value]="0" disabled>-- Seleccionar Oficial --</option>
-                                        @for (officer of officers; track officer.id_oficial) {
-                                            <option [value]="officer.id_oficial">Ofc. {{ officer.nombres }} {{ officer.apellidos }} ({{ officer.placa_policial }})</option>
+                            <!-- Additional Officers (Crew) -->
+                            <div class="bg-surface-container-low border border-outline-variant rounded-xl p-3 relative z-[94]">
+                                <label class="block font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold mb-2">Oficiales Adicionales (Tripulación)</label>
+                                
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex flex-wrap gap-2">
+                                        @for (officerId of currentShift.oficiales_adicionales; track officerId) {
+                                            <div class="flex items-center gap-1.5 bg-surface-container-high border border-outline-variant px-2.5 py-1 rounded-full text-xs font-bold text-on-surface shadow-sm">
+                                                <span class="material-symbols-outlined text-[14px] text-primary notranslate" translate="no">shield_person</span>
+                                                {{ getOfficerName(officerId) }}
+                                                <button type="button" (click)="removeOfficer(officerId)" class="hover:text-error ml-1 transition-colors flex items-center justify-center cursor-pointer">
+                                                    <span class="material-symbols-outlined text-[14px] notranslate" translate="no">close</span>
+                                                </button>
+                                            </div>
                                         }
-                                    </select>
-                                </div>
+                                    </div>
 
-                                <div>
-                                    <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Vehículo de Patrulla</label>
-                                    <select [(ngModel)]="currentShift.id_vehiculo" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2.5 py-1.5 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-xs font-semibold">
-                                        <option [value]="0" disabled>-- Seleccionar Vehículo --</option>
-                                        @for (vehicle of vehicles; track vehicle.id_vehiculo) {
-                                            <option [value]="vehicle.id_vehiculo">{{ vehicle.placa_vehiculo }} (Beat: {{ vehicle.codigo_beat }})</option>
+                                    <div class="relative">
+                                        <div class="premium-input-container bg-surface-container border-outline-variant !py-1.5 !px-3 relative" (click)="$event.stopPropagation()">
+                                            <input 
+                                                type="text" 
+                                                placeholder="+ Agregar miembro de apoyo..." 
+                                                [(ngModel)]="officerSearchQuery" 
+                                                name="officerSearchQuery" 
+                                                (focus)="showOfficerDropdown = true"
+                                                (input)="showOfficerDropdown = true"
+                                                (blur)="hideOfficerDropdown()"
+                                                autocomplete="off"
+                                                class="text-xs placeholder:text-xs"
+                                            />
+                                            <span class="absolute right-3 !left-auto top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-[16px] notranslate pointer-events-none" translate="no">search</span>
+                                        </div>
+
+                                        @if (showOfficerDropdown) {
+                                            <div class="w-full mt-1.5 bg-surface-container-low border border-outline-variant rounded-lg shadow-sm max-h-40 overflow-y-auto absolute left-0 right-0 z-[96]" (mousedown)="$event.preventDefault()" (click)="$event.stopPropagation()">
+                                                @if (officerSearchQuery.trim()) {
+                                                    <div class="px-3 py-1.5 bg-surface-container text-[10px] text-on-surface-variant font-bold uppercase tracking-wider border-b border-outline-variant sticky top-0 z-10">
+                                                        Mostrando {{ getFilteredOfficers().length }} resultados
+                                                    </div>
+                                                }
+                                                <div class="divide-y divide-surface-variant">
+                                                    @for (o of getFilteredOfficers(); track o.id_oficial) {
+                                                        <div (click)="selectOfficer(o)" class="p-2.5 hover:bg-surface-bright/50 cursor-pointer flex justify-between items-center transition-colors">
+                                                            <div class="flex flex-col">
+                                                                <span class="font-bold text-[13px] text-on-surface capitalize">Ofc. {{ o.nombres }} {{ o.apellidos }}</span>
+                                                                <span class="text-[11px] text-secondary-variant">{{ o.placa_policial }}</span>
+                                                            </div>
+                                                            <span class="material-symbols-outlined text-primary text-[16px] notranslate" translate="no">add</span>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
                                         }
-                                    </select>
-                                </div>
-
-                                <div class="grid grid-cols-3 gap-2">
-                                    <div class="col-span-1">
-                                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Fecha</label>
-                                        <input type="date" [(ngModel)]="currentShift.fecha_turno" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-on-surface focus:outline-none focus:border-primary text-xs" />
                                     </div>
-                                    <div>
-                                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Hora Inicio</label>
-                                        <input type="text" [(ngModel)]="currentShift.hora_inicio" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-on-surface focus:outline-none focus:border-primary text-xs" placeholder="08:00" />
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] font-bold text-on-surface uppercase tracking-wider mb-1">Hora Fin</label>
-                                        <input type="text" [(ngModel)]="currentShift.hora_fin" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-on-surface focus:outline-none focus:border-primary text-xs" placeholder="16:00" />
-                                    </div>
-                                </div>
-
-                                <!-- Drawn Route Nodes Status -->
-                                <div class="bg-surface-container-low border border-outline-variant p-3 rounded-xl flex justify-between items-center mt-1 shrink-0">
-                                    <div class="flex flex-col">
-                                        <span class="text-xs font-bold text-on-surface">Puntos en Ruta</span>
-                                        <span class="text-[10px] text-on-surface-variant mt-0.5">{{ drawnCoordinates.length }} esquinas marcadas</span>
-                                    </div>
-                                    <button (click)="clearRoutePoints()" [disabled]="drawnCoordinates.length === 0" class="border border-error/30 text-error hover:bg-error/5 py-1 px-2.5 rounded-lg flex items-center gap-1 transition-colors font-semibold text-[11px] disabled:opacity-40 cursor-pointer">
-                                        <span class="material-symbols-outlined text-[14px] notranslate" translate="no">delete_sweep</span> Limpiar
-                                    </button>
+                                    <p class="text-[9px] text-on-surface-variant mt-1 italic">El oficial principal queda excluido automáticamente de la búsqueda de apoyo.</p>
                                 </div>
                             </div>
-                            <div class="px-md py-4 border-t border-outline-variant bg-surface-container flex justify-end gap-2 shrink-0">
-                                <button (click)="closeShiftModal()" class="px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
-                                <button (click)="saveShift()" [disabled]="isSavingShift || currentShift.id_oficial == 0 || currentShift.id_vehiculo == 0" class="px-4 py-1.5 rounded-lg font-label-md text-label-md bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer font-bold">
-                                    @if (isSavingShift) {
-                                        <span class="material-symbols-outlined animate-spin text-[12px] notranslate" translate="no">progress_activity</span>
-                                    }
-                                    Guardar
-                                </button>
+                        </div>
+
+                        <div>
+                            <label class="block font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold mb-1">Vehículo de Patrulla</label>
+                            <select [(ngModel)]="currentShift.id_vehiculo" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2.5 py-1.5 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-xs font-semibold">
+                                <option [value]="0" disabled>-- Seleccionar Vehículo --</option>
+                                @for (vehicle of getAvailableVehicles(); track vehicle.id_vehiculo) {
+                                    <option [value]="vehicle.id_vehiculo" [disabled]="vehicle.disabled">
+                                        {{ vehicle.placa_vehiculo }} (Cuadrante: {{ vehicle.codigo_beat }}) {{ vehicle.disabled ? '- Ocupado' : '' }}
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-1">
+                                <label class="block font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold mb-1">Fecha</label>
+                                <input type="date" [(ngModel)]="currentShift.fecha_turno" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-on-surface focus:outline-none focus:border-primary text-xs" />
                             </div>
-                        }
+                            <div>
+                                <label class="block font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold mb-1">Hora Inicio</label>
+                                <input type="time" [(ngModel)]="currentShift.hora_inicio" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-on-surface focus:outline-none focus:border-primary text-xs" />
+                            </div>
+                            <div>
+                                <label class="block font-label-caps text-[10px] text-slate-500 uppercase tracking-[0.12em] font-bold mb-1">Hora Fin</label>
+                                <input type="time" [(ngModel)]="currentShift.hora_fin" class="w-full bg-surface-container border border-outline-variant rounded-lg px-2 py-1 text-on-surface focus:outline-none focus:border-primary text-xs" />
+                            </div>
+                        </div>
+
+                        <!-- Drawn Route Nodes Status -->
+                        <div class="bg-surface-container-low border border-outline-variant p-3 rounded-xl flex justify-between items-center mt-1 shrink-0">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold text-on-surface">Puntos de Ruta</span>
+                                <span class="text-[10px] text-on-surface-variant mt-0.5">{{ drawnCoordinates.length }} vértices marcados</span>
+                            </div>
+                            <button (click)="clearRoutePoints()" [disabled]="drawnCoordinates.length === 0" class="border border-error/30 text-error hover:bg-error/5 py-1 px-2.5 rounded-lg flex items-center gap-1 transition-colors font-semibold text-[11px] disabled:opacity-40 cursor-pointer">
+                                <span class="material-symbols-outlined text-[14px] notranslate" translate="no">delete_sweep</span> Limpiar
+                            </button>
+                        </div>
+
+                        <div class="border-t border-outline-variant flex justify-end gap-2 pt-4 mt-auto shrink-0">
+                            <button (click)="closeShiftModal()" class="px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+                            <button (click)="saveShift()" [disabled]="isSavingShift || currentShift.id_oficial == 0 || currentShift.id_vehiculo == 0" class="px-4 py-1.5 rounded-lg font-label-md text-label-md bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer font-bold">
+                                @if (isSavingShift) {
+                                    <span class="material-symbols-outlined animate-spin text-[12px] notranslate" translate="no">progress_activity</span>
+                                }
+                                Guardar Turno
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Map -->
+                <div class="flex-1 relative bg-surface-container-lowest h-full z-0">
+                    <div id="shift-drawing-map" class="w-full h-full z-0"></div>
+                    
+                    @if (drawingMode) {
+                    <div class="absolute top-4 left-4 z-[999] bg-error-container/95 backdrop-blur-md text-on-error-container px-4 py-2.5 rounded-xl border border-error/20 font-body-sm shadow-md flex items-center gap-2 max-w-sm animate-pulse pointer-events-none">
+                        <span class="material-symbols-outlined text-error text-[20px] notranslate" translate="no">gesture</span>
+                        <div>
+                            <span class="font-bold">Modo Trazado Activo</span>
+                            <p class="text-xs text-on-error-container/80 mt-0.5">Haga clic sobre el mapa para marcar la ruta vehicular.</p>
+                        </div>
+                    </div>
+                    }
+                    @if (selectedShiftId && !drawingMode) {
+                    <div class="absolute top-4 left-4 z-[999] bg-primary-container/95 backdrop-blur-md text-on-primary-container px-4 py-2.5 rounded-xl border border-primary/20 font-body-sm shadow-md flex items-center gap-2 max-w-sm pointer-events-none">
+                        <span class="material-symbols-outlined text-[#60a5fa] text-[20px] notranslate" translate="no">route</span>
+                        <div>
+                            <span class="font-bold">Mostrando Ruta Activa</span>
+                            <p class="text-xs text-on-primary-container/80 mt-0.5">Ruta de patrullaje resaltada en cian sobre el mapa.</p>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+                <!-- ======================================================== -->
+                <!-- PREVENTIVE MAINTENANCE PANEL (OT8) -->
+                <!-- ======================================================== -->
+                @if (activeTab === 'maintenance') {
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-lg flex-1 min-h-0 animate-fade-in relative overflow-hidden">
+                    
+                    <!-- AI Glowing Background Effect -->
+                    @if (isPredictiveMode) {
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none z-0"></div>
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4 z-0"></div>
+                    }
+
+                    <!-- Panel Top Header -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2.5 shrink-0 relative z-10">
+                        <div>
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold text-sm">
+                                <span class="material-symbols-outlined text-[20px] notranslate" translate="no" [ngClass]="isPredictiveMode ? 'text-primary animate-pulse' : 'text-primary'">build</span>
+                                {{ isPredictiveMode ? 'Mantenimiento Predictivo (IA)' : 'Cronograma de Mantenimiento Preventivo' }}
+                            </h3>
+                            <p class="font-body-xs text-[11px] text-on-surface-variant mt-0.2">
+                                {{ isPredictiveMode ? 'Algoritmo de clasificación por IA que predice la probabilidad de fallas mecánicas en los próximos 30 días.' : 'Seguimiento de inspecciones periódicas y monitoreo de kilometraje de vehículos policiales.' }}
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                            <!-- AI Toggle Button -->
+                            <button (click)="togglePredictiveMode()" class="px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs border" 
+                                [ngClass]="isPredictiveMode ? 'bg-primary text-on-primary border-primary shadow-[0_0_15px_-3px_rgba(244,63,94,0.4)]' : 'bg-surface-container text-on-surface hover:bg-surface-variant border-outline-variant'">
+                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">memory</span>
+                                Análisis Predictivo por IA
+                            </button>
+
+                            <!-- Status Filter Segmented Control -->
+                            @if (!isPredictiveMode) {
+                                <div class="bg-surface-container border border-outline-variant/60 rounded-lg p-0.5 flex gap-0.5 text-xs">
+                                    <button (click)="setMaintenanceFilter('ALL')" class="px-2 py-0.5 rounded font-semibold transition-all cursor-pointer text-xs" [ngClass]="maintenanceFilterStatus === 'ALL' ? 'bg-primary text-on-primary shadow-xs font-bold' : 'text-on-surface-variant hover:text-on-surface'">Todos</button>
+                                    <button (click)="setMaintenanceFilter('OVERDUE')" class="px-2 py-0.5 rounded font-semibold transition-all cursor-pointer text-xs" [ngClass]="maintenanceFilterStatus === 'OVERDUE' ? 'bg-error text-on-error shadow-xs font-bold' : 'text-on-surface-variant hover:text-on-surface'">Vencidos</button>
+                                    <button (click)="setMaintenanceFilter('DUE_SOON')" class="px-2 py-0.5 rounded font-semibold transition-all cursor-pointer text-xs" [ngClass]="maintenanceFilterStatus === 'DUE_SOON' ? 'bg-tertiary text-on-tertiary shadow-xs font-bold' : 'text-on-surface-variant hover:text-on-surface'">Próximos</button>
+                                </div>
+                            }
+                        </div>
                     </div>
 
-                    <!-- Interactive Map Container -->
-                    <div class="relative flex-1 h-full rounded-xl border border-outline-variant shadow-lg overflow-hidden bg-surface-container-lowest">
-                        <div id="patrol-route-map" class="w-full h-full z-0"></div>
-
-                        <!-- Map instruction overlays -->
-                        @if (drawingMode) {
-                        <div class="absolute top-4 left-4 z-[999] bg-error-container/95 backdrop-blur-md text-on-error-container px-4 py-2.5 rounded-xl border border-error/20 font-body-sm shadow-md flex items-center gap-2 max-w-sm animate-pulse">
-                            <span class="material-symbols-outlined text-error text-[20px] notranslate" translate="no">gesture</span>
-                            <div>
-                                <span class="font-bold">Modo Trazado Activo</span>
-                                <p class="text-xs text-on-error-container/80 mt-0.5">Haz clic sobre el mapa a la derecha para marcar la ruta del vehículo.</p>
-                            </div>
-                        </div>
-                        }
-
-                        @if (selectedShiftId && !drawingMode) {
-                        <div class="absolute top-4 left-4 z-[999] bg-primary-container/95 backdrop-blur-md text-on-primary-container px-4 py-2.5 rounded-xl border border-primary/20 font-body-sm shadow-md flex items-center gap-2 max-w-sm">
-                            <span class="material-symbols-outlined text-[#60a5fa] text-[20px] notranslate" translate="no">route</span>
-                            <div>
-                                <span class="font-bold">Mostrando Ruta Activa</span>
-                                <p class="text-xs text-on-primary-container/80 mt-0.5">Ruta de patrullaje destacada en color cian brillante en el mapa.</p>
-                            </div>
-                        </div>
+                    <!-- Table Area -->
+                    <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg relative z-10 bg-surface-container-lowest">
+                        
+                        @if (isPredictiveMode) {
+                            @if (isPredicting) {
+                                <div class="w-full h-full flex flex-col items-center justify-center p-8">
+                                    <span class="material-symbols-outlined text-primary text-[36px] animate-spin notranslate" translate="no">memory</span>
+                                    <p class="text-on-surface mt-2 font-bold text-xs">Procesando Red Neuronal...</p>
+                                    <p class="text-on-surface-variant text-[11px] mt-0.5">Simulando telemetría y prediciendo desgaste mecánico.</p>
+                                </div>
+                            } @else {
+                                <table class="w-full text-left border-collapse whitespace-nowrap">
+                                    <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10 shadow-xs">
+                                        <tr>
+                                            <th class="font-label-caps text-[11px] text-primary uppercase py-2.5 px-3 font-bold tracking-wider flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[15px] notranslate" translate="no">memory</span> Placa
+                                            </th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Modelo</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Kilometraje</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Días desde Manten.</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Prob. Falla (IA)</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Puntaje de Salud</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Nivel de Riesgo</th>
+                                            <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-right">Diagnóstico IA</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-surface-variant bg-surface-container-lowest">
+                                        @for (v of filteredPredictiveVehicles; track v.id_vehiculo) {
+                                        <tr class="hover:bg-surface-bright/50 transition-colors group cursor-pointer" (click)="openAIModal(v)">
+                                            <td class="py-2 px-3 font-data-mono text-data-mono font-bold text-on-surface group-hover:text-primary transition-colors">{{ v.placa }}</td>
+                                            <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface-variant">{{ v.tipo }}</td>
+                                            <td class="py-2 px-3 font-data-mono text-data-mono font-semibold text-on-surface-variant">{{ v.telemetria.kilometraje | number }} km</td>
+                                            <td class="py-2 px-3 font-data-mono text-data-mono font-semibold text-on-surface-variant">{{ v.telemetria.dias_desde_servicio }}</td>
+                                            
+                                            <td class="py-2 px-3 font-data-mono font-black text-sm" 
+                                                [ngClass]="v.ia_prediction.nivel_riesgo === 'CRITICAL' ? 'text-error' : (v.ia_prediction.nivel_riesgo === 'WARNING' ? 'text-tertiary' : 'text-secondary')">
+                                                {{ v.ia_prediction.probabilidad_falla }}%
+                                            </td>
+                                            
+                                            <td class="py-2 px-3">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-20 h-2 bg-surface-variant rounded-full overflow-hidden shadow-inner">
+                                                        <div class="h-full rounded-full transition-all duration-1000" 
+                                                            [style.width.%]="v.ia_prediction.health_score"
+                                                            [ngClass]="v.ia_prediction.health_score < 30 ? 'bg-error' : (v.ia_prediction.health_score < 70 ? 'bg-tertiary' : 'bg-secondary')">
+                                                        </div>
+                                                    </div>
+                                                    <span class="text-xs font-bold text-on-surface-variant">{{ v.ia_prediction.health_score }}</span>
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="py-2 px-3">
+                                                @if (v.ia_prediction.nivel_riesgo === 'CRITICAL') {
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container text-on-error-container border border-error/20 font-bold text-[9px] tracking-wider uppercase shadow-xs">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span> CRÍTICO
+                                                    </span>
+                                                } @else if (v.ia_prediction.nivel_riesgo === 'WARNING') {
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-container text-on-tertiary-container border border-tertiary/20 font-bold text-[9px] tracking-wider uppercase shadow-xs">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> ADVERTENCIA
+                                                    </span>
+                                                } @else {
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container border border-secondary/20 font-bold text-[9px] tracking-wider uppercase shadow-xs">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> ÓPTIMO
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="py-2 px-3 text-right">
+                                                <button (click)="openAIModal(v); $event.stopPropagation()" class="bg-primary/10 hover:bg-primary text-primary hover:text-on-primary font-bold py-1 px-2.5 rounded-md text-xs transition-colors inline-flex items-center gap-1 cursor-pointer">
+                                                    <span class="material-symbols-outlined text-[15px] notranslate" translate="no">troubleshoot</span>
+                                                    Detalle IA
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        } @else {
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                    <tr>
+                                        <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Placa de Vehículo</th>
+                                        <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Tipo de Vehículo</th>
+                                        <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Cuadrante Asignado</th>
+                                        <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Kilometraje Actual</th>
+                                        <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Última Inspección</th>
+                                        <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Próxima Inspección</th>
+                                        <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3">Estado de Salud</th>
+                                        <th class="font-label-caps text-[11px] text-on-surface-variant uppercase py-2.5 px-3 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-surface-variant">
+                                    @for (v of filteredPreventiveMaintenanceList; track v.id_vehiculo) {
+                                    <tr class="hover:bg-surface-bright/50 transition-colors group">
+                                        <td class="py-2 px-3 font-data-mono text-data-mono font-bold text-primary">{{ v.placa_vehiculo }}</td>
+                                        <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface">{{ v.tipo_vehiculo }}</td>
+                                        <td class="py-2 px-3 font-body-sm text-body-sm text-secondary">{{ v.codigo_beat }}</td>
+                                        <td class="py-2 px-3 font-data-mono text-data-mono font-semibold text-on-surface">
+                                            {{ v.kilometraje_actual | number }} km
+                                        </td>
+                                        <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface-variant">{{ v.fecha_ultima_revision }}</td>
+                                        <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface-variant">{{ v.fecha_proxima_revision }}</td>
+                                        <td class="py-2 px-3">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-[9px] tracking-wider" [ngClass]="getMaintenanceBadgeClass(v.estado_preventivo)">
+                                                <span class="w-1.5 h-1.5 rounded-full mr-1" [ngClass]="getMaintenanceBadgeDotClass(v.estado_preventivo)"></span>
+                                                {{ v.estado_preventivo === 'OVERDUE' ? 'VENCIDO' : (v.estado_preventivo === 'DUE_SOON' ? 'PRÓXIMO' : 'AL DÍA') }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-3 text-right">
+                                            <button (click)="openMaintenanceModal(v)" class="bg-primary/10 hover:bg-primary text-primary hover:text-on-primary font-bold py-1 px-2.5 rounded-md text-xs transition-all inline-flex items-center gap-1 cursor-pointer">
+                                                <span class="material-symbols-outlined text-[15px] notranslate" translate="no">verified</span>
+                                                Registrar Inspección
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    } @empty {
+                                    <tr>
+                                        <td colspan="8" class="py-6 text-center text-on-surface-variant font-body-md">
+                                            <span class="material-symbols-outlined text-[36px] text-outline mb-1 notranslate" translate="no">build</span>
+                                            <p class="text-xs">No hay vehículos que coincidan con el filtro de mantenimiento preventivo seleccionado.</p>
+                                        </td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
                         }
                     </div>
                 </div>
@@ -428,6 +1108,7 @@
         </main>
     </div>
 </div>
+
 
 <!-- ======================================================================= -->
 <!-- ADD/EDIT VEHICLE MODAL (GLASSMORPHISM EFFECT) -->
@@ -438,7 +1119,7 @@
         <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
             <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
                 <span class="material-symbols-outlined text-primary notranslate" translate="no">{{ isEditingVehicle ? 'edit' : 'add_circle' }}</span>
-                {{ isEditingVehicle ? 'Editar Vehículo' : 'Añadir Nuevo Vehículo' }}
+                {{ isEditingVehicle ? 'Editar Vehículo' : 'Registrar Nuevo Vehículo' }}
             </h3>
             <button (click)="closeVehicleModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
                 <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
@@ -453,21 +1134,21 @@
                 <div>
                     <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Tipo de Vehículo</label>
                     <select [(ngModel)]="currentVehicle.tipo_vehiculo" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm">
-                        <option value="SUV Patrol">SUV Patrol</option>
-                        <option value="Sedan">Sedan</option>
-                        <option value="Transport Van">Transport Van</option>
-                        <option value="K9 Unit">K9 Unit</option>
-                        <option value="Armored">Armored</option>
+                        <option value="SUV Patrol">SUV Patrulla</option>
+                        <option value="Sedan">Sedán</option>
+                        <option value="Transport Van">Furgoneta de Transporte</option>
+                        <option value="K9 Unit">Unidad K9</option>
+                        <option value="Armored">Blindado</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Beat de Jurisdicción</label>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Cuadrante de Jurisdicción</label>
                     <input type="text" [(ngModel)]="currentVehicle.codigo_beat" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. B-201" />
                 </div>
                 <div>
-                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Estado de Mantenimiento</label>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Estado Operativo</label>
                     <select [(ngModel)]="currentVehicle.estado_mantenimiento" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm">
-                        <option value="operativo">Operativo / En Patrulla</option>
+                        <option value="operativo">Operativo / En Patrullaje</option>
                         <option value="mantenimiento">En Taller / Mantenimiento</option>
                         <option value="dañado">Inoperativo / Dañado</option>
                     </select>
@@ -568,3 +1249,302 @@
     </div>
 </div>
 }
+
+<!-- ======================================================================= -->
+<!-- AI PREDICTIVE MAINTENANCE MODAL (GLASSMORPHISM EFFECT) -->
+<!-- ======================================================================= -->
+@if (showAIModal && selectedAIVehicle) {
+<div class="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col transition-all scale-100 relative">
+        
+        <!-- Glowing Accent Border -->
+        <div class="absolute top-0 left-0 w-full h-1" 
+             [ngClass]="selectedAIVehicle.ia_prediction.nivel_riesgo === 'CRITICAL' ? 'bg-error shadow-[0_0_15px_rgba(186,26,26,0.6)]' : (selectedAIVehicle.ia_prediction.nivel_riesgo === 'WARNING' ? 'bg-tertiary shadow-[0_0_15px_rgba(107,95,30,0.6)]' : 'bg-secondary shadow-[0_0_15px_rgba(83,95,112,0.6)]')">
+        </div>
+
+        <div class="px-6 py-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low pt-6">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center bg-surface-container shadow-sm border border-outline-variant">
+                    <span class="material-symbols-outlined text-[28px] notranslate" translate="no"
+                        [ngClass]="selectedAIVehicle.ia_prediction.nivel_riesgo === 'CRITICAL' ? 'text-error animate-pulse' : (selectedAIVehicle.ia_prediction.nivel_riesgo === 'WARNING' ? 'text-tertiary' : 'text-secondary')">
+                        troubleshoot
+                    </span>
+                </div>
+                <div>
+                    <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-2">
+                        Diagnóstico IA: Patrulla {{ selectedAIVehicle.placa }}
+                    </h3>
+                    <p class="text-on-surface-variant text-xs mt-0.5 font-medium">Modelo Predictivo (RandomForest) | Precisión: 94%</p>
+                </div>
+            </div>
+            <button (click)="closeAIModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-2 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[24px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto bg-surface-container-lowest">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- AI Breakdown -->
+                <div class="flex flex-col gap-4">
+                    <h4 class="text-xs font-bold text-primary uppercase tracking-wider mb-2 border-b border-outline-variant pb-2">Evaluación del Modelo</h4>
+                    
+                    <div class="bg-surface-container-low rounded-xl p-5 border border-outline-variant relative overflow-hidden group shadow-sm transition-transform hover:-translate-y-1">
+                        <div class="absolute inset-0 bg-gradient-to-br opacity-5 pointer-events-none"
+                            [ngClass]="selectedAIVehicle.ia_prediction.nivel_riesgo === 'CRITICAL' ? 'from-error to-transparent' : (selectedAIVehicle.ia_prediction.nivel_riesgo === 'WARNING' ? 'from-tertiary to-transparent' : 'from-secondary to-transparent')"></div>
+                        <p class="text-on-surface-variant text-xs mb-1 font-semibold">Probabilidad de Falla (Próximos 30 días)</p>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span class="text-5xl font-black tracking-tight"
+                                [ngClass]="selectedAIVehicle.ia_prediction.nivel_riesgo === 'CRITICAL' ? 'text-error' : (selectedAIVehicle.ia_prediction.nivel_riesgo === 'WARNING' ? 'text-tertiary' : 'text-secondary')">
+                                {{ selectedAIVehicle.ia_prediction.probabilidad_falla }}%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface-container-low rounded-xl p-5 border border-outline-variant shadow-sm relative">
+                        <span class="material-symbols-outlined text-outline/30 text-[64px] absolute right-2 bottom-2 notranslate pointer-events-none" translate="no">memory</span>
+                        <p class="text-on-surface-variant text-xs mb-2 font-semibold relative z-10">Conclusión del Algoritmo</p>
+                        <p class="text-sm text-on-surface leading-relaxed font-medium relative z-10">
+                            "{{ selectedAIVehicle.ia_prediction.motivo_principal }}"
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Telemetry Stats -->
+                <div class="flex flex-col gap-4">
+                    <h4 class="text-xs font-bold text-primary uppercase tracking-wider mb-2 border-b border-outline-variant pb-2">Telemetría Simulada</h4>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-surface-container rounded-xl p-4 border border-outline-variant/60 shadow-sm flex flex-col justify-between hover:bg-surface-container-high transition-colors">
+                            <span class="material-symbols-outlined text-primary text-[24px] mb-2 notranslate" translate="no">speed</span>
+                            <div>
+                                <p class="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase">Kilometraje</p>
+                                <p class="text-on-surface font-black font-data-mono text-lg mt-1">{{ selectedAIVehicle.telemetria.kilometraje | number }} km</p>
+                            </div>
+                        </div>
+                        <div class="bg-surface-container rounded-xl p-4 border border-outline-variant/60 shadow-sm flex flex-col justify-between hover:bg-surface-container-high transition-colors">
+                            <span class="material-symbols-outlined text-primary text-[24px] mb-2 notranslate" translate="no">calendar_clock</span>
+                            <div>
+                                <p class="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase">Días sin Manten.</p>
+                                <p class="text-on-surface font-black font-data-mono text-lg mt-1">{{ selectedAIVehicle.telemetria.dias_desde_servicio }} días</p>
+                            </div>
+                        </div>
+                        <div class="bg-surface-container rounded-xl p-4 border border-outline-variant/60 shadow-sm flex flex-col justify-between col-span-2 hover:bg-surface-container-high transition-colors">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-primary text-[24px] notranslate" translate="no">local_police</span>
+                                <p class="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase">Turnos Completados</p>
+                            </div>
+                            <p class="text-on-surface font-black font-data-mono text-lg mt-1">{{ selectedAIVehicle.telemetria.turnos_completados }} turnos de patrullaje</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 py-5 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3 shrink-0">
+            <button (click)="closeAIModal()" class="px-5 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors cursor-pointer font-bold">
+                Cerrar Diagnóstico
+            </button>
+            @if (selectedAIVehicle.ia_prediction.nivel_riesgo === 'CRITICAL' || selectedAIVehicle.ia_prediction.nivel_riesgo === 'WARNING') {
+                <button (click)="closeAIModal(); openMaintenanceModal(selectedAIVehicle)" class="px-5 py-2.5 rounded-lg font-label-lg text-label-lg bg-error hover:bg-error/90 text-on-error shadow-md transition-colors flex items-center gap-2 cursor-pointer font-bold">
+                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">build_circle</span>
+                    Agendar Mantenimiento
+                </button>
+            }
+        </div>
+    </div>
+</div>
+}
+
+<!-- ======================================================================= -->
+<!-- LOG PREVENTIVE MAINTENANCE MODAL (OT8) -->
+<!-- ======================================================================= -->
+@if (showMaintenanceModal) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-full transition-all scale-100">
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-primary notranslate" translate="no">build</span>
+                Registrar Inspección de Mantenimiento
+            </h3>
+            <button (click)="closeMaintenanceModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="flex flex-col gap-4">
+                <div class="bg-primary/5 border border-primary/10 rounded-xl p-3 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-secondary">Vehículo Objetivo</span>
+                        <h4 class="text-base font-black font-data-mono text-primary">{{ currentMaintenanceForm.placa_vehiculo }}</h4>
+                    </div>
+                    <span class="material-symbols-outlined text-primary text-2xl notranslate" translate="no">directions_car</span>
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Kilometraje Actualizado en Odómetro (km)</label>
+                    <input type="number" [(ngModel)]="currentMaintenanceForm.kilometraje_actual" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm font-data-mono" placeholder="ej. 45200" />
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Nombre del Inspector / Oficial</label>
+                    <input type="text" [(ngModel)]="currentMaintenanceForm.reportado_por" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="ej. Jefe de Taller" />
+                </div>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Notas de Inspección y Servicio</label>
+                    <textarea [(ngModel)]="currentMaintenanceForm.notas" rows="3" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="Detalle cambio de aceite, rotación de neumáticos, revisión de frenos, etc."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeMaintenanceModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+            <button (click)="submitMaintenanceInspection()" [disabled]="isSubmittingMaintenance" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-primary hover:bg-primary/90 text-on-primary shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold">
+                @if (isSubmittingMaintenance) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Guardar Inspección
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ======================================================================= -->
+<!-- BURNOUT WELLNESS REPORT MODAL -->
+<!-- ======================================================================= -->
+@if (showBurnoutModal && selectedAIOfficer) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto animate-fade-in">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+        <!-- Header -->
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined notranslate" 
+                      [ngClass]="{
+                          'text-error': selectedAIOfficer.ia_prediction.probabilidad_burnout >= 75,
+                          'text-amber-600': selectedAIOfficer.ia_prediction.probabilidad_burnout >= 50 && selectedAIOfficer.ia_prediction.probabilidad_burnout < 75,
+                          'text-emerald-600': selectedAIOfficer.ia_prediction.probabilidad_burnout < 50
+                      }" translate="no">psychiatry</span>
+                Reporte de Salud Laboral (IA)
+            </h3>
+            <button (click)="closeBurnoutModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        
+        <!-- Body -->
+        <div class="p-6 overflow-y-auto flex-1 flex flex-col gap-6">
+            
+            <div class="flex items-center gap-4 bg-surface-container-low p-4 rounded-xl border border-outline-variant shadow-sm">
+                <div class="w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg border-2"
+                     [ngClass]="{
+                         'bg-error/10 text-error border-error/30': selectedAIOfficer.ia_prediction.probabilidad_burnout >= 75,
+                         'bg-amber-500/10 text-amber-600 border-amber-500/30': selectedAIOfficer.ia_prediction.probabilidad_burnout >= 50 && selectedAIOfficer.ia_prediction.probabilidad_burnout < 75,
+                         'bg-emerald-500/10 text-emerald-600 border-emerald-500/30': selectedAIOfficer.ia_prediction.probabilidad_burnout < 50
+                     }">
+                     {{ selectedAIOfficer.ia_prediction.probabilidad_burnout }}%
+                </div>
+                <div>
+                    <h4 class="font-title-lg font-bold text-on-surface">Ofc. {{ selectedAIOfficer.nombre_completo }}</h4>
+                    <p class="font-body-sm text-on-surface-variant flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px] notranslate" translate="no">badge</span> {{ selectedAIOfficer.placa_policial }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h5 class="font-label-lg font-bold text-on-surface uppercase tracking-wider text-xs">Análisis Diagnóstico:</h5>
+                <div class="p-4 rounded-xl border"
+                     [ngClass]="{
+                         'bg-error/5 border-error/20': selectedAIOfficer.ia_prediction.nivel_estres === 'CRITICAL',
+                         'bg-amber-500/5 border-amber-500/20': selectedAIOfficer.ia_prediction.nivel_estres === 'WARNING',
+                         'bg-emerald-500/5 border-emerald-500/20': selectedAIOfficer.ia_prediction.nivel_estres === 'OPTIMAL'
+                     }">
+                    <p class="font-body-md text-on-surface flex items-start gap-2">
+                        <span class="material-symbols-outlined text-lg mt-0.5"
+                              [ngClass]="{
+                                  'text-error': selectedAIOfficer.ia_prediction.nivel_estres === 'CRITICAL',
+                                  'text-amber-600': selectedAIOfficer.ia_prediction.nivel_estres === 'WARNING',
+                                  'text-emerald-600': selectedAIOfficer.ia_prediction.nivel_estres === 'OPTIMAL'
+                              }">info</span>
+                        {{ selectedAIOfficer.ia_prediction.motivo_principal }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h5 class="font-label-lg font-bold text-on-surface uppercase tracking-wider text-xs">Telemetría de Recursos Humanos (Últimos 30d):</h5>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-surface-container rounded-xl p-3 text-center border border-outline-variant/50">
+                        <span class="block font-data-mono text-xl font-bold text-primary">{{ selectedAIOfficer.telemetria.turnos_30d }}</span>
+                        <span class="block font-label-sm text-on-surface-variant mt-1 text-[10px] uppercase">Turnos Trabajados</span>
+                    </div>
+                    <div class="bg-surface-container rounded-xl p-3 text-center border border-outline-variant/50">
+                        <span class="block font-data-mono text-xl font-bold"
+                              [ngClass]="selectedAIOfficer.telemetria.horas_overtime > 20 ? 'text-error' : 'text-primary'">
+                            {{ selectedAIOfficer.telemetria.horas_overtime }}h
+                        </span>
+                        <span class="block font-label-sm text-on-surface-variant mt-1 text-[10px] uppercase">Horas Extras (Overtime)</span>
+                    </div>
+                    <div class="bg-surface-container rounded-xl p-3 text-center border border-outline-variant/50">
+                        <span class="block font-data-mono text-xl font-bold"
+                              [ngClass]="selectedAIOfficer.telemetria.dias_sin_vacaciones > 150 ? 'text-amber-600' : 'text-primary'">
+                            {{ selectedAIOfficer.telemetria.dias_sin_vacaciones }}
+                        </span>
+                        <span class="block font-label-sm text-on-surface-variant mt-1 text-[10px] uppercase">Días sin Descanso</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-surface-variant/50 p-4 rounded-xl border border-outline-variant/50 mt-2">
+                <p class="font-body-sm text-on-surface-variant text-xs text-justify">
+                    <span class="font-bold">Algoritmo:</span> Random Forest Regressor sobre KPIs operativos. El porcentaje indica la probabilidad de desarrollar fatiga extrema (Burnout) si se mantiene la carga de trabajo actual. 
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeBurnoutModal()" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-surface-variant hover:bg-surface-container-high text-on-surface shadow-sm transition-colors cursor-pointer font-bold border border-outline-variant">
+                Cerrar Reporte
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ======================================================================= -->
+<!-- DECOMMISSION / BAJA VEHICLE MODAL -->
+<!-- ======================================================================= -->
+@if (showBajaModal && selectedVehicle) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto animate-fade-in">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-full transition-all scale-100">
+        <div class="px-6 py-4.5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 class="font-headline-sm text-headline-sm text-error flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-error notranslate" translate="no">warning</span>
+                Dar de Baja Vehículo
+            </h3>
+            <button (click)="closeBajaModal()" class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-full hover:bg-surface-variant cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="flex flex-col gap-4">
+                <p class="text-xs text-on-surface-variant">
+                    ¿Está seguro de que desea dar de baja la unidad <strong class="text-on-surface">{{ selectedVehicle.placa_vehiculo }}</strong>? Esta acción retirará el vehículo del servicio activo.
+                </p>
+                <div>
+                    <label class="block font-label-sm text-label-sm text-on-surface font-semibold mb-1.5">Motivo de la Baja</label>
+                    <textarea [(ngModel)]="motivoBaja" rows="3" class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-sm" placeholder="Ingrese el motivo de retiro o baja..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4.5 border-t border-outline-variant bg-surface-container flex justify-end gap-3 shrink-0">
+            <button (click)="closeBajaModal()" class="px-4 py-2 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-variant transition-colors cursor-pointer">Cancelar</button>
+            <button (click)="submitBaja()" [disabled]="isSubmittingBaja || !motivoBaja.trim()" class="px-5 py-2 rounded-lg font-label-lg text-label-lg bg-error hover:bg-error/90 text-on-error shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold">
+                @if (isSubmittingBaja) {
+                    <span class="material-symbols-outlined animate-spin text-sm notranslate" translate="no">progress_activity</span>
+                }
+                Confirmar Baja
+            </button>
+        </div>
+    </div>
+</div>
+}
+

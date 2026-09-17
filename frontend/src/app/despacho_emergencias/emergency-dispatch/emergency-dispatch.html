@@ -1,0 +1,557 @@
+<div class="flex flex-col bg-background font-body-md text-on-background h-screen w-full overflow-hidden">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-hidden relative">
+
+        <!-- Dispatch Action Bar -->
+        <div class="shrink-0 bg-[#0f172a] border-b border-slate-800 flex justify-between items-center px-lg py-2.5 w-full z-10">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-rose-500 notranslate" translate="no">emergency</span>
+                <h1 class="text-base font-black tracking-tight text-white m-0">Despacho CAD de Emergencias 911</h1>
+                <span class="bg-rose-500/10 text-rose-400 font-mono text-[10px] px-2 py-0.5 rounded-full border border-rose-500/20 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse inline-block"></span>
+                    MONITOR EN VIVO
+                </span>
+            </div>
+            <button (click)="activeTab = 'create'; selectedCall = null" class="bg-rose-600 hover:bg-rose-500 text-white font-bold pl-4 pr-3 py-1.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-md cursor-pointer">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[17px] notranslate" translate="no">add_call</span>
+                    Registrar Llamada de Emergencia
+                </span>
+                <span class="bg-white/20 border border-white/30 text-white font-mono text-[9px] px-1.5 py-0.5 rounded shadow-sm">F2</span>
+            </button>
+        </div>
+
+        <!-- Dispatch KPIs Dashboard -->
+        <section class="shrink-0 bg-[#0f172a]/60 border-b border-slate-800/80 px-lg py-3.5 grid grid-cols-5 gap-4">
+            <div class="bg-[#1e293b]/60 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
+                    <span class="material-symbols-outlined notranslate" translate="no">notifications_active</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Llamadas Activas</span>
+                    <span class="text-xl font-black text-white leading-none mt-1">{{ (kpis?.pending_calls || 0) + (kpis?.dispatched_calls || 0) + (kpis?.en_sitio_calls || 0) }}</span>
+                </div>
+            </div>
+            <div class="bg-[#1e293b]/60 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+                    <span class="material-symbols-outlined notranslate" translate="no">pending</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Pendientes de Asignación</span>
+                    <span class="text-xl font-black text-white leading-none mt-1">{{ kpis?.pending_calls || 0 }}</span>
+                </div>
+            </div>
+            <div class="bg-[#1e293b]/60 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
+                    <span class="material-symbols-outlined notranslate" translate="no">quick_reference_all</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Unidades Despachadas</span>
+                    <span class="text-xl font-black text-white leading-none mt-1">{{ kpis?.dispatched_calls || 0 }}</span>
+                </div>
+            </div>
+            <div class="bg-[#1e293b]/60 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+                    <span class="material-symbols-outlined notranslate" translate="no">task_alt</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Resueltas Hoy</span>
+                    <span class="text-xl font-black text-white leading-none mt-1">{{ kpis?.resolved_today || 0 }}</span>
+                </div>
+            </div>
+            <div class="bg-[#1e293b]/60 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500">
+                    <span class="material-symbols-outlined notranslate" translate="no">timelapse</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tiempo Promedio de Respuesta</span>
+                    <span class="text-xl font-black text-white leading-none mt-1">
+                        {{ formatResponseTime((kpis?.avg_dispatch_seconds || 0) + (kpis?.avg_arrival_seconds || 0)) }}
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Workspace Area (Split Panels) -->
+        <div class="flex-1 min-h-0 flex overflow-hidden relative bg-[#0B0F19]">
+
+            <!-- Left Panel: Live Calls List -->
+            <aside class="w-88 xl:w-96 shrink-0 border-r border-slate-800 flex flex-col h-full bg-[#0d1321] min-h-0 z-10">
+                <!-- Search & Triage Header -->
+                <div class="p-3.5 border-b border-slate-800 flex flex-col gap-3 shrink-0 select-none bg-[#090d16]">
+                    
+                    <!-- Internal Live Search Input -->
+                    <div class="relative w-full">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[16px] notranslate pointer-events-none" translate="no">search</span>
+                        <input type="text" [(ngModel)]="callSearchQuery" placeholder="Buscar llamada, teléfono, placa, dirección..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-8 py-2 text-white text-xs focus:outline-none focus:border-rose-500 transition-all placeholder:text-slate-500 shadow-inner" />
+                        @if (callSearchQuery) {
+                            <button (click)="callSearchQuery = ''" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-400 transition-colors p-1 bg-transparent border-0 cursor-pointer flex items-center" title="Limpiar">
+                                <span class="material-symbols-outlined text-[15px] notranslate" translate="no">close</span>
+                            </button>
+                        }
+                    </div>
+
+                    <!-- Triage Filters -->
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="font-label-caps text-[10px] text-slate-400 font-bold uppercase tracking-widest">Estado de Triaje</span>
+                            <span class="text-[10px] font-mono text-rose-400 font-bold bg-rose-950/40 px-2 py-0.5 rounded border border-rose-800/40">{{ filteredCalls.length }} Llamadas</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button (click)="filterStatus = 'all'" [ngClass]="filterStatus === 'all' ? 'bg-slate-700 text-white border-slate-600' : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors uppercase cursor-pointer">Todos</button>
+                            <button (click)="filterStatus = 'pendiente'" [ngClass]="filterStatus === 'pendiente' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors uppercase cursor-pointer">Pendiente</button>
+                            <button (click)="filterStatus = 'despachado'" [ngClass]="filterStatus === 'despachado' ? 'bg-blue-500/20 text-blue-400 border-blue-500/40' : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors uppercase cursor-pointer">Desp.</button>
+                            <button (click)="filterStatus = 'en_sitio'" [ngClass]="filterStatus === 'en_sitio' ? 'bg-purple-500/20 text-purple-400 border-purple-500/40' : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors uppercase cursor-pointer">En Sitio</button>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-0.5">
+                            <button (click)="filterPriority = 'all'" [ngClass]="filterPriority === 'all' ? 'bg-slate-700 text-white border-slate-600' : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors uppercase cursor-pointer">Todos</button>
+                            <button (click)="filterPriority = 'CRITICAL'" [ngClass]="filterPriority === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border-red-500/40' : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors uppercase cursor-pointer">Crítico</button>
+                            <button (click)="filterPriority = 'HIGH'" [ngClass]="filterPriority === 'HIGH' ? 'bg-orange-500/20 text-orange-400 border-orange-500/40' : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors uppercase cursor-pointer">Alto</button>
+                            <button (click)="filterPriority = 'MEDIUM'" [ngClass]="filterPriority === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors uppercase cursor-pointer">Medio</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live call list container -->
+                <div class="flex-1 overflow-y-auto divide-y divide-slate-800/60 p-2.5 space-y-2 min-h-0">
+                    @for (call of filteredCalls; track call.id_llamada) {
+                        <button type="button" (click)="selectCall(call)"
+                                [ngClass]="selectedCall?.id_llamada === call.id_llamada ? 'bg-slate-800 border-rose-500/70 shadow-xl ring-1 ring-rose-500/30' : 'hover:bg-slate-900/80 border-slate-800/60 bg-slate-900/30'"
+                                class="w-full text-left p-3.5 border rounded-xl flex flex-col gap-2 transition-all group pointer-events-auto cursor-pointer">
+                            
+                            <!-- Call Header -->
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono select-none flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[13px] text-rose-500">emergency</span>
+                                    EM-LL-{{ call.id_llamada }}
+                                </span>
+                                <!-- Priority badge -->
+                                <span [ngClass]="{
+                                    'bg-red-500/20 text-red-400 border border-red-500/40': call.nivel_prioridad === 'CRITICAL',
+                                    'bg-orange-500/20 text-orange-400 border border-orange-500/40': call.nivel_prioridad === 'HIGH',
+                                    'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40': call.nivel_prioridad === 'MEDIUM',
+                                    'bg-blue-500/20 text-blue-400 border border-blue-500/40': call.nivel_prioridad === 'LOW'
+                                }" class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded leading-none">
+                                    {{ call.nivel_prioridad === 'CRITICAL' ? 'CRÍTICO' : 
+                                       call.nivel_prioridad === 'HIGH' ? 'ALTO' : 
+                                       call.nivel_prioridad === 'MEDIUM' ? 'MEDIO' : 'BAJO' }}
+                                </span>
+                            </div>
+
+                            <!-- Description -->
+                            <p class="text-xs font-bold text-white group-hover:text-rose-400 transition-colors line-clamp-2 leading-relaxed">
+                                {{ call.descripcion_inicial }}
+                            </p>
+
+                            <!-- Call metadata -->
+                            <div class="flex items-center justify-between text-[11px] text-slate-300">
+                                <span class="truncate pr-2 max-w-[150px] flex items-center gap-1 font-medium">
+                                    <span class="material-symbols-outlined text-[13px] text-rose-400">location_on</span>
+                                    {{ call.direccion }}
+                                </span>
+                                <span class="font-mono text-slate-400 text-[10px] font-bold select-none">
+                                    {{ getElapsedTime(call) }}
+                                </span>
+                            </div>
+
+                            <!-- Status Badge -->
+                            <div class="flex justify-between items-center mt-1 pt-2 border-t border-slate-800/60">
+                                <span [ngClass]="{
+                                    'bg-amber-500/10 text-amber-400 border border-amber-500/20': call.estado === 'pendiente',
+                                    'bg-blue-500/10 text-blue-400 border border-blue-500/20': call.estado === 'despachado',
+                                    'bg-purple-500/10 text-purple-400 border border-purple-500/20': call.estado === 'en_sitio',
+                                    'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': call.estado === 'resuelto',
+                                    'bg-rose-500/10 text-rose-400 border border-rose-500/20': call.estado === 'falsa_alarma'
+                                }" class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full" [ngClass]="{
+                                        'bg-amber-500 animate-pulse': call.estado === 'pendiente',
+                                        'bg-blue-500': call.estado === 'despachado',
+                                        'bg-purple-500 animate-ping-subtle': call.estado === 'en_sitio',
+                                        'bg-emerald-500': call.estado === 'resuelto',
+                                        'bg-rose-500': call.estado === 'falsa_alarma'
+                                    }"></span>
+                                    {{ call.estado === 'pendiente' ? 'PENDIENTE' : 
+                                       call.estado === 'despachado' ? 'DESPACHADO' : 
+                                       call.estado === 'en_sitio' ? 'EN SITIO' : 
+                                       call.estado === 'resuelto' ? 'RESUELTO' : 
+                                       call.estado === 'falsa_alarma' ? 'FALSA ALARMA' : call.estado }}
+                                </span>
+                                <span class="text-[10px] text-slate-300 flex items-center gap-1 font-mono font-bold">
+                                    <span class="material-symbols-outlined text-[13px] text-slate-400 notranslate" translate="no">local_police</span>
+                                    {{ call.vehicle_plate && call.vehicle_plate !== 'Ninguno' ? call.vehicle_plate : 'Sin asignar' }}
+                                </span>
+                            </div>
+
+                        </button>
+                    }
+                    @if (filteredCalls.length === 0) {
+                        <div class="flex flex-col items-center justify-center p-8 text-center text-slate-500">
+                            <span class="material-symbols-outlined text-4xl mb-2 notranslate" translate="no">call_end</span>
+                            <p class="text-xs font-semibold">No se encontraron llamadas de emergencia.</p>
+                        </div>
+                    }
+                </div>
+            </aside>
+
+            <!-- Center Panel: Map -->
+            <main class="flex-1 min-w-0 h-full relative border-r border-slate-800 overflow-hidden">
+                <!-- Floating tactical search box -->
+                <div class="absolute top-4 left-4 z-[1000] w-[340px] bg-[#0d1321]/90 backdrop-blur-md border border-slate-700/80 p-3 rounded-xl shadow-2xl flex flex-col gap-2 transition-all">
+                    <div class="text-xs font-bold text-white flex items-center justify-between select-none">
+                        <span class="flex items-center gap-1.5 text-rose-400">
+                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">travel_explore</span>
+                            Búsqueda Táctica de Calles
+                        </span>
+                        @if (isSearchingMap) {
+                            <span class="text-[10px] text-rose-400 animate-pulse">Buscando...</span>
+                        }
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <div class="relative flex-1">
+                            <input type="text" 
+                                   [(ngModel)]="mapSearchQuery" 
+                                   (ngModelChange)="onSearchQueryChange()"
+                                   (keydown.enter)="searchStreet()"
+                                   class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 pr-8 text-xs text-white focus:outline-none focus:border-rose-500 placeholder:text-slate-400" 
+                                   placeholder="Ej: 64th St, Michigan Ave, Halsted..." />
+                            
+                            @if (mapSearchQuery) {
+                                <button type="button" 
+                                        (click)="clearMapSearch()" 
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full p-0.5 transition-colors cursor-pointer flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-xs notranslate" translate="no">close</span>
+                                </button>
+                            }
+                        </div>
+                        <button type="button" 
+                                (click)="searchStreet()"
+                                class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer shadow-sm">
+                            Buscar
+                        </button>
+                    </div>
+
+                    <!-- Search Suggestions / Results -->
+                    @if (mapSearchSuggestions.length > 0) {
+                        <div class="bg-slate-900 border border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-800 mt-1">
+                            @for (sug of mapSearchSuggestions; track sug.display_name) {
+                                <button type="button" 
+                                        (click)="selectMapSuggestion(sug)"
+                                        class="w-full text-left px-3 py-2 hover:bg-slate-800 text-[11px] text-slate-300 flex justify-between items-center transition-colors cursor-pointer group">
+                                    <div class="flex flex-col flex-1 min-w-0 pr-2">
+                                        <span class="font-bold text-white group-hover:text-rose-400 truncate block">{{ sug.display_name.split(',')[0] }}</span>
+                                        <span class="text-[9px] text-slate-400 truncate block mt-0.5">
+                                            {{ sug.display_name.split(',').slice(1, 4).join(',').trim() }}
+                                        </span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-xs text-slate-500 group-hover:text-rose-400 shrink-0 transition-colors notranslate" translate="no">near_me</span>
+                                </button>
+                            }
+                        </div>
+                    }
+
+                    @if (mapSearchError) {
+                        <span class="text-[10px] text-red-400 font-medium block px-1 mt-0.5">{{ mapSearchError }}</span>
+                    }
+                </div>
+
+                <!-- Floating Map Theme & View Controls (Top Right) -->
+                <div class="absolute top-4 right-4 z-[1000] flex items-center gap-2 bg-[#0d1321]/90 backdrop-blur-md border border-slate-700/80 p-1.5 rounded-xl shadow-2xl select-none">
+                    <div class="flex rounded-lg bg-slate-900 p-0.5 border border-slate-700">
+                        <button type="button" (click)="setMapTheme('satellite')" 
+                                [ngClass]="activeMapTheme === 'satellite' ? 'bg-rose-600 text-white font-bold shadow' : 'text-slate-400 hover:text-white'"
+                                class="px-2.5 py-1 rounded-md text-[10px] transition-all cursor-pointer flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">satellite_alt</span>
+                            Satélite
+                        </button>
+                        <button type="button" (click)="setMapTheme('streets')" 
+                                [ngClass]="activeMapTheme === 'streets' ? 'bg-rose-600 text-white font-bold shadow' : 'text-slate-400 hover:text-white'"
+                                class="px-2.5 py-1 rounded-md text-[10px] transition-all cursor-pointer flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">map</span>
+                            OpenStreetMap
+                        </button>
+                        <button type="button" (click)="setMapTheme('dark')" 
+                                [ngClass]="activeMapTheme === 'dark' ? 'bg-rose-600 text-white font-bold shadow' : 'text-slate-400 hover:text-white'"
+                                class="px-2.5 py-1 rounded-md text-[10px] transition-all cursor-pointer flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">dark_mode</span>
+                            Modo Oscuro
+                        </button>
+                    </div>
+
+                    <button type="button" (click)="recenterMap()" title="Centrar Mapa en Chicago / Llamada Seleccionada"
+                            class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[16px]">my_location</span>
+                    </button>
+                </div>
+
+                <div id="dispatch-map-container" class="absolute inset-0 w-full h-full z-0"></div>
+            </main>
+
+            <!-- Right Panel: Panel Form & Details -->
+            <aside class="w-88 xl:w-96 shrink-0 border-l border-slate-800 flex flex-col h-full bg-[#0d1321] overflow-y-auto min-h-0 z-10">
+                
+                <!-- Tab: REGISTRO DE NUEVA LLAMADA -->
+                @if (activeTab === 'create') {
+                    <div class="p-5 flex flex-col gap-4 select-none animate-fade-in">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-rose-500">campaign</span>
+                                Registrar Incidente de Emergencia
+                            </h3>
+                            <button (click)="activeTab = 'list'" class="text-slate-500 hover:text-white transition-all cursor-pointer">
+                                <span class="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </div>
+
+                        <form (ngSubmit)="submitCall()" class="space-y-4 text-xs">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Teléfono de Origen</label>
+                                <input type="text" [(ngModel)]="newCall.telefono_origen" name="telefono_origen" required
+                                       class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-rose-500"
+                                       placeholder="Ej: (312) 555-0199" />
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nivel de Prioridad (Triaje)</label>
+                                <select [(ngModel)]="newCall.nivel_prioridad" name="nivel_prioridad"
+                                        class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-rose-500">
+                                    <option value="CRITICAL">Código Rojo: CRÍTICO (Peligro Inminente)</option>
+                                    <option value="HIGH">Código Naranja: ALTO (Violencia Activa)</option>
+                                    <option value="MEDIUM">Código Amarillo: MEDIO (Delito en Progreso)</option>
+                                    <option value="LOW">Código Verde: BAJO (Sospecha/Reporte Secundario)</option>
+                                </select>
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Descripción del Reporte</label>
+                                <textarea [(ngModel)]="newCall.descripcion_inicial" name="descripcion_inicial" required rows="4"
+                                          class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-rose-500 placeholder:text-slate-500"
+                                          placeholder="Describa brevemente la situación reportada por el informante..."></textarea>
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Geolocalización (Punto en el Mapa)</label>
+                                <input type="text" [(ngModel)]="newCall.direccion" name="direccion" readonly
+                                       class="bg-slate-800/40 border border-slate-700 text-slate-400 rounded-lg px-3 py-2 select-none"
+                                       placeholder="Haga clic en cualquier punto del mapa para capturar..." />
+                                <span class="text-[9px] text-slate-400 leading-normal block px-1 mt-0.5">Capture las coordenadas haciendo clic directamente sobre el mapa táctico.</span>
+                            </div>
+
+                            <div class="pt-3">
+                                <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-lg transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                                    <span class="material-symbols-outlined text-[16px]">how_to_reg</span>
+                                    Guardar y Activar Emergencia
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                }
+
+                <!-- Tab: CALL DETAIL & ACTIONS -->
+                @if (activeTab === 'list' && selectedCall) {
+                    <div class="p-4 flex flex-col gap-3.5 animate-fade-in">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-sm text-white flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-rose-500 text-[18px]">contact_support</span>
+                                Incidente #{{ selectedCall.id_llamada }}
+                            </h3>
+                            <button (click)="selectedCall = null" class="text-slate-500 hover:text-white transition-all cursor-pointer p-1">
+                                <span class="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </div>
+
+                        <!-- Info Card -->
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 space-y-3 text-xs">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-[9px] font-bold text-slate-500 uppercase block select-none">Identificador de Llamada</span>
+                                    <span class="text-white font-bold text-xs flex items-center gap-1 mt-0.5">
+                                        <span class="material-symbols-outlined text-[14px] text-slate-400">phone_iphone</span>
+                                        {{ selectedCall.telefono_origen }}
+                                    </span>
+                                </div>
+                                <span [ngClass]="{
+                                    'bg-red-500/20 text-red-400 border border-red-500/40': selectedCall.nivel_prioridad === 'CRITICAL',
+                                    'bg-orange-500/20 text-orange-400 border border-orange-500/40': selectedCall.nivel_prioridad === 'HIGH',
+                                    'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40': selectedCall.nivel_prioridad === 'MEDIUM',
+                                    'bg-blue-500/20 text-blue-400 border border-blue-500/40': selectedCall.nivel_prioridad === 'LOW'
+                                }" class="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                                    {{ selectedCall.nivel_prioridad === 'CRITICAL' ? 'CRÍTICO' : 
+                                       selectedCall.nivel_prioridad === 'HIGH' ? 'ALTO' : 
+                                       selectedCall.nivel_prioridad === 'MEDIUM' ? 'MEDIO' : 'BAJO' }}
+                                </span>
+                            </div>
+
+                            <div>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase block select-none">Descripción de la Situación</span>
+                                <p class="text-white mt-1 leading-relaxed font-semibold">{{ selectedCall.descripcion_inicial }}</p>
+                            </div>
+
+                            <div>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase block select-none">Ubicación Registrada</span>
+                                <span class="text-slate-300 mt-0.5 block font-medium flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[13px] text-rose-400">location_on</span>
+                                    {{ selectedCall.direccion }}
+                                </span>
+                            </div>
+
+                            @if (selectedCall.case_number) {
+                                <div>
+                                    <span class="text-[9px] font-bold text-slate-500 uppercase block select-none">Caso Vinculado</span>
+                                    <a [routerLink]="['/incidents', selectedCall.case_number]" class="text-blue-400 hover:underline font-bold text-xs flex items-center gap-1 mt-1">
+                                        <span class="material-symbols-outlined text-[16px]">feed</span>
+                                        Caso #{{ selectedCall.case_number }}
+                                    </a>
+                                </div>
+                            }
+
+                            <div>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase block select-none">Estado de Respuesta</span>
+                                <div class="flex justify-between items-center mt-1">
+                                    <span class="bg-slate-950 px-2 py-0.5 border border-slate-800 rounded text-slate-400 font-mono text-[10px] select-none">
+                                        {{ getElapsedTime(selectedCall) }}
+                                    </span>
+                                    <span [ngClass]="{
+                                        'bg-amber-500/10 text-amber-500 border border-amber-500/20': selectedCall.estado === 'pendiente',
+                                        'bg-blue-500/10 text-blue-500 border border-blue-500/20': selectedCall.estado === 'despachado',
+                                        'bg-purple-500/10 text-purple-500 border border-purple-500/20': selectedCall.estado === 'en_sitio',
+                                        'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20': selectedCall.estado === 'resuelto',
+                                        'bg-rose-500/10 text-rose-500 border border-rose-500/20': selectedCall.estado === 'falsa_alarma'
+                                    }" class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                                        {{ selectedCall.estado === 'pendiente' ? 'PENDIENTE' : 
+                                           selectedCall.estado === 'despachado' ? 'DESPACHADO' : 
+                                           selectedCall.estado === 'en_sitio' ? 'EN SITIO' : 
+                                           selectedCall.estado === 'resuelto' ? 'RESUELTO' : 
+                                           selectedCall.estado === 'falsa_alarma' ? 'FALSA ALARMA' : selectedCall.estado }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Operator Notes -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-between">
+                                Registro de Notas del Operador
+                                <span class="material-symbols-outlined text-[14px]">edit_note</span>
+                            </label>
+                            <textarea [(ngModel)]="operatorNotes" rows="2"
+                                      class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-rose-500 text-xs resize-none placeholder:text-slate-600"
+                                      placeholder="Actualizaciones rápidas o notas durante la llamada..."></textarea>
+                        </div>
+
+                        <!-- Actions Panel -->
+                        <div class="space-y-3 pt-1">
+
+                            @if (selectedCall.estado === 'pendiente') {
+                                <div class="flex flex-col gap-2 text-xs">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Seleccionar Unidad para Despachar</label>
+                                    <select [(ngModel)]="selectedVehicleId" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-rose-500 text-xs">
+                                        <option [value]="null">Seleccionar Patrulla Disponible...</option>
+                                        @for (sim of patrolSimulations; track sim.shift.id_vehiculo) {
+                                            <option [value]="sim.shift.id_vehiculo">
+                                                Patrulla: Ofc. {{ sim.shift.officer_name }} ({{ sim.shift.vehicle_plate }})
+                                            </option>
+                                        }
+                                    </select>
+                                    <div class="flex gap-2 mt-1">
+                                        <button (click)="dispatchUnit()" [disabled]="!selectedVehicleId"
+                                                class="flex-1 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold py-2 rounded-lg transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                                            <span class="material-symbols-outlined text-[16px]">local_shipping</span>
+                                            Despachar
+                                        </button>
+                                        <button (click)="updateStatus('en_sitio', false)"
+                                                class="w-auto bg-red-900/40 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/50 font-bold px-3 py-2 rounded-lg transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer" title="Escalar a SWAT">
+                                            <span class="material-symbols-outlined text-[18px]">security</span>
+                                            SWAT
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- In-Site Action (Only visible if call is dispatched) -->
+                            @if (selectedCall.estado === 'despachado') {
+                                <div class="flex flex-col gap-2">
+                                    <button (click)="updateStatus('en_sitio')"
+                                            class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-lg transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                                        <span class="material-symbols-outlined text-[16px]">where_to_vote</span>
+                                        Confirmar Unidad en Sitio
+                                    </button>
+                                </div>
+                            }
+
+                            <!-- Close/Resolve Action (Visible once unit is dispatched or en_sitio) -->
+                            @if (selectedCall.estado === 'despachado' || selectedCall.estado === 'en_sitio') {
+                                <div class="border-t border-slate-800/60 pt-3 flex flex-col gap-2">
+                                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resolución del Incidente</h4>
+                                    
+                                    <button (click)="createDetailedCase()"
+                                            class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                                        <span class="material-symbols-outlined text-[16px]">edit_document</span>
+                                        Resolver y Crear Caso
+                                    </button>
+
+                                    <button (click)="updateStatus('resuelto', true)"
+                                            class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                                        <span class="material-symbols-outlined text-[16px]">gavel</span>
+                                        Resolver y Auto-Archivar
+                                    </button>
+                                    
+                                    <button (click)="updateStatus('falsa_alarma', false)"
+                                            class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                                        <span class="material-symbols-outlined text-[16px]">cancel</span>
+                                        Falsa Alarma
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Standby Telemetry Overview Panel when no call is selected -->
+                @if (!selectedCall && activeTab === 'list') {
+                    <div class="p-4 flex flex-col gap-4 animate-fade-in select-none">
+                        <div class="text-center py-2 border-b border-slate-800">
+                            <span class="material-symbols-outlined text-4xl text-rose-500 mb-1 inline-block animate-pulse">radar</span>
+                            <h4 class="font-bold text-xs text-white uppercase tracking-wider">Consola de Mando en Espera</h4>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Monitoreo en vivo activo en todos los sectores y cuadrantes.</p>
+                        </div>
+
+                        <!-- Action Button to pick highest priority -->
+                        <button type="button" (click)="selectHighestPriority()" 
+                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 px-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer text-xs">
+                            <span class="material-symbols-outlined text-[18px]">priority_high</span>
+                            Despachar Llamada de Máxima Prioridad
+                        </button>
+
+                        <!-- Active Patrol Units Live Telemetry -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Flota Activa de Patrullas</span>
+                                <span class="text-[10px] font-mono text-emerald-400 font-bold">{{ patrolSimulations.length }} Unidades en Vivo</span>
+                            </div>
+                            <div class="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+                                @for (sim of patrolSimulations; track sim.shift.id_vehiculo) {
+                                    <div class="p-2 bg-slate-900/60 border border-slate-800 rounded-lg flex items-center justify-between text-xs">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-2.5 h-2.5 rounded-full" [style.background-color]="sim.color"></div>
+                                            <div class="flex flex-col">
+                                                <span class="font-bold text-white text-[11px]">Ofc. {{ sim.shift.officer_name }}</span>
+                                                <span class="text-[9px] font-mono text-slate-400">{{ sim.shift.vehicle_plate }}</span>
+                                            </div>
+                                        </div>
+                                        <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                                            {{ sim.shift.cuadrante || 'Sector ' + (sim.routeIndex + 1) }}
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </aside>
+
+        </div>
+    </div>
+</div>

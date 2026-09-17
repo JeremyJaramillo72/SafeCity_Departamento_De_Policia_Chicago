@@ -1,0 +1,261 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <!-- Page Content -->
+        <main class="bg-surface p-lg pb-16">
+            <div class="max-w-[1000px] w-full mx-auto flex flex-col gap-lg animate-fade-in pb-xl">
+
+                <!-- Page Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-outline-variant pb-md">
+                    <div>
+                        <div class="flex items-center gap-2.5 mb-1.5">
+                            <span class="material-symbols-outlined text-primary text-[28px] notranslate" translate="no">gavel</span>
+                            <h1 class="font-display-lg text-display-lg text-on-surface font-extrabold tracking-tight">
+                                {{ isEditMode ? 'Editar Orden Judicial' : 'Registrar Orden Judicial' }}
+                            </h1>
+                        </div>
+                        <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                            {{ isEditMode ? 'Modificación de la orden judicial y actualización de metadatos en SafeCity.' : 'Registro e indexación de órdenes judiciales oficiales en el sistema SafeCity.' }}
+                        </p>
+                    </div>
+                    <div class="flex gap-3 mt-4 md:mt-0 shrink-0">
+                        <button type="button" (click)="router.navigate(['/ordenes'])"
+                            class="px-4 py-2.5 rounded-lg border border-outline text-on-surface font-body-sm font-semibold hover:bg-surface-container-low transition-colors cursor-pointer text-xs">
+                            Cancel
+                        </button>
+                        <button type="button" (click)="onSubmit()" [disabled]="!ordenForm.valid || (!selectedFile && !isEditMode) || loading"
+                            class="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-on-primary font-body-sm font-bold shadow-md transition-colors flex items-center gap-2 disabled:opacity-60 min-w-[150px] justify-center cursor-pointer text-xs">
+                            @if (loading) {
+                                <span class="material-symbols-outlined text-sm animate-spin notranslate" translate="no">progress_activity</span>
+                                Processing...
+                            } @else {
+                                <span class="material-symbols-outlined text-sm notranslate" translate="no">save</span>
+                                {{ isEditMode ? 'Guardar Cambios' : 'Emitir Orden Judicial' }}
+                            }
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Success banner -->
+                @if (successMessage) {
+                    <div class="flex items-center justify-between gap-3 bg-secondary-container border border-secondary-container/50 text-on-secondary-container rounded-xl px-md py-3.5 shadow-sm animate-fade-in">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-xl notranslate" translate="no">check_circle</span>
+                            <span class="font-body-md font-semibold">{{ successMessage }}</span>
+                        </div>
+                        <button (click)="router.navigate(['/ordenes'])" class="bg-on-secondary-container text-secondary-container px-3 py-1.5 rounded-lg font-bold text-xs hover:opacity-90">Ir al Directorio</button>
+                    </div>
+                }
+
+                <!-- Error banner -->
+                @if (errorMessage) {
+                    <div class="flex items-center gap-3 bg-error-container border border-error/30 text-on-error-container rounded-xl px-md py-3.5 shadow-sm animate-fade-in">
+                        <span class="material-symbols-outlined text-xl notranslate" translate="no">error</span>
+                        <span class="font-body-md font-bold">{{ errorMessage }}</span>
+                    </div>
+                }
+
+                <!-- Form Content -->
+                <form #ordenForm="ngForm" class="flex flex-col gap-lg mt-4">
+                    
+                    <!-- PANEL 1: Suspect Identification -->
+                    <div class="premium-panel-card flex flex-col shadow-sm rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden">
+                        <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">person_search</span>
+                            <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Identificación del Sujeto / Sospechoso</h2>
+                        </div>
+                        <div class="p-lg grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- ID / Plate -->
+                            <div class="flex flex-col gap-1.5 relative">
+                                <label class="text-sm font-bold text-on-surface-variant">Identificación (DNI / Cédula) *</label>
+                                <div class="premium-input-container relative flex items-center border border-outline-variant rounded-lg bg-surface-bright overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+                                    <span class="material-symbols-outlined pl-3 text-on-surface-variant notranslate" translate="no">fingerprint</span>
+                                    <input [(ngModel)]="formData.sospechoso_identificacion" name="sospechoso_identificacion" required
+                                        (input)="searchSuspects(formData.sospechoso_identificacion)"
+                                        (focus)="searchSuspects(formData.sospechoso_identificacion)"
+                                        (blur)="hideSuggestionsWithDelay()"
+                                        class="w-full bg-transparent px-3 py-2 text-sm outline-none text-on-surface"
+                                        placeholder="Ej: DNI-99381" type="text" autocomplete="off"/>
+                                </div>
+
+                                <!-- Floating suggestions dropdown -->
+                                @if (showSuspectSuggestions && suspectSuggestions.length > 0) {
+                                    <div class="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-surface border border-outline rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-outline-variant/60">
+                                        @for (sug of suspectSuggestions; track sug.id_sospechoso) {
+                                            <div (mousedown)="selectSuspect(sug)" class="p-3 hover:bg-surface-container-low cursor-pointer transition-colors flex items-center justify-between">
+                                                <div class="flex flex-col">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="font-bold text-primary font-data-mono">{{ sug.identificacion || 'NO BADGE/ID' }}</span>
+                                                        <span class="text-xs text-on-surface font-semibold">{{ sug.nombres }}</span>
+                                                    </div>
+                                                    <span class="text-[10px] text-on-surface-variant uppercase mt-0.5" *ngIf="sug.alias_conocido">Alias: {{ sug.alias_conocido }}</span>
+                                                </div>
+                                                <div class="flex flex-col items-end shrink-0" *ngIf="sug.cases && sug.cases.length > 0">
+                                                    <span class="text-[9px] text-on-surface-variant font-bold uppercase tracking-wider mb-0.5">Cases</span>
+                                                    <div class="flex flex-wrap gap-1 justify-end max-w-[200px]">
+                                                        @for (c of sug.cases; track c) {
+                                                            <span class="font-bold font-data-mono bg-surface-container-highest px-1.5 py-0.5 rounded text-[9px] text-secondary">
+                                                                {{ c }}
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Nombre -->
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-sm font-bold text-on-surface-variant">Nombre o Alias *</label>
+                                <div class="premium-input-container relative flex items-center border border-outline-variant rounded-lg bg-surface-bright overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+                                    <span class="material-symbols-outlined pl-3 text-on-surface-variant notranslate" translate="no">badge</span>
+                                    <input [(ngModel)]="formData.sospechoso_nombre" name="sospechoso_nombre" required
+                                        class="w-full bg-transparent px-3 py-2 text-sm outline-none text-on-surface"
+                                        placeholder="Ej: John Doe" type="text"/>
+                                </div>
+                            </div>
+                            
+                            <!-- Expediente -->
+                            <div class="flex flex-col gap-1.5 md:col-span-2">
+                                <label class="text-sm font-bold text-on-surface-variant">Expediente Policial Vinculado</label>
+                                <div class="premium-input-container relative flex items-center border border-outline-variant rounded-lg bg-surface-bright overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+                                    <span class="material-symbols-outlined pl-3 text-on-surface-variant notranslate" translate="no">folder_open</span>
+                                    <input [(ngModel)]="formData.expediente_vinculado" name="expediente_vinculado"
+                                        class="w-full bg-transparent px-3 py-2 text-sm outline-none text-on-surface font-data-mono uppercase"
+                                        placeholder="JB155558" type="text"/>
+                                </div>
+                                @if (availableCases.length > 0) {
+                                    <div class="flex flex-wrap gap-2 mt-1.5 items-center">
+                                        <span class="text-xs text-on-surface-variant font-medium">Casos vinculados al sospechoso:</span>
+                                        @for (c of availableCases; track c) {
+                                            <button type="button" (click)="formData.expediente_vinculado = c"
+                                                class="px-2.5 py-1 text-xs rounded-lg font-data-mono border transition-all cursor-pointer"
+                                                [ngClass]="formData.expediente_vinculado === c ? 'bg-primary text-on-primary border-primary font-bold' : 'bg-surface-container-low text-on-surface border-outline-variant hover:bg-surface-container-highest'">
+                                                {{ c }}
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL 2: Judicial Details -->
+                    <div class="premium-panel-card flex flex-col shadow-sm rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden">
+                        <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">account_balance</span>
+                            <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Detalles Judiciales</h2>
+                        </div>
+                        <div class="p-lg grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Type de Orden -->
+                            <div class="flex flex-col gap-1.5 md:col-span-2">
+                                <label class="text-sm font-bold text-on-surface-variant">Tipo de Orden *</label>
+                                <div class="premium-input-container relative flex items-center border border-outline-variant rounded-lg bg-surface-bright overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+                                    <span class="material-symbols-outlined pl-3 text-on-surface-variant notranslate" translate="no">list_alt</span>
+                                    <select [(ngModel)]="formData.tipo_orden" name="tipo_orden" required
+                                        class="w-full bg-transparent px-3 py-2 text-sm outline-none text-on-surface appearance-none">
+                                        <option value="Arresto">Orden de Arresto</option>
+                                        <option value="Allanamiento">Orden de Allanamiento</option>
+                                        <option value="Comparecencia">Orden de Comparecencia</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Juez -->
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-sm font-bold text-on-surface-variant">Juez Emisor *</label>
+                                <div class="premium-input-container relative flex items-center border border-outline-variant rounded-lg bg-surface-bright overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+                                    <span class="material-symbols-outlined pl-3 text-on-surface-variant notranslate" translate="no">person</span>
+                                    <input [(ngModel)]="formData.juez_emisor" name="juez_emisor" required
+                                        class="w-full bg-transparent px-3 py-2 text-sm outline-none text-on-surface"
+                                        placeholder="Ej: Juez Dr. Carlos Morales" type="text"/>
+                                </div>
+                            </div>
+                            
+                            <!-- Tribunal -->
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-sm font-bold text-on-surface-variant">Tribunal / Juzgado *</label>
+                                <div class="premium-input-container relative flex items-center border border-outline-variant rounded-lg bg-surface-bright overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+                                    <span class="material-symbols-outlined pl-3 text-on-surface-variant notranslate" translate="no">gavel</span>
+                                    <input [(ngModel)]="formData.tribunal" name="tribunal" required
+                                        class="w-full bg-transparent px-3 py-2 text-sm outline-none text-on-surface"
+                                        placeholder="Ej: Juzgado Penal del Distrito 1" type="text"/>
+                                </div>
+                            </div>
+
+                            <!-- Dates -->
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-sm font-bold text-on-surface-variant">Fecha de Emisión *</label>
+                                <div class="premium-input-container relative flex items-center border border-outline-variant rounded-lg bg-surface-bright overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+                                    <span class="material-symbols-outlined pl-3 text-on-surface-variant notranslate" translate="no">calendar_today</span>
+                                    <input [(ngModel)]="formData.fecha_emision" name="fecha_emision" required type="date"
+                                        (click)="$any($event.target).showPicker()"
+                                        class="w-full bg-transparent px-3 py-2 text-sm outline-none text-on-surface"/>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-sm font-bold text-on-surface-variant">Fecha de Vencimiento *</label>
+                                <div class="premium-input-container relative flex items-center border border-outline-variant rounded-lg bg-surface-bright overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+                                    <span class="material-symbols-outlined pl-3 text-on-surface-variant notranslate" translate="no">event_busy</span>
+                                    <input [(ngModel)]="formData.fecha_vencimiento" name="fecha_vencimiento" required type="date"
+                                        (click)="$any($event.target).showPicker()"
+                                        class="w-full bg-transparent px-3 py-2 text-sm outline-none text-on-surface"/>
+                                </div>
+                            </div>
+
+                            <!-- Cargos -->
+                            <div class="flex flex-col gap-1.5 md:col-span-2">
+                                <label class="text-sm font-bold text-on-surface-variant">Cargos / Motivos *</label>
+                                <div class="premium-input-container relative flex border border-outline-variant rounded-lg bg-surface-bright overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all p-2">
+                                    <textarea [(ngModel)]="formData.cargos" name="cargos" required rows="3"
+                                        class="w-full bg-transparent px-1 py-1 text-sm outline-none text-on-surface"
+                                        placeholder="Ej: Homicidio en primer grado, evasión de la justicia..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL 3: Documento PDF -->
+                    <div class="premium-panel-card flex flex-col shadow-sm rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden">
+                        <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">picture_as_pdf</span>
+                                <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Documento Físico Escaneado</h2>
+                            </div>
+                            @if (!isEditMode) {
+                                <span class="font-label-caps text-label-caps text-error bg-error/10 border border-error/30 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide">OBLIGATORIO</span>
+                            } @else {
+                                <span class="font-label-caps text-label-caps text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide">OPCIONAL (REEMPLAZAR)</span>
+                            }
+                        </div>
+                        <div class="p-lg flex flex-col items-center justify-center border-2 border-dashed border-outline-variant rounded-lg m-4 bg-surface-container-low hover:bg-surface-container transition-colors relative h-32">
+                            <input type="file" (change)="onFileSelected($event)" accept=".pdf" [required]="!isEditMode" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            
+                            <div class="flex flex-col items-center justify-center text-center gap-2">
+                                @if (selectedFile) {
+                                    <span class="material-symbols-outlined text-success text-[32px] notranslate" translate="no">check_circle</span>
+                                    <span class="font-bold text-on-surface text-sm">{{ selectedFile.name }}</span>
+                                    <span class="text-xs text-on-surface-variant">Haga clic para cambiar de archivo</span>
+                                } @else if (isEditMode && existingPdfUrl) {
+                                    <span class="material-symbols-outlined text-primary text-[32px] notranslate" translate="no">picture_as_pdf</span>
+                                    <span class="font-bold text-on-surface text-sm">PDF Actual: Documento Adjunto</span>
+                                    <span class="text-xs text-on-surface-variant">Haga clic o arrastre un nuevo archivo para reemplazarlo</span>
+                                } @else {
+                                    <span class="material-symbols-outlined text-outline text-[32px] notranslate" translate="no">upload_file</span>
+                                    <span class="font-bold text-on-surface text-sm">Adjuntar Orden Judicial en PDF</span>
+                                    <span class="text-xs text-on-surface-variant">Arrastre el archivo o haga clic aquí</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </main>
+    </div>
+</div>

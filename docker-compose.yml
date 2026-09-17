@@ -41,6 +41,30 @@ services:
     command: standalone
     restart: always
 
+  backend:
+    build:
+      context: ./django_app
+      dockerfile: Dockerfile
+    container_name: safecity_backend
+    environment:
+      - CLICKHOUSE_HOST=clickhouse
+    ports:
+      - "8000:8000"
+    depends_on:
+      - clickhouse
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: safecity_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
 volumes:
   safecity_clickhouse_volume:
 

@@ -4,6 +4,19 @@
 
 /* You can add global styles to this file, and also import other style files */
 
+@layer base {
+  html, body {
+    min-height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  input, textarea, select, button {
+    font-family: inherit;
+  }
+}
 @layer components {
   .premium-sidebar {
     background-color: #0b0f19 !important;
@@ -27,24 +40,42 @@
    MODERN WEB GUIDANCE SKILL IMPLEMENTATIONS
    ========================================================================== */
 
-/* 1. Slim Modern Scrollbar using Standard CSS scrollbar-color / scrollbar-width */
+/* 1. Slim Modern High-Visibility Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(196, 198, 209, 0.4) transparent; /* outline-variant color with opacity */
-  transition: scrollbar-color 0.2s ease;
+  scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
 }
 
-*:hover {
-  scrollbar-color: rgba(196, 198, 209, 0.8) transparent;
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.45);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(59, 130, 246, 0.75);
 }
 
 /* Dark mode scrollbars */
 .dark * {
-  scrollbar-color: rgba(68, 71, 79, 0.4) transparent;
+  scrollbar-color: rgba(100, 116, 139, 0.6) transparent;
 }
 
-.dark *:hover {
-  scrollbar-color: rgba(68, 71, 79, 0.8) transparent;
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.5);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(96, 165, 250, 0.8);
 }
 
 /* 2. Collapsible CSS Grid for Height-Auto Transitions */
@@ -132,4 +163,180 @@
   cursor: pointer !important;
 }
 
+/* ==========================================================================
+   PREMIUM REPORT FILING COMMAND SYSTEM STYLES
+   ========================================================================== */
+
+/* High-Tech Card Panel */
+.premium-panel-card {
+  background: #ffffff;
+  border: 1px solid rgba(196, 198, 209, 0.45);
+  border-radius: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.01);
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.premium-panel-card:hover {
+  border-color: rgba(11, 43, 94, 0.25);
+  box-shadow: 0 20px 25px -5px rgba(11, 43, 94, 0.04), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+}
+
+/* High-Tech Input Container with Icon Prefix */
+.premium-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.premium-input-container span.material-symbols-outlined {
+  position: absolute;
+  left: 12px;
+  color: #8b9bb4;
+  font-size: 18px;
+  pointer-events: none;
+  transition: all 180ms ease;
+  z-index: 10;
+}
+
+.premium-input-container input,
+.premium-input-container select,
+.premium-input-container textarea {
+  width: 100% !important;
+  background-color: #f8fafc !important; /* Tinted container light tint */
+  border: 1px solid rgba(196, 198, 209, 0.7) !important;
+  border-radius: 10px !important;
+  padding: 8px 12px 8px 38px !important; /* Extra padding on left for the icon */
+  color: #191c1e !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  transition: all 180ms ease !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  outline: none !important;
+}
+
+/* Double column compact layout input tweaks */
+.premium-input-container select {
+  cursor: pointer;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-position: right 10px center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1.5em 1.5em !important;
+  padding-right: 32px !important;
+}
+
+.premium-input-container input:focus,
+.premium-input-container select:focus,
+.premium-input-container textarea:focus {
+  border-color: #0b2b5e !important;
+  box-shadow: 0 0 0 3px rgba(11, 43, 94, 0.1), inset 0 1px 2px rgba(0, 0, 0, 0.01) !important;
+  background-color: #ffffff !important;
+}
+
+.premium-input-container input:focus ~ span.material-symbols-outlined,
+.premium-input-container select:focus ~ span.material-symbols-outlined,
+.premium-input-container textarea:focus ~ span.material-symbols-outlined {
+  color: #0b2b5e !important;
+  transform: scale(1.05);
+}
+
+.premium-input-container input[readonly] {
+  background-color: #eef2f6 !important;
+  border-color: rgba(196, 198, 209, 0.4) !important;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* Pulsing Status Dot */
+.status-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  display: inline-block;
+}
+
+.status-indicator-dot.pulse {
+  animation: glow-pulse-green 2s infinite;
+}
+
+@keyframes glow-pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Badge Neon Effect */
+.neon-badge-police {
+  background: rgba(11, 43, 94, 0.05);
+  border: 1px solid rgba(11, 43, 94, 0.15);
+  color: #0b2b5e;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(11, 43, 94, 0.05);
+}
+
+/* Premium Sliding Drawers & Fade-In Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.premium-drawer-container {
+  background-color: #ffffff;
+  border-left: 1px solid rgba(196, 198, 209, 0.5);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tactical Midnight Dark Map Tiles (Pure Dark Matter Look without Watermarks) */
+.leaflet-tile.tactical-dark-tiles {
+  filter: invert(100%) hue-rotate(180deg) brightness(80%) contrast(130%) !important;
+}
+
+/* Custom Leaflet Dark Popups */
+.leaflet-popup.leaflet-dark-popup .leaflet-popup-content-wrapper {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7) !important;
+}
+
+.leaflet-popup.leaflet-dark-popup .leaflet-popup-tip {
+  background-color: #0f172a !important;
+  border-left: 1px solid #334155 !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.leaflet-popup.leaflet-dark-popup .leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 8px 8px 0 0 !important;
+}
+
+.leaflet-popup.leaflet-dark-popup .leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+}
 

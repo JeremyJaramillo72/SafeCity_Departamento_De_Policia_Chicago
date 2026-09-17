@@ -1,0 +1,540 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+
+        <!-- Main Dashboard View (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-3.5 w-full relative pb-16">
+            
+            <!-- Dynamic Header with Tab Description -->
+            <div class="flex justify-between items-center gap-3 shrink-0">
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h2 class="font-display-lg text-xl lg:text-2xl font-bold text-primary flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[24px] text-primary notranslate" translate="no">gavel</span>
+                            Órdenes Judiciales y Cadena de Custodia Digital
+                        </h2>
+                        <button (click)="toggleKpis()" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 transition-all font-semibold text-xs cursor-pointer select-none" title="Toggle KPI Summary">
+                            <span class="material-symbols-outlined text-[14px] transition-transform duration-300 notranslate" [ngClass]="{'rotate-180': !showKpis}" translate="no">expand_less</span>
+                            <span>{{ showKpis ? 'Ocultar Resumen' : 'Mostrar Resumen' }}</span>
+                        </button>
+                    </div>
+                    <!-- Contextual Tab Subtitle -->
+                    <p class="text-xs text-secondary font-medium mt-0.5 flex items-center gap-1.5">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary/60"></span>
+                        @if (activeTab === 'warrants') {
+                            <span>Directorio de órdenes, control de ejecución judicial y búsqueda activa de sospechosos.</span>
+                        } @else if (activeTab === 'custody') {
+                            <span>Registros de cadena de custodia digital, auditoría QR y verificación criptográfica.</span>
+                        }
+                    </p>
+                </div>
+                
+                @if (canRegister() && activeTab === 'warrants') {
+                <a routerLink="/ordenes/registrar" class="bg-primary-container hover:bg-primary text-on-primary font-bold py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition-all shadow-xs cursor-pointer text-xs no-underline">
+                    <span class="material-symbols-outlined text-xs font-black notranslate" translate="no">add</span>
+                    Registrar Orden Judicial
+                </a>
+                }
+            </div>
+
+            <!-- Modern Collapsible KPI Ribbon -->
+            <div class="collapsible-grid shrink-0" [ngClass]="{'expanded': showKpis}">
+                <div class="collapsible-content">
+                    <section class="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-1 animate-fade-in">
+                        <!-- Órdenes Activas -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-2 px-3 shadow-xs flex items-center gap-2.5 hover:border-error/30 transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[18px] notranslate text-error" translate="no">gavel</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Órdenes Activas</span>
+                                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-error-container text-on-error-container inline-flex items-center shrink-0">ACTIVA</span>
+                                </div>
+                                <span class="text-base font-black text-on-surface block leading-tight">{{ kpis.active_warrants_count || 0 }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Órdenes Ejecutadas -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-2 px-3 shadow-xs flex items-center gap-2.5 hover:border-secondary/30 transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center group-hover:bg-secondary group-hover:text-on-secondary transition-all shrink-0">
+                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">task_alt</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Órdenes Ejecutadas</span>
+                                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-secondary-container text-on-secondary-container inline-flex items-center shrink-0">EJECUTADA</span>
+                                </div>
+                                <span class="text-base font-black text-on-surface block leading-tight">{{ kpis.executed_warrants_count || 0 }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Digital Custody Audit Logs -->
+                        <div class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-2 px-3 shadow-xs flex items-center gap-2.5 hover:border-primary/30 transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
+                                <span class="material-symbols-outlined text-[18px] notranslate" translate="no">qr_code_scanner</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">Registros de Custodia Digital</span>
+                                    <span class="font-bold text-[8px] px-1.5 py-0.2 rounded-full bg-primary-container text-on-primary-container inline-flex items-center shrink-0">AUDITADO</span>
+                                </div>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-base font-black text-on-surface leading-tight">{{ kpis.total_custody_logs || custodyLogs.length || 0 }}</span>
+                                    <span class="text-[10px] text-primary font-bold">logs</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Segmented Navigation Tabs -->
+            <div class="flex items-center justify-between bg-surface-container-lowest border border-outline-variant/70 rounded-xl p-1 shadow-xs shrink-0 overflow-x-auto">
+                <div class="flex items-center gap-1">
+                    <button (click)="switchTab('warrants')"
+                            [ngClass]="activeTab === 'warrants' ? 'bg-primary text-on-primary shadow-xs' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'"
+                            class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer text-xs font-semibold select-none border-0">
+                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">gavel</span>
+                        Directorio de Órdenes
+                    </button>
+                    <button (click)="switchTab('custody')"
+                            [ngClass]="activeTab === 'custody' ? 'bg-primary text-on-primary shadow-xs' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'"
+                            class="px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer text-xs font-semibold select-none border-0">
+                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">qr_code_scanner</span>
+                        Auditoría de Cadena de Custodia Digital
+                    </button>
+                </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- TAB 1: WARRANTS DIRECTORY -->
+            <!-- ======================================================== -->
+            @if (activeTab === 'warrants') {
+                <!-- Verificar / Search Toolbar -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-2.5 flex flex-wrap gap-2 items-center shadow-sm shrink-0 relative overflow-hidden">
+                    <!-- Red/Green Pulse Effect if Active Warrant Found via Search -->
+                    <div class="absolute inset-0 bg-error/10 animate-pulse pointer-events-none" *ngIf="verificacionResult?.color === 'red'"></div>
+                    <div class="absolute inset-0 bg-success/10 pointer-events-none" *ngIf="verificacionResult?.color === 'green'"></div>
+
+                    <div class="w-full relative z-10 flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Búsqueda Táctica Rápida (Verificación)</span>
+                        <div class="relative flex gap-2">
+                            <div class="relative flex-1">
+                                <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+                                <input [ngModel]="searchQuery" (ngModelChange)="onSearchChange($event)" class="w-full border border-outline-variant rounded-lg py-1 pl-8 pr-3 text-xs focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-container" placeholder="Buscar por nombre, alias o identificación de sospechoso..." type="text"/>
+                            </div>
+                            
+                            <div class="flex items-center px-3 py-1 rounded-lg font-bold uppercase tracking-wider text-[11px] border" 
+                                 [ngClass]="{'bg-error text-white border-error': verificacionResult?.color === 'red', 'bg-success text-white border-success': verificacionResult?.color === 'green', 'bg-surface-container border-outline-variant text-on-surface-variant': !verificacionResult}">
+                                {{ verificacionResult ? verificacionResult.status : 'ESPERANDO CONSULTA' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table Card -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-3 lg:p-3.5 flex-1 min-h-0 animate-fade-in">
+                    <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                <tr class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+                                    <th (click)="sortOrdenes('id')" class="py-2.5 px-3 w-16 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            ID
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'id' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortOrdenes('sospechoso_nombre')" class="py-2.5 px-3 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Sospechoso
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'sospechoso_nombre' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortOrdenes('tipo_orden')" class="py-2.5 px-3 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Type
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'tipo_orden' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortOrdenes('cargos')" class="py-2.5 px-3 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Cargos / Delitos
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'cargos' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortOrdenes('fecha_vencimiento')" class="py-2.5 px-3 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Vencimiento
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'fecha_vencimiento' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th (click)="sortOrdenes('estado')" class="py-2.5 px-3 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                        <div class="flex items-center gap-1">
+                                            Estado
+                                            <span class="material-symbols-outlined text-[14px] notranslate" translate="no">
+                                                {{ sortField === 'estado' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                            </span>
+                                        </div>
+                                    </th>
+                                    <th class="py-2.5 px-3 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant/40 text-xs">
+                                @for (orden of ordenes; track orden.id) {
+                                <tr class="hover:bg-surface-bright transition-colors group">
+                                    <td class="py-2 px-3 font-data-mono text-primary font-bold text-xs">#{{ orden.id }}</td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface font-bold">
+                                        {{ orden.sospechoso_nombre }}
+                                        <div class="text-[10px] font-normal text-secondary">{{ orden.sospechoso_identificacion }}</div>
+                                    </td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface font-medium">
+                                        {{ orden.tipo_orden === 'Arresto' ? 'Orden de Arresto' : (orden.tipo_orden === 'Allanamiento' ? 'Orden de Allanamiento' : (orden.tipo_orden === 'Interceptación' ? 'Orden de Interceptación' : orden.tipo_orden)) }}
+                                    </td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-secondary truncate max-w-[240px]" [title]="orden.cargos">{{ orden.cargos }}</td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface">{{ orden.fecha_vencimiento | date:'MMM d, y' }}</td>
+                                    <td class="py-2 px-3">
+                                        <span class="inline-flex items-center px-2 py-0.2 rounded-full font-label-caps text-[9px] font-bold border"
+                                              [ngClass]="{
+                                                'bg-error-container text-on-error-container border-error-container/30': orden.estado === 'Active' || orden.estado === 'Activa',
+                                                'bg-secondary-container text-on-secondary-container border-secondary-container/30': orden.estado === 'Executed' || orden.estado === 'Ejecutada',
+                                                'bg-surface-variant text-on-surface-variant border-outline-variant': orden.estado === 'Expired' || orden.estado === 'Expirada'
+                                              }">
+                                            {{ orden.estado === 'Activa' || orden.estado === 'Active' ? 'Activa' : (orden.estado === 'Ejecutada' || orden.estado === 'Executed' ? 'Ejecutada' : (orden.estado === 'Expirada' || orden.estado === 'Expired' ? 'Expirada' : orden.estado)) }}
+                                        </span>
+                                    </td>
+                                    <td class="py-2 px-3 text-right">
+                                        <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                                            @if ((orden.estado === 'Active' || orden.estado === 'Activa') && profile !== 'administrador_sistema') {
+                                            <button (click)="openExecuteModal(orden.id)" class="border border-primary text-primary hover:bg-primary hover:text-on-primary font-bold px-2.5 py-1 rounded-lg text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1 shadow-xs cursor-pointer">
+                                                <span class="material-symbols-outlined text-[13px] notranslate" translate="no">task_alt</span> Ejecutar
+                                            </button>
+                                            }
+                                            
+                                            @if (orden.documento_pdf) {
+                                            <a [href]="orden.documento_pdf" target="_blank" class="w-7 h-7 rounded-full border border-outline-variant text-outline hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-xs bg-surface-container-lowest" title="Ver PDF">
+                                                <span class="material-symbols-outlined text-[15px] notranslate" translate="no">picture_as_pdf</span>
+                                            </a>
+                                            }
+
+                                            @if (canRegister()) {
+                                            <a [routerLink]="['/ordenes/editar', orden.id]" class="w-7 h-7 rounded-full border border-outline-variant text-outline hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-xs bg-surface-container-lowest" title="Editar Orden">
+                                                <span class="material-symbols-outlined text-[15px] notranslate" translate="no">edit</span>
+                                            </a>
+                                            <button (click)="eliminarOrden(orden.id)" class="w-7 h-7 rounded-full border border-error/30 text-error/70 hover:text-error hover:bg-error/10 hover:border-error transition-colors flex items-center justify-center shadow-xs bg-surface-container-lowest cursor-pointer" title="Eliminar Orden">
+                                                <span class="material-symbols-outlined text-[15px] notranslate" translate="no">delete</span>
+                                            </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                                }
+                                @if (ordenes.length === 0) {
+                                <tr>
+                                    <td colspan="7" class="py-6 text-center text-secondary font-body-md text-xs">No se encontraron órdenes judiciales.</td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <!-- ======================================================== -->
+            <!-- TAB 2: DIGITAL CHAIN OF CUSTODY AUDIT -->
+            <!-- ======================================================== -->
+            @if (activeTab === 'custody') {
+                <!-- Custody Filter Toolbar -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-2.5 flex flex-col md:flex-row gap-2.5 shadow-sm shrink-0 items-start md:items-end">
+                    <div class="flex-1 w-full md:max-w-md">
+                        <span class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Buscar Registros de Custodia Digital</span>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+                            <input [(ngModel)]="custodyFilters.search" (ngModelChange)="loadCustodiaDigital()"
+                                   class="w-full border border-outline-variant rounded-lg py-1 pl-8 pr-3 text-xs focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-container"
+                                   placeholder="Buscar código QR, caso, oficial, tipo de evidencia..." type="text"/>
+                        </div>
+                    </div>
+
+                    <div class="flex-1">
+                        <span class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Filtrar por Acción</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button (click)="custodyFilters.accion = 'ALL'; loadCustodiaDigital()" 
+                                    [ngClass]="custodyFilters.accion === 'ALL' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'bg-surface-container border border-outline-variant text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'" 
+                                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer">
+                                <span class="material-symbols-outlined text-[13px] notranslate" translate="no">apps</span> Todos
+                            </button>
+                            <button (click)="custodyFilters.accion = 'INGRESO'; loadCustodiaDigital()" 
+                                    [ngClass]="custodyFilters.accion === 'INGRESO' ? 'bg-primary-container text-on-primary-container font-bold shadow-xs border-primary/20 border' : 'bg-surface-container border border-outline-variant text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'" 
+                                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer">
+                                <span class="material-symbols-outlined text-[13px] notranslate" translate="no">login</span> Ingreso
+                            </button>
+                            <button (click)="custodyFilters.accion = 'TRANSFERENCIA'; loadCustodiaDigital()" 
+                                    [ngClass]="custodyFilters.accion === 'TRANSFERENCIA' ? 'bg-secondary-container text-on-secondary-container font-bold shadow-xs border-secondary/20 border' : 'bg-surface-container border border-outline-variant text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'" 
+                                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer">
+                                <span class="material-symbols-outlined text-[13px] notranslate" translate="no">sync_alt</span> Transferencia
+                            </button>
+                            <button (click)="custodyFilters.accion = 'SALIDA_JUDICIAL'; loadCustodiaDigital()" 
+                                    [ngClass]="custodyFilters.accion === 'SALIDA_JUDICIAL' ? 'bg-tertiary-container text-on-tertiary-container font-bold shadow-xs border-tertiary/20 border' : 'bg-surface-container border border-outline-variant text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'" 
+                                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer">
+                                <span class="material-symbols-outlined text-[13px] notranslate" translate="no">gavel</span> Salida Judicial
+                            </button>
+                            <button (click)="custodyFilters.accion = 'DESTRUCCION'; loadCustodiaDigital()" 
+                                    [ngClass]="custodyFilters.accion === 'DESTRUCCION' ? 'bg-error-container text-on-error-container font-bold shadow-xs border-error/20 border' : 'bg-surface-container border border-outline-variant text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'" 
+                                    class="px-2.5 py-1 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer">
+                                <span class="material-symbols-outlined text-[13px] notranslate" translate="no">delete_forever</span> Destrucción
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Digital Custody Table -->
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col p-3 lg:p-3.5 flex-1 min-h-0 animate-fade-in">
+                    <div class="overflow-auto flex-1 min-h-0 border border-outline-variant/60 rounded-lg">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
+                                <tr class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+                                    <th class="py-2.5 px-3">Código QR / Rastreo</th>
+                                    <th class="py-2.5 px-3">ID Evidencia</th>
+                                    <th class="py-2.5 px-3"># de Caso</th>
+                                    <th class="py-2.5 px-3">Acción</th>
+                                    <th class="py-2.5 px-3">Oficial de Origen</th>
+                                    <th class="py-2.5 px-3">Custodio Actual</th>
+                                    <th class="py-2.5 px-3">Fecha / Hora</th>
+                                    <th class="py-2.5 px-3">Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant/40 text-xs">
+                                @for (log of custodyLogs; track log.id_transferencia) {
+                                <tr class="hover:bg-surface-bright transition-colors">
+                                    <td class="py-2 px-3 font-data-mono font-bold flex items-center gap-2">
+                                        <div class="px-2 py-0.5 bg-surface-container border border-outline-variant rounded-md flex items-center gap-1.5 text-on-surface cursor-help shadow-xs" [title]="'SHA-256 Hash Block Validated'">
+                                            <span class="material-symbols-outlined text-[13px] text-primary notranslate" translate="no">qr_code_2</span>
+                                            {{ log.codigo_qr }}
+                                        </div>
+                                    </td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface font-semibold">
+                                        #EV-{{ log.id_evidencia }}
+                                        <div class="text-[10px] font-normal text-secondary">{{ log.tipo_evidencia }}</div>
+                                    </td>
+                                    <td class="py-2 px-3 font-data-mono text-on-surface">#{{ log.case_number }}</td>
+                                    <td class="py-2 px-3">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-xs"
+                                              [ngClass]="{
+                                                'bg-primary-container text-on-primary-container border-primary/20': log.tipo_accion === 'INGRESO',
+                                                'bg-secondary-container text-on-secondary-container border-secondary/20': log.tipo_accion === 'TRANSFERENCIA',
+                                                'bg-tertiary-container text-on-tertiary-container border-tertiary/20': log.tipo_accion === 'SALIDA_JUDICIAL',
+                                                'bg-error-container text-on-error-container border-error/20': log.tipo_accion === 'DESTRUCCION'
+                                              }">
+                                            <span class="material-symbols-outlined text-[13px] notranslate" translate="no">
+                                                {{ log.tipo_accion === 'INGRESO' ? 'login' : (log.tipo_accion === 'TRANSFERENCIA' ? 'sync_alt' : (log.tipo_accion === 'SALIDA_JUDICIAL' ? 'gavel' : 'delete_forever')) }}
+                                            </span>
+                                            {{ log.tipo_accion === 'INGRESO' ? 'Ingreso a Almacén' : (log.tipo_accion === 'TRANSFERENCIA' ? 'Transferencia de Custodia' : (log.tipo_accion === 'SALIDA_JUDICIAL' ? 'Salida Judicial' : 'Destrucción / Baja')) }}
+                                        </span>
+                                    </td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface">{{ log.oficial_origen || 'N/A' }}</td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-on-surface font-bold">{{ log.oficial_destino || 'N/A' }}</td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-secondary">
+                                        <div class="flex flex-col">
+                                            {{ log.fecha_registro | date:'MMM d, y HH:mm' }}
+                                            <span class="text-[9px] text-success flex items-center gap-1 mt-0.5" title="Immutable Blockchain Hash">
+                                                <span class="material-symbols-outlined text-[11px] notranslate" translate="no">lock</span> 
+                                                {{log.hash_signature || '0x9a8b...f1c2'}}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="py-2 px-3 font-body-sm text-body-sm text-secondary truncate max-w-[200px]" [title]="log.observaciones">{{ log.observaciones || 'Sin observaciones registradas' }}</td>
+                                </tr>
+                                }
+                                @if (custodyLogs.length === 0) {
+                                <tr>
+                                    <td colspan="8" class="py-6 text-center text-secondary font-body-md text-xs">No se encontraron registros de auditoría de custodia digital.</td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </main>
+    </div>
+
+    <!-- Execute Modal -->
+    <div *ngIf="showExecuteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+                <h3 class="font-headline-sm text-on-surface font-bold">Reportar Ejecución de Orden (Orden #{{ejecucionFormData.ordenId}})</h3>
+                <button (click)="closeExecuteModal()" class="text-on-surface-variant hover:text-on-surface">
+                    <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <div *ngIf="execError" class="mb-4 bg-error-container text-on-error-container p-3 rounded-lg text-sm">{{ execError }}</div>
+                
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Ubicación del Arresto/Allanamiento *</label>
+                        <div class="flex items-center gap-2">
+                            <div class="relative flex-1">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px] notranslate" translate="no">location_on</span>
+                                <input [(ngModel)]="ejecucionFormData.ubicacion" type="text" class="w-full border border-outline-variant rounded-lg py-2 pl-9 pr-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-surface-bright text-on-surface text-sm" placeholder="Ej: 123 Main St, Apt 4B">
+                            </div>
+                            <button type="button" (click)="openMapModal()" title="Ubicar en el Mapa" class="bg-surface-container-lowest text-primary hover:bg-primary/10 transition-colors flex items-center justify-center p-2 rounded-lg border border-outline-variant hover:border-primary shrink-0 shadow-sm">
+                                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">map</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Resultado del Operativo *</label>
+                        <select [(ngModel)]="ejecucionFormData.resultado" class="w-full border border-outline-variant rounded-lg py-2 px-3 focus:border-primary outline-none bg-surface-bright text-on-surface">
+                            <option value="Exitosa">Exitosa (Sujeto Asegurado)</option>
+                            <option value="Fallida">Fallida (Sujeto no localizado)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Observations</label>
+                        <textarea [(ngModel)]="ejecucionFormData.observaciones" rows="3" class="w-full border border-outline-variant rounded-lg py-2 px-3 focus:border-primary outline-none bg-surface-bright text-on-surface" placeholder="Detalles, novedades del operativo..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3">
+                <button (click)="closeExecuteModal()" class="px-4 py-2 font-medium text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors">Cancelar</button>
+                <button (click)="submitEjecucion()" [disabled]="executing || !ejecucionFormData.ubicacion" class="px-4 py-2 bg-primary hover:bg-primary-dark text-on-primary font-bold rounded-lg transition-colors disabled:opacity-50">
+                    {{ executing ? 'Procesando...' : 'Confirmar Ejecución' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Modal -->
+    @if (showMapModal) {
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+                
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                            <span class="material-symbols-outlined text-[24px] notranslate" translate="no">my_location</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline-sm text-on-surface font-bold text-base leading-tight">Seleccionar Ubicación de Ejecución</h3>
+                            <p class="font-body-sm text-secondary text-xs">Busque una calle o haga clic en el mapa para colocar el pin de la ubicación.</p>
+                        </div>
+                    </div>
+                    <button type="button" (click)="closeMapModal()" class="text-on-surface-variant hover:text-on-surface p-1.5 rounded-full hover:bg-surface-container-high transition-colors cursor-pointer flex items-center justify-center">
+                        <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                    </button>
+                </div>
+
+                <!-- Modal Body (Leaflet Map + Search Overlay + Guidance) -->
+                <div class="flex-1 relative bg-surface-container-low flex flex-col">
+                    <!-- Search overlay -->
+                    <div class="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-md z-[1000] px-4">
+                        <div class="bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant/80 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                            <div class="flex items-center relative">
+                                <span class="material-symbols-outlined absolute left-3.5 text-primary text-[20px] notranslate" translate="no">search</span>
+                                <input type="text" 
+                                       placeholder="Buscar calle, avenida o sector..." 
+                                       class="w-full py-3 pl-11 pr-10 outline-none font-body-sm text-xs text-on-surface bg-transparent placeholder:text-on-surface-variant/50"
+                                       [(ngModel)]="mapSearchQuery"
+                                       (input)="onSearchQueryChange()"
+                                       (keydown.enter)="searchStreet()">
+                                
+                                @if (isSearchingMap) {
+                                    <div class="absolute right-3.5 w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                } @else {
+                                    @if (mapSearchQuery) {
+                                        <button type="button" 
+                                                class="absolute right-2.5 text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-variant transition-colors cursor-pointer"
+                                                (click)="clearMapSearch()">
+                                            <span class="material-symbols-outlined text-[16px] notranslate" translate="no">close</span>
+                                        </button>
+                                    }
+                                }
+                            </div>
+
+                            <!-- Suggestions Dropdown -->
+                            @if (mapSearchSuggestions.length > 0) {
+                                <ul class="border-t border-outline-variant/50 max-h-56 overflow-y-auto divide-y divide-outline-variant/20">
+                                    @for (sug of mapSearchSuggestions; track sug.display_name) {
+                                        <li class="px-4 py-2.5 hover:bg-primary/5 cursor-pointer flex items-start gap-3 transition-colors group"
+                                            (click)="selectMapSuggestion(sug)">
+                                            <span class="material-symbols-outlined text-primary/60 group-hover:text-primary mt-0.5 text-[18px] shrink-0 notranslate" translate="no">near_me</span>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="font-body-sm text-xs font-bold text-on-surface group-hover:text-primary truncate">{{ sug.display_name.split(',')[0] }}</div>
+                                                <div class="text-[10px] text-secondary truncate">{{ sug.display_name }}</div>
+                                            </div>
+                                            <span class="text-[10px] text-primary font-bold shrink-0 self-center">Ir a la Calle</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+
+                            <!-- Error Message -->
+                            @if (mapSearchError) {
+                                <div class="p-2 text-center text-xs text-error font-medium border-t border-outline-variant/50 bg-error/5">
+                                    {{ mapSearchError }}
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Floating Guidance Pill -->
+                    @if (isPinningLocation || ejecucionFormData.ubicacion) {
+                        <div class="absolute top-20 left-1/2 -translate-x-1/2 z-[1000] bg-surface-container-lowest/95 backdrop-blur-md border border-primary/40 text-on-surface px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 text-xs select-none animate-fade-in pointer-events-none">
+                            <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                            <span class="font-medium text-primary">¡Calle centrada! Haga clic en cualquier punto del mapa para fijar la ubicación exacta.</span>
+                        </div>
+                    }
+
+                    <!-- Leaflet Container -->
+                    <div id="modal-warrant-map" class="w-full h-full"></div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="px-6 py-3.5 border-t border-outline-variant bg-surface-container-low flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+                    <div class="flex items-center gap-2.5 max-w-md w-full min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">pin_drop</span>
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-secondary">Ubicación Seleccionada</span>
+                            <span class="text-xs font-bold text-on-surface truncate">
+                                {{ ejecucionFormData.ubicacion || 'Haga clic en el mapa para fijar un punto o busque una calle' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
+                        <button type="button" 
+                                (click)="closeMapModal()" 
+                                class="px-4 py-2 rounded-xl border border-outline-variant hover:bg-surface-variant text-on-surface transition-colors cursor-pointer text-xs font-semibold">
+                            Cancel
+                        </button>
+                        <button type="button" 
+                                (click)="confirmMapLocation()" 
+                                [disabled]="!ejecucionFormData.ubicacion"
+                                class="px-5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                            <span class="material-symbols-outlined text-[17px] notranslate" translate="no">check_circle</span>
+                            Confirm Location
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

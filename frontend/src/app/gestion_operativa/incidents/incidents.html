@@ -1,134 +1,280 @@
-<div class="flex bg-background font-body-md text-on-background min-h-screen w-full">
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
     <app-sidebar></app-sidebar>
 
     <!-- Main Content Area -->
-    <div class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden relative">
-        <!-- TopNavBar Component -->
-        <header class="sticky top-0 bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-on-surface-variant flex justify-between items-center h-16 w-full px-lg z-40">
-            <!-- Brand / Active Tab Context -->
-            <div class="flex items-center gap-4">
-                <span class="font-headline-md text-headline-md font-black tracking-tight text-primary dark:text-primary-fixed">SafeCity Intelligence</span>
-            </div>
-            <!-- Actions & Profile -->
-            <div class="flex items-center gap-6">
-                <!-- Search -->
-                <div class="relative hidden lg:block">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
-                    <input class="pl-9 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Search database..." type="text"/>
-                </div>
-                <!-- Icons -->
-                <div class="flex items-center gap-2">
-                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out relative">
-                        <span class="material-symbols-outlined notranslate" translate="no">notifications</span>
-                    </button>
-                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out">
-                        <span class="material-symbols-outlined notranslate" translate="no">history</span>
-                    </button>
-                    <button class="p-2 rounded-full text-on-surface-variant font-medium hover:bg-surface-container-low transition-all scale-95 duration-150 ease-in-out">
-                        <span class="material-symbols-outlined notranslate" translate="no">help</span>
-                    </button>
-                </div>
-                <!-- Profile -->
-                <div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
-                    <img alt="Officer Profile Image" class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVZCFb_VW_PmEcwto3luZFMSKOxh1BHw879119sxZhYwIrmO9gD3gU6wCFhyQPaE0p7UwDvmKcuA0pe4KJ0hCmJkogNz_1vjSxrGayA7Iyx6QhFgrACkEY6WoqCi15tET9WVhdmPknHND6q_ba-yajyLWTPaJp4Nyl9nnNKB_GYbaRSpi95tdm1o0xa2pMJEyRK7GHikT9TaQbIH-VuEbryhgYBr6VbBfABW8ADzdESdw9mbQr9iV85a6uQQXs6dz16IEh3emy_-vA"/>
-                </div>
-            </div>
-        </header>
-
-        <!-- List View Canvas -->
-        <main class="flex-1 overflow-y-auto p-lg lg:p-xl flex flex-col gap-lg max-w-[1600px] w-full mx-auto">
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+        <!-- List View Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-4 w-full pb-16">
             <!-- Page Header -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
                 <div>
-                    <h2 class="font-display-lg text-display-lg text-primary">Incident Records</h2>
-                    <p class="font-body-md text-body-md text-secondary mt-1">Manage and review all operational event logs.</p>
+                    <h2 class="font-display-lg text-display-lg text-primary">Registros de Incidentes</h2>
+                    <p class="font-body-md text-body-md text-secondary mt-1">Gestione y revise todas las bitácoras y registros de eventos policiales.</p>
                 </div>
-                <a routerLink="/incidents/new" class="bg-primary-container text-on-primary font-headline-sm text-headline-sm px-6 py-2.5 rounded-lg hover:bg-primary transition-colors flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-primary-container shadow-sm inline-flex">
-                    <span class="material-symbols-outlined text-lg notranslate" translate="no">add</span>
-                    Log New Incident
-                </a>
+                <div class="flex items-center gap-3">
+                    @if (profile === 'administrador') {
+                        <button (click)="openRequestsModal()" class="relative bg-surface-container border border-outline-variant hover:bg-surface-container-high text-on-surface font-headline-sm text-headline-sm px-5 py-2.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm select-none">
+                            <span class="material-symbols-outlined text-lg notranslate" translate="no">assignment_late</span>
+                            Solicitudes de Asignación
+                            @if (solicitudesPendientes.length > 0) {
+                                <span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-error text-[10px] font-bold text-on-error animate-pulse">
+                                    {{ solicitudesPendientes.length }}
+                                </span>
+                            }
+                        </button>
+                    }
+                    <a routerLink="/incidents/new" class="bg-primary-container text-on-primary font-headline-sm text-headline-sm px-6 py-2.5 rounded-lg hover:bg-primary transition-colors flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-primary-container shadow-sm inline-flex">
+                        <span class="material-symbols-outlined text-lg notranslate" translate="no">add</span>
+                        Registrar Nuevo Incidente
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bento Stats Cards (Resumen y Reporte General de Incidentes) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-md shrink-0 select-none">
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex items-center justify-between gap-2 min-w-0">
+                    <div class="min-w-0 flex-1">
+                        <span class="block font-label-caps text-[10.5px] text-on-surface-variant uppercase font-bold tracking-wider truncate">Total Registrado</span>
+                        <span class="text-2xl font-black text-on-surface mt-1 block truncate">{{ pagination.total | number }}</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                        <span class="material-symbols-outlined notranslate" translate="no">folder_open</span>
+                    </div>
+                </div>
+
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex items-center justify-between gap-2 min-w-0">
+                    <div class="min-w-0 flex-1">
+                        <span class="block font-label-caps text-[10.5px] text-tertiary uppercase font-bold tracking-wider truncate">Investigaciones Activas</span>
+                        <span class="text-2xl font-black text-tertiary mt-1 block truncate">{{ activeCount }}</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-tertiary/10 border border-tertiary/20 flex items-center justify-center text-tertiary shrink-0">
+                        <span class="material-symbols-outlined notranslate" translate="no">pending_actions</span>
+                    </div>
+                </div>
+
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex items-center justify-between gap-2 min-w-0">
+                    <div class="min-w-0 flex-1">
+                        <span class="block font-label-caps text-[10.5px] text-secondary uppercase font-bold tracking-wider truncate">Cerrados (Con Arresto)</span>
+                        <span class="text-2xl font-black text-secondary mt-1 block truncate">{{ closedCount }}</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary shrink-0">
+                        <span class="material-symbols-outlined notranslate" translate="no">check_circle</span>
+                    </div>
+                </div>
+
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex items-center justify-between gap-2 min-w-0">
+                    <div class="min-w-0 flex-1">
+                        <span class="block font-label-caps text-[10.5px] text-error uppercase font-bold tracking-wider">Tipo Predominante</span>
+                        <span class="text-sm sm:text-base font-black text-error leading-snug block mt-1 break-words" [title]="predominantType">{{ predominantType }}</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-error/10 border border-error/20 flex items-center justify-center text-error shrink-0">
+                        <span class="material-symbols-outlined notranslate" translate="no">warning</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Filter & Search Toolbar (Bento/Card style) -->
             <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-wrap lg:flex-nowrap gap-md items-end shadow-sm shrink-0">
-                <div class="w-full lg:w-1/3 min-w-[250px]">
-                    <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Search Records</label>
+                <div class="w-full lg:w-1/4 min-w-[200px]">
+                    <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Buscar Registros</label>
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg notranslate" translate="no">search</span>
-                        <input [ngModel]="filters.search" (ngModelChange)="onSearchChange($event)" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="Search ID, Location, or Type..." type="text"/>
+                        <input [ngModel]="filters.search" (ngModelChange)="onSearchChange($event)" class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" placeholder="Buscar ID, Ubicación o Tipo..." type="text"/>
                     </div>
                 </div>
-                <div class="w-full lg:w-2/3 flex flex-wrap sm:flex-nowrap gap-md">
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Date Range</label>
-                        <select [(ngModel)]="filters.date_range" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
-                            <option value="All Time">All Time</option>
-                            <option value="24h">Last 24 Hours</option>
-                            <option value="7d">Last 7 Days</option>
-                            <option value="30d">Last 30 Days</option>
-                        </select>
+                <div class="w-full lg:w-3/4 flex flex-wrap sm:flex-nowrap gap-md">
+                    <!-- Searchable Patrol Unit Combobox -->
+                    <div class="flex-1 min-w-[170px] relative">
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Unidad de Patrulla</label>
+                        <div class="relative">
+                            <input type="text"
+                                   [value]="filters.patrol === 'Todas las Patrullas' ? patrolSearchQuery : (patrolSearchQuery || filters.patrol)"
+                                   (focus)="onPatrolFocus()"
+                                   (input)="onPatrolSearchInput($any($event.target).value)"
+                                   placeholder="Buscar patrulla (ej. CPD-001)..."
+                                   class="w-full border border-outline-variant rounded-lg py-2 pl-3 pr-8 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" />
+                            
+                            @if (filters.patrol !== 'Todas las Patrullas') {
+                                <button type="button" (click)="clearPatrolSelection()" class="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-error transition-colors text-sm font-bold bg-transparent border-0 cursor-pointer flex items-center justify-center p-0.5 z-10">
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">close</span>
+                                </button>
+                            } @else {
+                                <span class="material-symbols-outlined text-[18px] text-on-surface-variant absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none notranslate" translate="no">arrow_drop_down</span>
+                            }
+
+                            @if (showPatrolDropdown) {
+                                <div class="fixed inset-0 z-[80]" (click)="showPatrolDropdown = false"></div>
+                                <div class="absolute left-0 top-full mt-1 w-full max-h-[160px] overflow-y-auto bg-surface-container-lowest border border-outline-variant rounded-lg shadow-xl z-[90] py-1 select-none">
+                                    @for (p of filteredPatrols; track p) {
+                                        <div (click)="selectPatrol(p)" class="px-3 py-2 text-xs font-medium hover:bg-surface-variant text-on-surface cursor-pointer flex items-center justify-between transition-colors">
+                                            <span>{{ p }}</span>
+                                            @if (filters.patrol === p) {
+                                                <span class="material-symbols-outlined text-primary text-sm notranslate" translate="no">check</span>
+                                            }
+                                        </div>
+                                    }
+                                    @if (filteredPatrols.length === 0) {
+                                        <div class="px-3 py-2 text-xs text-on-surface-variant italic">No hay patrullas que coincidan</div>
+                                    }
+                                </div>
+                            }
+                        </div>
                     </div>
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">District</label>
-                        <select [(ngModel)]="filters.district" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
-                            <option value="All Districts">All Districts</option>
-                            <option value="District 1 - Central">District 1 - Central</option>
-                            <option value="District 2 - North">District 2 - North</option>
-                            <option value="District 3 - South">District 3 - South</option>
-                            <option value="District 14">District 14</option>
-                        </select>
+                    <div class="flex-1 min-w-[130px] relative">
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Estado</label>
+                        <div class="relative">
+                            <input type="text"
+                                   [value]="statusSearchQuery || getStatusLabel(filters.status)"
+                                   (focus)="onStatusFocus()"
+                                   (input)="onStatusSearchInput($any($event.target).value)"
+                                   placeholder="Buscar estado..."
+                                   class="w-full border border-outline-variant rounded-lg py-2 pl-3 pr-8 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" />
+                            
+                            @if (filters.status !== 'all') {
+                                <button type="button" (click)="clearStatusSelection()" class="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-error transition-colors text-sm font-bold bg-transparent border-0 cursor-pointer flex items-center justify-center p-0.5 z-10">
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">close</span>
+                                </button>
+                            } @else {
+                                <span class="material-symbols-outlined text-[18px] text-on-surface-variant absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none notranslate" translate="no">arrow_drop_down</span>
+                            }
+
+                            @if (showStatusDropdown) {
+                                <div class="fixed inset-0 z-[80]" (click)="showStatusDropdown = false"></div>
+                                <div class="absolute left-0 top-full mt-1 w-full max-h-[160px] overflow-y-auto bg-surface-container-lowest border border-outline-variant rounded-lg shadow-xl z-[90] py-1 select-none">
+                                    @for (s of filteredStatuses; track s.value) {
+                                        <div (click)="selectStatus(s)" class="px-3 py-2 text-xs font-medium hover:bg-surface-variant text-on-surface cursor-pointer flex items-center justify-between transition-colors">
+                                            <span>{{ s.label }}</span>
+                                            @if (filters.status === s.value) {
+                                                <span class="material-symbols-outlined text-primary text-sm notranslate" translate="no">check</span>
+                                            }
+                                        </div>
+                                    }
+                                    @if (filteredStatuses.length === 0) {
+                                        <div class="px-3 py-2 text-xs text-on-surface-variant italic">Sin coincidencias</div>
+                                    }
+                                </div>
+                            }
+                        </div>
                     </div>
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Crime Type</label>
-                        <select [(ngModel)]="filters.type" (change)="applyFilters()" class="w-full border border-outline-variant rounded-lg py-2 px-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright appearance-none">
-                            <option value="All Types">All Types</option>
-                            <option value="HOMICIDE">Homicide</option>
-                            <option value="BATTERY">Battery</option>
-                            <option value="THEFT">Theft</option>
-                            <option value="CRIMINAL DAMAGE">Criminal Damage</option>
-                        </select>
+                    <div class="flex-1 min-w-[130px] relative">
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Distrito</label>
+                        <div class="relative">
+                            <input type="text"
+                                   [value]="filters.district"
+                                   (focus)="onDistrictFocus()"
+                                   (input)="onDistrictSearchInput($any($event.target).value)"
+                                   placeholder="Buscar distrito..."
+                                   class="w-full border border-outline-variant rounded-lg py-2 pl-3 pr-8 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" />
+                            
+                            @if (filters.district !== 'Todos los Distritos') {
+                                <button type="button" (click)="clearDistrictSelection()" class="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-error transition-colors text-sm font-bold bg-transparent border-0 cursor-pointer flex items-center justify-center p-0.5 z-10">
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">close</span>
+                                </button>
+                            } @else {
+                                <span class="material-symbols-outlined text-[18px] text-on-surface-variant absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none notranslate" translate="no">arrow_drop_down</span>
+                            }
+
+                            @if (showDistrictDropdown) {
+                                <div class="fixed inset-0 z-[80]" (click)="showDistrictDropdown = false"></div>
+                                <div class="absolute left-0 top-full mt-1 w-full max-h-[160px] overflow-y-auto bg-surface-container-lowest border border-outline-variant rounded-lg shadow-xl z-[90] py-1 select-none">
+                                    @for (d of filteredDistricts; track d) {
+                                        <div (click)="selectDistrict(d)" class="px-3 py-2 text-xs font-medium hover:bg-surface-variant text-on-surface cursor-pointer flex items-center justify-between transition-colors">
+                                            <span>{{ d }}</span>
+                                            @if (filters.district === d) {
+                                                <span class="material-symbols-outlined text-primary text-sm notranslate" translate="no">check</span>
+                                            }
+                                        </div>
+                                    }
+                                    @if (filteredDistricts.length === 0) {
+                                        <div class="px-3 py-2 text-xs text-on-surface-variant italic">Sin coincidencias</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-[130px] relative">
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Tipo de Delito</label>
+                        <div class="relative">
+                            <input type="text"
+                                   [value]="filters.type"
+                                   (focus)="onCrimeTypeFocus()"
+                                   (input)="onCrimeTypeSearchInput($any($event.target).value)"
+                                   placeholder="Buscar tipo de delito..."
+                                   class="w-full border border-outline-variant rounded-lg py-2 pl-3 pr-8 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" />
+                            
+                            @if (filters.type !== 'Todos los Tipos') {
+                                <button type="button" (click)="clearCrimeTypeSelection()" class="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-error transition-colors text-sm font-bold bg-transparent border-0 cursor-pointer flex items-center justify-center p-0.5 z-10">
+                                    <span class="material-symbols-outlined text-[16px] notranslate" translate="no">close</span>
+                                </button>
+                            } @else {
+                                <span class="material-symbols-outlined text-[18px] text-on-surface-variant absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none notranslate" translate="no">arrow_drop_down</span>
+                            }
+
+                            @if (showCrimeTypeDropdown) {
+                                <div class="fixed inset-0 z-[80]" (click)="showCrimeTypeDropdown = false"></div>
+                                <div class="absolute left-0 top-full mt-1 w-full max-h-[160px] overflow-y-auto bg-surface-container-lowest border border-outline-variant rounded-lg shadow-xl z-[90] py-1 select-none">
+                                    @for (c of filteredCrimeTypes; track c) {
+                                        <div (click)="selectCrimeType(c)" class="px-3 py-2 text-xs font-medium hover:bg-surface-variant text-on-surface cursor-pointer flex items-center justify-between transition-colors">
+                                            <span>{{ c }}</span>
+                                            @if (filters.type === c) {
+                                                <span class="material-symbols-outlined text-primary text-sm notranslate" translate="no">check</span>
+                                            }
+                                        </div>
+                                    }
+                                    @if (filteredCrimeTypes.length === 0) {
+                                        <div class="px-3 py-2 text-xs text-on-surface-variant italic">Sin coincidencias</div>
+                                    }
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Data Table Card -->
             <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col min-h-0">
-                <div class="overflow-auto flex-1">
+                <div class="overflow-x-auto flex-1">
                     <table class="w-full text-left border-collapse whitespace-nowrap">
                         <thead class="sticky top-0 bg-surface-container-low border-b border-outline-variant z-10">
                             <tr>
-                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4 w-32">ID</th>
-                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Date &amp; Time</th>
-                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Primary Type</th>
-                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Location</th>
-                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">District</th>
-                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4">Status</th>
-                                <th class="font-label-caps text-label-caps text-on-surface-variant uppercase py-3 px-4 w-16 text-center">Actions</th>
+                                <th class="font-label-caps text-[11px] font-bold tracking-wider text-on-surface-variant uppercase py-2.5 px-3 w-20">ID</th>
+                                <th class="font-label-caps text-[11px] font-bold tracking-wider text-on-surface-variant uppercase py-2.5 px-3 w-28">Fecha y Hora</th>
+                                <th class="font-label-caps text-[11px] font-bold tracking-wider text-on-surface-variant uppercase py-2.5 px-3">Tipo Principal</th>
+                                <th class="font-label-caps text-[11px] font-bold tracking-wider text-on-surface-variant uppercase py-2.5 px-3">Ubicación</th>
+                                <th class="font-label-caps text-[11px] font-bold tracking-wider text-on-surface-variant uppercase py-2.5 px-3">Patrulla Asignada</th>
+                                <th class="font-label-caps text-[11px] font-bold tracking-wider text-on-surface-variant uppercase py-2.5 px-3 w-24">Distrito</th>
+                                <th class="font-label-caps text-[11px] font-bold tracking-wider text-on-surface-variant uppercase py-2.5 px-3 w-36 text-center">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-surface-variant">
                             @for (incident of incidents; track incident.case_number) {
                             <tr class="hover:bg-surface-bright transition-colors group cursor-pointer" (click)="viewIncident(incident.case_number)">
-                                <td class="py-3 px-4 font-data-mono text-data-mono text-primary font-medium">#{{ incident.case_number }}</td>
-                                <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface">{{ incident.date | date:'MMM d, y' }} <span class="text-secondary ml-1">{{ incident.date | date:'HH:mm' }}</span></td>
-                                <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium">{{ incident.primary_type }}</td>
-                                <td class="py-3 px-4 font-body-sm text-body-sm text-secondary truncate max-w-[200px]" [title]="incident.block">{{ incident.block }}</td>
-                                <td class="py-3 px-4 font-body-sm text-body-sm text-on-surface">{{ incident.district ? 'D-' + incident.district : 'N/A' }}</td>
-                                <td class="py-3 px-4">
+                                <td class="py-2.5 px-3 font-data-mono text-xs text-primary font-semibold">#{{ incident.case_number }}</td>
+                                <td class="py-2.5 px-3">
+                                    <div class="flex flex-col leading-tight">
+                                        <span class="font-body-sm text-xs font-semibold text-on-surface">{{ incident.date | date:'d MMM, y' }}</span>
+                                        <span class="text-[11px] text-secondary font-mono">{{ incident.date | date:'HH:mm' }} hrs</span>
+                                    </div>
+                                </td>
+                                <td class="py-2.5 px-3 font-body-sm text-xs text-on-surface font-semibold tracking-wide">{{ incident.primary_type }}</td>
+                                <td class="py-2.5 px-3 font-body-sm text-xs text-secondary truncate max-w-[170px] 2xl:max-w-[220px]" [title]="incident.block">{{ incident.block }}</td>
+                                <td class="py-2.5 px-3 font-body-sm text-xs text-on-surface font-medium">
+                                    <div class="flex items-center gap-1.5 truncate max-w-[150px] 2xl:max-w-[200px]" [title]="incident.patrol_assigned || 'Sin Asignar'">
+                                        <span class="material-symbols-outlined text-[15px] text-secondary shrink-0 notranslate" translate="no">directions_car</span>
+                                        <span class="truncate">{{ incident.patrol_assigned || 'Sin Asignar' }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-2.5 px-3 font-body-sm text-xs text-on-surface">Distrito {{ incident.district }}</td>
+                                <td class="py-2.5 px-3 text-center">
                                     @if (incident.arrest) {
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-secondary-container text-on-secondary-container border border-secondary-container/30">
-                                            Arrest Made
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md font-label-caps text-[10px] font-bold uppercase tracking-wider bg-secondary-container text-on-secondary-container border border-secondary-container/30">
+                                            Arresto Efectuado
                                         </span>
                                     } @else {
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-error-container text-on-error-container border border-error-container/30">
-                                            Under Investigation
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md font-label-caps text-[10px] font-bold uppercase tracking-wider bg-error-container text-on-error-container border border-error-container/30">
+                                            En Investigación
                                         </span>
                                     }
-                                </td>
-                                <td class="py-3 px-4 text-center" (click)="$event.stopPropagation()">
-                                    <button (click)="viewIncident(incident.case_number)" class="text-outline hover:text-primary transition-colors p-1 rounded hover:bg-surface-container-low" title="View details">
-                                        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">visibility</span>
-                                    </button>
                                 </td>
                             </tr>
                             }
@@ -141,24 +287,24 @@
                     <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                         <div>
                             <p class="font-body-sm text-body-sm text-on-surface-variant">
-                                Showing
+                                Mostrando
                                 <span class="font-medium text-on-surface">{{ (pagination.page - 1) * pagination.per_page + 1 }}</span>
-                                to
+                                a
                                 <span class="font-medium text-on-surface">{{ Math.min(pagination.page * pagination.per_page, pagination.total) }}</span>
-                                of
+                                de
                                 <span class="font-medium text-on-surface">{{ pagination.total | number }}</span>
-                                results
+                                resultados
                             </p>
                         </div>
                         <div>
-                            <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
+                            <nav aria-label="Paginación" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
                                 <button (click)="prevPage()" [disabled]="pagination.page === 1" class="relative inline-flex items-center rounded-l-md px-2 py-1.5 text-on-surface-variant ring-1 ring-inset ring-outline-variant hover:bg-surface-container-low focus:z-20 outline-none disabled:opacity-50">
-                                    <span class="sr-only">Previous</span>
+                                    <span class="sr-only">Anterior</span>
                                     <span class="material-symbols-outlined text-sm notranslate" translate="no">chevron_left</span>
                                 </button>
                                 <button aria-current="page" class="relative z-10 inline-flex items-center bg-primary text-on-primary px-3 py-1.5 font-body-sm text-body-sm font-semibold focus:z-20 outline-none">{{ pagination.page }}</button>
                                 <button (click)="nextPage()" [disabled]="pagination.page === pagination.total_pages" class="relative inline-flex items-center rounded-r-md px-2 py-1.5 text-on-surface-variant ring-1 ring-inset ring-outline-variant hover:bg-surface-container-low focus:z-20 outline-none disabled:opacity-50">
-                                    <span class="sr-only">Next</span>
+                                    <span class="sr-only">Siguiente</span>
                                     <span class="material-symbols-outlined text-sm notranslate" translate="no">chevron_right</span>
                                 </button>
                             </nav>
@@ -166,6 +312,80 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Modal Solicitudes de Asignación Pendientes -->
+            @if (showRequestsModal) {
+              <div class="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4 overflow-y-auto" (click)="closeRequestsModal()">
+                <div class="bg-surface-container-low border border-outline-variant rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden animate-fade-in flex flex-col max-h-[85vh]" (click)="$event.stopPropagation()">
+                  <!-- Header -->
+                  <div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-bright shrink-0">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-primary notranslate" translate="no">assignment_late</span>
+                      <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Solicitudes Pendientes de Asignación de Casos</h3>
+                    </div>
+                    <button (click)="closeRequestsModal()" class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 p-2 rounded-full transition-colors cursor-pointer border-0 bg-transparent flex items-center">
+                      <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+                    </button>
+                  </div>
+                  <!-- Content -->
+                  <div class="p-6 overflow-y-auto flex-1">
+                    @if (solicitudesPendientes.length > 0) {
+                      <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                          <thead>
+                            <tr class="border-b border-outline-variant text-left">
+                              <th class="py-2.5 px-3 font-label-md text-label-md text-on-surface-variant font-bold">Número de Caso</th>
+                              <th class="py-2.5 px-3 font-label-md text-label-md text-on-surface-variant font-bold">Solicitado Por</th>
+                              <th class="py-2.5 px-3 font-label-md text-label-md text-on-surface-variant font-bold">Fecha de Solicitud</th>
+                              <th class="py-2.5 px-3 text-right font-label-md text-label-md text-on-surface-variant font-bold">Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (sol of solicitudesPendientes; track sol.id_solicitud) {
+                              <tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+                                <td class="py-3 px-3">
+                                  <a [routerLink]="['/incidents', sol.case_number]" (click)="closeRequestsModal()" class="font-data-mono text-data-mono text-primary font-bold hover:underline">
+                                    {{ sol.case_number }}
+                                  </a>
+                                </td>
+                                <td class="py-3 px-3 font-body-sm text-body-sm text-on-surface font-medium">
+                                  {{ sol.nombre_detective }} <span class="text-xs text-outline">(#{{ sol.id_detective }})</span>
+                                </td>
+                                <td class="py-3 px-3 font-body-sm text-body-sm text-on-surface-variant">
+                                  {{ sol.fecha_solicitud | date:'medium' }}
+                                </td>
+                                <td class="py-3 px-3 text-right">
+                                  <div class="inline-flex gap-2">
+                                    <button (click)="resolverSolicitud(sol.id_solicitud, 'Aprobado')" class="px-3 py-1.5 bg-success text-on-success rounded-lg font-bold text-xs hover:bg-success/90 flex items-center gap-1 cursor-pointer transition-all hover:shadow shadow-sm">
+                                      <span class="material-symbols-outlined text-[14px] notranslate" translate="no">check</span> Aprobar
+                                    </button>
+                                    <button (click)="resolverSolicitud(sol.id_solicitud, 'Rechazado')" class="px-3 py-1.5 bg-error text-on-error rounded-lg font-bold text-xs hover:bg-error/90 flex items-center gap-1 cursor-pointer transition-all hover:shadow shadow-sm">
+                                      <span class="material-symbols-outlined text-[14px] notranslate" translate="no">close</span> Rechazar
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    } @else {
+                      <div class="p-12 text-center text-on-surface-variant bg-surface rounded-xl border border-outline-variant border-dashed">
+                        <span class="material-symbols-outlined text-5xl mb-3 opacity-50 notranslate" translate="no">task</span>
+                        <p class="font-headline-sm text-headline-sm text-on-surface">Todas las solicitudes resueltas</p>
+                        <p class="font-body-md text-body-md text-on-surface-variant mt-2">No hay solicitudes pendientes de asignación de casos en este momento.</p>
+                      </div>
+                    }
+                  </div>
+                  <!-- Footer -->
+                  <div class="px-6 py-4 bg-surface-container border-t border-outline-variant flex justify-end shrink-0">
+                    <button (click)="closeRequestsModal()" class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-label-lg text-label-lg font-bold hover:bg-primary/95 transition-all cursor-pointer shadow-sm hover:shadow-md">
+                      Cerrar Ventana
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
         </main>
     </div>
 </div>

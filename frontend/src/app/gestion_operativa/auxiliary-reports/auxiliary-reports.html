@@ -1,0 +1,258 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full relative">
+  <app-sidebar></app-sidebar>
+
+  <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+
+    <!-- Main Canvas (Fluid Full Width) -->
+    <main class="p-4 lg:p-6 flex flex-col gap-4 w-full relative pb-16">
+      
+      <!-- Module Title and Tab Switcher -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0 pb-1 border-b border-outline-variant/30">
+        <div>
+          <h2 class="font-display-lg text-display-lg text-primary flex items-center gap-2">
+            <span class="material-symbols-outlined text-[28px] text-primary notranslate" translate="no">assignment</span>
+            Informes Auxiliares
+          </h2>
+          <p class="font-body-sm text-body-sm text-secondary mt-0.5">Despliegue de Taser y Despacho de Grúas</p>
+        </div>
+
+        <!-- Segmented Tab Switcher -->
+        <div class="bg-surface-container-low border border-outline-variant/65 p-1 rounded-xl flex gap-1 shadow-sm shrink-0 z-10">
+          <button (click)="activeTab = 'taser'" 
+                  class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" 
+                  [ngClass]="activeTab === 'taser' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">electric_bolt</span>
+            Informe de Taser
+          </button>
+          <button (click)="activeTab = 'tow'" 
+                  class="px-4 py-2 rounded-lg font-label-lg text-label-lg flex items-center gap-2 transition-all cursor-pointer text-xs" 
+                  [ngClass]="activeTab === 'tow' ? 'bg-primary text-on-primary shadow-md font-bold scale-102' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'">
+            <span class="material-symbols-outlined text-[18px] notranslate" translate="no">car_crash</span>
+            Grúas
+          </button>
+        </div>
+      </div>
+
+      <!-- Toast Messages -->
+      <div *ngIf="successMessage" class="mx-auto max-w-[800px] w-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-bold animate-fade-in shadow-sm shrink-0">
+        <span class="material-symbols-outlined text-emerald-600 notranslate" translate="no">check_circle</span>
+        <span>{{ successMessage }}</span>
+      </div>
+      <div *ngIf="errorMessage" class="mx-auto max-w-[800px] w-full bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-bold animate-fade-in shadow-sm shrink-0">
+        <span class="material-symbols-outlined text-rose-600 notranslate" translate="no">error</span>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- TASER VIEW -->
+      <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-lg overflow-hidden min-h-0" *ngIf="activeTab === 'taser'">
+        
+        <!-- Left Column: Form -->
+        <div class="lg:col-span-5 flex flex-col min-h-0 overflow-y-auto">
+          <div class="bg-surface-container-lowest border border-error/45 rounded-xl shadow-lg relative overflow-hidden flex flex-col">
+            <div class="absolute left-0 top-0 w-full h-1 bg-error"></div>
+            
+            <div class="px-md py-3 border-b border-error/30 bg-surface-container-low flex items-center gap-2 select-none">
+              <span class="material-symbols-outlined text-error text-[20px] notranslate" translate="no">electric_bolt</span>
+              <h3 class="font-headline-sm text-headline-sm text-error font-bold">Informe de Uso de la Fuerza</h3>
+            </div>
+            
+            <form (ngSubmit)="submitTaser()" #formTaser="ngForm" class="p-lg flex flex-col gap-md">
+              <p class="text-xs text-on-surface-variant font-medium">
+                Todas las descargas de Taser o uso de fuerza no letal deben registrarse formalmente y remitirse a la junta de Asuntos Internos.
+              </p>
+
+              <!-- Caso / Incidente Autocomplete -->
+              <div class="flex flex-col gap-1.5 relative">
+                <label class="font-body-sm text-xs font-bold text-on-surface-variant">Nº de Incidente Relacionado *</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-error text-md notranslate" translate="no">gavel</span>
+                  <input type="text" [ngModel]="newTaser.id_incidente" (ngModelChange)="newTaser.id_incidente = $event; searchCases($event)" 
+                         (focus)="searchCases(newTaser.id_incidente)" name="id_incidente" required 
+                         class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-error focus:ring-1 focus:ring-error outline-none text-on-surface bg-surface-bright font-data-mono" 
+                         placeholder="ej. G493919 o buscar..." autocomplete="off">
+                  
+                  <!-- Case Autocomplete Dropdown -->
+                  <div *ngIf="showCaseSuggestions && caseSuggestions.length > 0" class="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-[200] max-h-48 overflow-y-auto">
+                    <button type="button" *ngFor="let sug of caseSuggestions" (click)="selectCase(sug)" 
+                            class="w-full text-left px-4 py-3 hover:bg-slate-50 text-xs flex justify-between items-center transition-colors border-b border-slate-100 last:border-b-0 cursor-pointer">
+                      <div class="flex flex-col gap-0.5">
+                        <span class="font-bold text-slate-900 text-sm font-data-mono">{{ sug.case_number }}</span>
+                        <span class="text-xs text-slate-500 capitalize">{{ (sug.primary_type || sug.description) | lowercase }}</span>
+                      </div>
+                      <span class="material-symbols-outlined text-[16px] text-slate-400 notranslate" translate="no">arrow_forward</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Serial Taser -->
+              <div class="flex flex-col gap-1.5">
+                <label class="font-body-sm text-xs font-bold text-on-surface-variant">Serial del Dispositivo Taser *</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-error text-md notranslate" translate="no">barcode</span>
+                  <input type="text" [(ngModel)]="newTaser.serial_taser" name="serial_taser" required 
+                         class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-error focus:ring-1 focus:ring-error outline-none text-on-surface bg-surface-bright font-data-mono" 
+                         placeholder="ej. X26-10294A">
+                </div>
+              </div>
+
+              <!-- Justification -->
+              <div class="flex flex-col gap-1.5">
+                <label class="font-body-sm text-xs font-bold text-on-surface-variant">Justificación y Contexto del Despliegue *</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-3 text-error text-md notranslate" translate="no">edit_note</span>
+                  <textarea [(ngModel)]="newTaser.justificacion" name="justificacion" required rows="5" 
+                            class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-error focus:ring-1 focus:ring-error outline-none text-on-surface bg-surface-bright" 
+                            placeholder="Describa el comportamiento hostil, la resistencia del sospechoso, los intentos previos de desescalada y por qué fue necesario el Taser para garantizar la seguridad..."></textarea>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" [disabled]="!formTaser.valid || isLoading" 
+                        class="w-full py-3 rounded-lg bg-error hover:bg-error/95 text-on-error font-body-md font-bold shadow-md shadow-error/20 transition-colors disabled:opacity-60 cursor-pointer text-xs flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-xs notranslate" translate="no">send</span>
+                  Enviar Informe a Asuntos Internos
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Column: History List -->
+        <div class="lg:col-span-7 flex flex-col min-h-0 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+          <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low flex justify-between items-center select-none shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-error text-[20px] notranslate" translate="no">warning</span>
+              <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Informes de Fuerza Registrados</h3>
+            </div>
+            <span class="text-[11px] font-bold text-error bg-error/10 px-2 py-0.5 rounded-full border border-error/20">Total: {{ tasers.length }}</span>
+          </div>
+
+          <div class="flex-1 overflow-y-auto p-md space-y-3 bg-surface-container-lowest">
+            <div *ngIf="tasers.length === 0" class="flex flex-col items-center justify-center py-10 text-center gap-2">
+              <span class="material-symbols-outlined text-[48px] text-outline notranslate" translate="no">bolt</span>
+              <p class="text-sm font-bold text-secondary">No hay informes de fuerza registrados</p>
+              <p class="text-xs text-on-surface-variant">Los registros aparecerán aquí una vez creados.</p>
+            </div>
+
+            <div *ngFor="let t of tasers" class="p-md rounded-xl border border-error/20 bg-surface-container-lowest hover:border-error/45 hover:shadow-sm transition-all duration-200 flex flex-col gap-2 relative">
+              <div class="flex justify-between items-start gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-xs font-bold text-error uppercase">Despliegue de Fuerza Taser</span>
+                  <span class="font-bold text-xs bg-surface-container-low px-2 py-0.5 border border-outline-variant rounded font-data-mono">Caso: {{ t.id_incidente }}</span>
+                </div>
+                <span class="text-[10px] text-secondary font-medium">{{ t.fecha_hora | date:'MMM d, y HH:mm' }}</span>
+              </div>
+              <p class="text-xs text-secondary bg-surface-container-low/40 p-2.5 rounded-lg italic whitespace-pre-line">{{ t.justificacion }}</p>
+              
+              <div class="flex justify-between items-center mt-1 border-t border-outline-variant/30 pt-2 shrink-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-outline">Taser: {{ t.serial_taser }}</span>
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-outline border-l border-outline-variant/30 pl-2">Ofc: #{{ t.id_oficial }}</span>
+                </div>
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-error-container text-on-error border border-error/20 inline-flex items-center gap-1 select-none animate-pulse">
+                  <span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  Bajo Auditoría de Asuntos Internos
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOWS VIEW -->
+      <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-lg overflow-hidden min-h-0" *ngIf="activeTab === 'tow'">
+        
+        <!-- Left Column: Form -->
+        <div class="lg:col-span-5 flex flex-col min-h-0 overflow-y-auto">
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+            <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low flex items-center gap-2 select-none">
+              <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">local_shipping</span>
+              <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Solicitar Servicio de Grúa</h3>
+            </div>
+            
+            <form (ngSubmit)="submitTow()" #formTow="ngForm" class="p-lg flex flex-col gap-md">
+              <div class="flex flex-col gap-1.5">
+                <label class="font-body-sm text-xs font-bold text-on-surface-variant">Ubicación del Vehículo *</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-md notranslate" translate="no">location_on</span>
+                  <input type="text" [(ngModel)]="newTow.ubicacion" name="ubicacion" required 
+                         class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" 
+                         placeholder="ej. Av. República y Calle 10">
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="font-body-sm text-xs font-bold text-on-surface-variant">Motivo y Descripción del Vehículo *</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-3 text-on-surface-variant text-md notranslate" translate="no">description</span>
+                  <textarea [(ngModel)]="newTow.motivo" name="motivo" required rows="5" 
+                            class="w-full border border-outline-variant rounded-lg py-2 pl-10 pr-3 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface bg-surface-bright" 
+                            placeholder="Describa el motivo (ej. Vía bloqueada, accidente) y detalles del vehículo (ej. Sedán azul, Placa PCM-902)..."></textarea>
+                </div>
+              </div>
+
+              <div class="pt-2 flex justify-end">
+                <button type="submit" [disabled]="!formTow.valid || isLoading" 
+                        class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-on-primary font-body-sm font-bold shadow-md transition-colors disabled:opacity-60 cursor-pointer text-xs flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-xs notranslate font-black" translate="no">local_shipping</span>
+                  Despachar Grúa
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Column: History List -->
+        <div class="lg:col-span-7 flex flex-col min-h-0 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+          <div class="px-md py-3 border-b border-outline-variant bg-surface-container-low flex justify-between items-center select-none shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">car_crash</span>
+              <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Solicitudes de Grúa Activas</h3>
+            </div>
+            <span class="text-[11px] font-bold text-secondary bg-surface px-2 py-0.5 rounded-full border border-outline-variant/50">Total: {{ tows.length }}</span>
+          </div>
+
+          <div class="flex-1 overflow-y-auto p-md space-y-3 bg-surface-container-lowest">
+            <div class="flex flex-col items-center justify-center py-10 text-center gap-2" *ngIf="tows.length === 0">
+              <span class="material-symbols-outlined text-[48px] text-outline notranslate" translate="no">car_crash</span>
+              <p class="text-sm font-bold text-secondary">No hay solicitudes de grúa registradas</p>
+              <p class="text-xs text-on-surface-variant">Los registros aparecerán aquí una vez creados.</p>
+            </div>
+
+            <div *ngFor="let w of tows" class="p-md rounded-xl border border-outline-variant bg-surface-container-lowest hover:border-primary/45 hover:shadow-sm transition-all duration-200 flex flex-col gap-2">
+              <div class="flex justify-between items-start gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-sm notranslate" translate="no">location_on</span>
+                  <span class="font-bold text-xs text-on-surface">{{ w.ubicacion }}</span>
+                </div>
+                <span class="text-[10px] text-secondary font-medium">{{ w.fecha_hora | date:'MMM d, y HH:mm' }}</span>
+              </div>
+              <p class="text-xs text-secondary bg-surface-container-low/40 p-2.5 rounded-lg whitespace-pre-line">{{ w.motivo }}</p>
+              <div class="flex justify-between items-center mt-1 border-t border-outline-variant/30 pt-2 shrink-0">
+                <span class="text-[9px] font-bold uppercase tracking-wider text-outline">ID de Despacho: #{{ w.id_despacho | slice:0:8 }}</span>
+                
+                <!-- Status Badge -->
+                <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 select-none"
+                      [ngClass]="{
+                        'bg-amber-50 text-amber-800 border border-amber-200': w.estado === 'PENDING',
+                        'bg-emerald-50 text-emerald-800 border border-emerald-200': w.estado === 'COMPLETED',
+                        'bg-slate-50 text-slate-800 border border-outline-variant': w.estado !== 'PENDING' && w.estado !== 'COMPLETED'
+                      }">
+                  <span class="w-1.5 h-1.5 rounded-full" 
+                        [ngClass]="{
+                          'bg-amber-500 animate-pulse': w.estado === 'PENDING',
+                          'bg-emerald-600': w.estado === 'COMPLETED',
+                          'bg-slate-500': w.estado !== 'PENDING' && w.estado !== 'COMPLETED'
+                        }"></span>
+                  {{ w.estado === 'PENDING' ? 'En Camino / Pendiente' : (w.estado === 'COMPLETED' ? 'Completado' : w.estado) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>

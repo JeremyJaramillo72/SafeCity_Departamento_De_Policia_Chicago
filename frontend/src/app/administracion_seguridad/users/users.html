@@ -1,0 +1,236 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+    
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <!-- Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-5 w-full pb-16">
+            <!-- Summary Dashboard Card -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex justify-between items-center shadow-sm select-none">
+                <div>
+                    <h2 class="text-[17px] font-bold text-on-surface">Directorio Activo de Oficiales</h2>
+                    <p class="text-xs text-on-surface-variant mt-1">Gestión integral de cuentas, roles de patrulla y permisos globales del sistema.</p>
+                </div>
+                <button (click)="openAddModal()" class="bg-primary hover:bg-primary/95 text-white text-[13px] font-semibold px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer transition-all duration-200">
+                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">person_add</span>
+                    Registrar Nuevo Oficial
+                </button>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col md:flex-row gap-4 justify-between items-center shadow-sm">
+                <!-- Search Input -->
+                <div class="relative w-full md:w-96">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+                    <input [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" class="pl-9 pr-4 py-2 bg-surface-bright border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary w-full transition-all" placeholder="Buscar por nombres, placa o correo..."/>
+                </div>
+                <!-- Filters Dropdowns -->
+                <div class="flex gap-4 w-full md:w-auto">
+                    <select [(ngModel)]="roleFilter" (ngModelChange)="applyFilters()" class="bg-surface-bright border border-outline-variant text-on-surface text-[13px] rounded-lg px-3 py-2 focus:outline-none focus:border-primary">
+                        <option value="">Todos los Roles</option>
+                        <option value="administrador_sistema">Administrador de Sistema</option>
+                        <option value="administrador">Comisario / Jefe</option>
+                        <option value="detective">Detective</option>
+                        <option value="oficial">Oficial de Patrulla</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Users Grid / Table -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+                <div class="overflow-y-auto max-h-[calc(100vh-340px)] w-full">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-low/50 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant select-none">
+                                <th (click)="sortUsers('nombres')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                    <div class="flex items-center gap-1">
+                                        Oficial
+                                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                             {{ sortField === 'nombres' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                        </span>
+                                    </div>
+                                </th>
+                                <th (click)="sortUsers('placa_policial')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                    <div class="flex items-center gap-1">
+                                        Placa / ID
+                                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                            {{ sortField === 'placa_policial' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                        </span>
+                                    </div>
+                                </th>
+                                <th (click)="sortUsers('role')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                    <div class="flex items-center gap-1">
+                                        Rol
+                                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                            {{ sortField === 'role' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                        </span>
+                                    </div>
+                                </th>
+                                <th (click)="sortUsers('ultimo_acceso')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                    <div class="flex items-center gap-1">
+                                        Último Acceso
+                                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                            {{ sortField === 'ultimo_acceso' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                        </span>
+                                    </div>
+                                </th>
+                                <th (click)="sortUsers('estado')" class="p-4 hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer select-none">
+                                    <div class="flex items-center gap-1">
+                                        Estado
+                                        <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                                            {{ sortField === 'estado' ? (sortAscending ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}
+                                        </span>
+                                    </div>
+                                </th>
+                                <th class="p-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant text-[13px] text-on-surface">
+                            @for (user of filteredUsers; track user.id_usuario) {
+                                <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs uppercase">
+                                                {{ user.nombres.substring(0,1) }}{{ user.apellidos.substring(0,1) }}
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold text-on-surface">{{ user.nombres }} {{ user.apellidos }}</div>
+                                                <div class="text-[11px] text-on-surface-variant mt-0.5">{{ user.correo }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 font-semibold text-on-surface-variant font-data-mono">{{ user.placa_policial }}</td>
+                                    <td class="p-4">
+                                        <span [class]="'px-2.5 py-1 rounded text-[10.5px] font-bold ' + 
+                                            (user.role === 'administrador_sistema' ? 'bg-primary/15 text-primary border border-primary/20' : 
+                                            (user.role === 'administrador' ? 'bg-success/15 text-success border border-success/20' : 
+                                            (user.role === 'detective' ? 'bg-warning/15 text-warning border border-warning/20' : 'bg-secondary/15 text-secondary border border-secondary/20')))">
+                                            {{ getRoleLabel(user.role) }}
+                                        </span>
+                                    </td>
+                                    <td class="p-4 text-on-surface-variant text-xs">{{ user.ultimo_acceso }}</td>
+                                    <td class="p-4">
+                                        <span [class]="'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ' + 
+                                            (user.estado === 'online' ? 'bg-green-500/10 text-green-500' : 'bg-surface-container-highest text-on-surface-variant')">
+                                            <span [class]="'w-1.5 h-1.5 rounded-full ' + (user.estado === 'online' ? 'bg-green-500' : 'bg-on-surface-variant')"></span>
+                                            {{ user.estado === 'online' ? 'EN LÍNEA' : 'DESCONECTADO' }}
+                                        </span>
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <div class="flex items-center justify-center gap-2">
+                                            @if (user.estado === 'online') {
+                                            <button (click)="disconnectUser(user)" class="px-3 py-1.5 flex items-center justify-center gap-1 rounded-lg border border-warning/20 text-warning hover:bg-warning/10 transition-all cursor-pointer" title="Desconexión Forzada">
+                                                <span class="material-symbols-outlined text-[16px] notranslate" translate="no">logout</span>
+                                                <span class="text-xs font-semibold">Desconectar</span>
+                                            </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @if (filteredUsers.length === 0) {
+                    <div class="p-12 text-center text-on-surface-variant select-none">
+                        <span class="material-symbols-outlined text-4xl mb-2 opacity-40 notranslate" translate="no">search_off</span>
+                        <p class="font-body-md text-body-md">No se encontraron oficiales con los filtros seleccionados.</p>
+                    </div>
+                }
+            </div>
+        </main>
+    </div>
+
+    <!-- Registration Modal -->
+    @if (showModal) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div class="w-full max-w-lg mx-4 premium-modal-container bg-surface-container-lowest border border-outline-variant p-6 rounded-2xl flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-outline-variant pb-3">
+                    <h3 class="text-[16px] font-bold text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary notranslate" translate="no">person_add</span>
+                        Registrar Oficial de Policía
+                    </h3>
+                    <button (click)="closeAddModal()" class="text-on-surface-variant hover:text-on-surface cursor-pointer select-none">
+                        <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                    </button>
+                </div>
+                
+                <form (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Nombres</label>
+                            <input type="text" name="nombres" [(ngModel)]="newUser.nombres" (ngModelChange)="updatePlacaPreview()" required class="w-full mt-1 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary"/>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Apellidos</label>
+                            <input type="text" name="apellidos" [(ngModel)]="newUser.apellidos" (ngModelChange)="updatePlacaPreview()" required class="w-full mt-1 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary"/>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Placa Policial (Usuario)</label>
+                            <input type="text" name="placa_policial" [(ngModel)]="newUser.placa_policial" placeholder="Generado automáticamente" readonly required class="w-full mt-1 p-2 bg-surface-bright/50 border border-outline-variant rounded-lg text-on-surface/70 text-[13px] focus:outline-none cursor-not-allowed font-semibold"/>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Correo Institucional</label>
+                            <input type="email" name="correo" [(ngModel)]="newUser.correo" required class="w-full mt-1 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary"/>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Rol en el Sistema</label>
+                        <select name="role" [(ngModel)]="newUser.role" (ngModelChange)="updatePlacaPreview()" class="w-full mt-1 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary">
+                            <option value="oficial">Oficial de Patrulla (OFC)</option>
+                            <option value="detective">Detective (DET)</option>
+                            <option value="administrador">Comisario / Jefe (SHF)</option>
+                            <option value="administrador_sistema">Administrador de Sistema (ADM)</option>
+                        </select>
+                    </div>
+
+                    <div class="border-t border-outline-variant pt-4 mt-2 flex justify-end gap-3">
+                        <button type="button" (click)="closeAddModal()" class="border border-outline-variant hover:bg-surface-container-low text-on-surface text-[12px] font-semibold py-2 px-4 rounded-lg cursor-pointer transition-all">Cancelar</button>
+                        <button type="submit" [disabled]="!newUser.nombres || !newUser.apellidos || !newUser.placa_policial || !newUser.correo" class="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-[12px] font-semibold py-2 px-4 rounded-lg cursor-pointer transition-all">Crear Oficial</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <!-- Success Confirmation Modal -->
+    @if (showSuccessModal) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div class="w-full max-w-md mx-4 premium-modal-container bg-surface-container-lowest border border-outline-variant p-6 rounded-2xl flex flex-col gap-4 text-center">
+                <div class="w-12 h-12 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 flex items-center justify-center mx-auto mb-2 animate-bounce">
+                    <span class="material-symbols-outlined text-[28px] notranslate" translate="no">check_circle</span>
+                </div>
+                
+                <h3 class="text-[17px] font-bold text-on-surface">
+                    {{ successModalMessage }}
+                </h3>
+                
+                <div class="bg-surface-container-low/50 border border-outline-variant p-4 rounded-xl text-left flex flex-col gap-3 font-body-sm text-body-sm text-on-surface">
+                    <p class="m-0 leading-relaxed text-on-surface-variant">
+                        La cuenta ha sido creada y se envió un correo con las credenciales de acceso a:
+                    </p>
+                    <div class="font-semibold text-primary break-all select-all py-1.5 px-3 bg-primary/10 border border-primary/20 rounded-lg text-center font-data-mono text-[12px]">
+                        {{ newUserMail }}
+                    </div>
+                    
+                    <div class="h-px bg-outline-variant/30 my-1"></div>
+                    
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Contraseña Temporal Generada:</span>
+                        <div class="font-data-mono font-bold text-success text-center text-lg select-all bg-success/10 border border-success/20 py-2.5 px-3 rounded-lg mt-1 tracking-widest">
+                            {{ newUserTempPass }}
+                        </div>
+                    </div>
+                </div>
+                
+                <button (click)="showSuccessModal = false" class="bg-primary hover:bg-primary/95 text-white text-[13px] font-semibold py-2.5 px-4 rounded-xl cursor-pointer transition-all mt-2 w-full">
+                    Aceptar y Continuar
+                </button>
+            </div>
+        </div>
+    }
+</div>

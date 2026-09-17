@@ -1,33 +1,33 @@
-<div class="flex h-full w-full">
+<div class="flex min-h-screen w-full">
 <!-- Left Side: Atmospheric Branding -->
-<div class="hidden lg:flex w-1/2 relative bg-primary">
+<div class="hidden lg:flex w-1/2 relative bg-primary min-h-screen">
 <!-- Background Image -->
-<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('bg.png');"></div>
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/bg.png');"></div>
 <!-- Dark Gradient Overlay -->
 <div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-primary/20"></div>
 <!-- Content Container -->
 <div class="relative z-10 flex flex-col justify-end p-xl h-full w-full text-on-primary">
 <div class="mb-auto mt-xl">
-<img alt="SafeCity Intelligence Logo" class="h-24 w-auto drop-shadow-lg opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcY6hZTNLZtSkC9JCK3fAzAQBIQDFRnzz5ERYor7xXZgMiwRFeowQCyOCb3fCKKFIyQesKoDZuhUaVEDuHKOoJpBiTAEfk5FynYalZ1M1TfeZdait25MF4Rdmp5uDKMI1uID0RzQGGP0J_fnX5RuB_CQrWXH2CafeCSdSapuBQcXvIPp2MUnwEiyt2lCcOq2NIRoHQewVKKIJV920jeNv4ZWUsS80_NmvuLrBKDQn1qfn7FGV8zaHPiT6qv7ZdMEfUvRW45Gi7aZrQ"/>
+<img alt="SafeCity Intelligence Logo" class="h-24 w-auto drop-shadow-[0_10px_25px_rgba(0,0,0,0.8)] opacity-95 transition-transform hover:scale-105" src="/logo.png"/>
 </div>
 <div class="space-y-sm max-w-lg mb-xl">
 <h1 class="font-display-lg text-display-lg text-on-primary tracking-tight">SafeCity Intelligence</h1>
 <p class="font-body-lg text-body-lg text-on-primary/80 border-l-4 border-on-primary/30 pl-md py-xs">
-                        Authorized Personnel Only. All access is logged and monitored.
+                        Solo Personal Autorizado. Todo acceso es registrado y auditado.
                     </p>
 </div>
 </div>
 </div>
 <!-- Right Side: Login Form -->
-<div class="w-full lg:w-1/2 flex items-center justify-center bg-surface p-lg">
+<div class="w-full lg:w-1/2 flex items-center justify-center bg-surface p-lg min-h-screen">
 <div class="w-full max-w-md bg-surface-container-lowest p-xl rounded border border-outline-variant shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),_0_2px_4px_-2px_rgba(0,0,0,0.05)]">
 <!-- Mobile Logo (Visible only on small screens) -->
 <div class="lg:hidden flex justify-center mb-lg">
-<img alt="SafeCity Intelligence Logo" class="h-16 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcY6hZTNLZtSkC9JCK3fAzAQBIQDFRnzz5ERYor7xXZgMiwRFeowQCyOCb3fCKKFIyQesKoDZuhUaVEDuHKOoJpBiTAEfk5FynYalZ1M1TfeZdait25MF4Rdmp5uDKMI1uID0RzQGGP0J_fnX5RuB_CQrWXH2CafeCSdSapuBQcXvIPp2MUnwEiyt2lCcOq2NIRoHQewVKKIJV920jeNv4ZWUsS80_NmvuLrBKDQn1qfn7FGV8zaHPiT6qv7ZdMEfUvRW45Gi7aZrQ"/>
+<img alt="SafeCity Intelligence Logo" class="h-16 w-auto drop-shadow-md" src="/logo.png"/>
 </div>
 <div class="mb-xl text-center lg:text-left">
-<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Secure Officer Access</h2>
-<p class="font-body-sm text-body-sm text-on-surface-variant">Enter your credentials to access the command center.</p>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Acceso Seguro de Oficiales</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ingrese sus credenciales para acceder a la consola de comando.</p>
 </div>
 <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-lg">
 @if (error) {
@@ -37,17 +37,17 @@
 }
 <!-- Badge Number / Username -->
 <div class="space-y-xs">
-<label class="block font-label-caps text-label-caps text-on-surface uppercase tracking-wider" for="badge_number">Badge Number / Username</label>
+<label class="block font-label-caps text-label-caps text-on-surface uppercase tracking-wider" for="badge_number">Número de Placa / Usuario</label>
 <div class="relative">
 <div class="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-outline text-[18px] notranslate" translate="no">badge</span>
 </div>
-<input class="block w-full pl-xl pr-sm py-sm border border-outline-variant bg-surface-bright rounded text-on-surface font-data-mono text-data-mono focus:ring-2 focus:ring-primary focus:border-primary transition-colors" id="badge_number" formControlName="username" placeholder="e.g. SC-7482" type="text"/>
+<input class="block w-full pl-xl pr-sm py-sm border border-outline-variant bg-surface-bright rounded text-on-surface font-data-mono text-data-mono focus:ring-2 focus:ring-primary focus:border-primary transition-colors" id="badge_number" formControlName="username" placeholder="Ej. SC-7482" type="text"/>
 </div>
 </div>
 <!-- Password -->
 <div class="space-y-xs">
-<label class="block font-label-caps text-label-caps text-on-surface uppercase tracking-wider" for="password">Password</label>
+<label class="block font-label-caps text-label-caps text-on-surface uppercase tracking-wider" for="password">Contraseña</label>
 <div class="relative">
 <div class="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-outline text-[18px] notranslate" translate="no">lock</span>
@@ -58,11 +58,16 @@
 </button>
 </div>
 </div>
+<div class="flex justify-end">
+  <button type="button" (click)="openRecoveryModal()" class="text-xs text-primary hover:text-primary/80 font-semibold cursor-pointer transition-colors">
+    ¿Olvidó su contraseña?
+  </button>
+</div>
 <!-- Submit Button -->
 <div class="pt-sm">
-<button class="w-full flex justify-center items-center py-md px-lg border border-transparent rounded bg-primary-container text-on-primary font-headline-sm text-headline-sm hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors" type="submit" [disabled]="!loginForm.valid" [class.opacity-50]="!loginForm.valid">
+<button class="w-full flex justify-center items-center py-md px-lg border border-transparent rounded bg-primary-container text-on-primary font-headline-sm text-headline-sm hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors cursor-pointer" type="submit">
 <span class="material-symbols-outlined mr-sm text-[20px] notranslate" translate="no">login</span>
-                            Secure Login
+                            Iniciar Sesión
                         </button>
 </div>
 </form>
@@ -70,9 +75,77 @@
 <div class="mt-xl text-center border-t border-surface-variant pt-lg">
 <a class="font-body-sm text-body-sm text-primary hover:text-primary-container font-medium flex items-center justify-center gap-xs transition-colors" href="#">
 <span class="material-symbols-outlined text-[16px] notranslate" translate="no">support_agent</span>
-                        Contact IT Support
+                        Contactar a Soporte de TI
                     </a>
 </div>
 </div>
 </div>
 </div>
+
+<!-- Password Recovery Modal (Cybersecurity) -->
+@if (showRecoveryModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in p-4">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 max-w-md w-full shadow-2xl relative animate-scale-up text-on-surface">
+      <!-- Close Button -->
+      <button (click)="closeRecoveryModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
+        <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+      </button>
+
+      <!-- Header -->
+      <div class="mb-5 flex flex-col items-center text-center">
+        <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-3">
+          <span class="material-symbols-outlined text-[24px] notranslate" translate="no">lock_reset</span>
+        </div>
+        <h3 class="text-lg font-bold">Recuperar Contraseña</h3>
+        <p class="text-xs text-on-surface-variant mt-1.5 leading-relaxed">
+          Ingrese su correo institucional registrado y le enviaremos un enlace seguro para restablecer su contraseña.
+        </p>
+      </div>
+
+      <!-- Messages -->
+      @if (recoveryMessage) {
+        <div class="mb-4 bg-green-500/10 border border-green-500/20 text-green-500 p-3 rounded-lg text-xs text-center flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[16px] notranslate" translate="no">check_circle</span>
+          {{ recoveryMessage }}
+        </div>
+      }
+      @if (recoveryError) {
+        <div class="mb-4 bg-error-container text-on-error-container p-3 rounded-lg text-xs text-center flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[16px] notranslate" translate="no">error</span>
+          {{ recoveryError }}
+        </div>
+      }
+
+      <!-- Form -->
+      @if (!recoveryMessage) {
+        <div class="space-y-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider" for="recovery_email">Correo Institucional</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="material-symbols-outlined text-outline text-[18px] notranslate" translate="no">mail</span>
+              </div>
+              <input [(ngModel)]="recoveryEmail" class="block w-full pl-10 pr-3 py-2 border border-outline-variant bg-surface-bright rounded-lg text-on-surface font-body-md focus:ring-2 focus:ring-primary focus:border-primary transition-colors" id="recovery_email" placeholder="oficial@safecity.gov" type="email" [disabled]="isSendingRecovery"/>
+            </div>
+          </div>
+
+          <button (click)="onSendRecovery()" class="w-full bg-primary hover:bg-primary/95 text-white text-[13px] font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-all" [disabled]="isSendingRecovery || !recoveryEmail">
+            @if (isSendingRecovery) {
+              <span class="material-symbols-outlined text-[16px] animate-spin notranslate" translate="no">sync</span>
+              Enviando...
+            } @else {
+              <span class="material-symbols-outlined text-[16px] notranslate" translate="no">send</span>
+              Enviar Enlace de Recuperación
+            }
+          </button>
+        </div>
+      } @else {
+        <div class="pt-2">
+          <button (click)="closeRecoveryModal()" class="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-[13px] font-semibold py-2.5 rounded-lg text-center cursor-pointer transition-all">
+            Cerrar Ventana
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}

@@ -34,6 +34,7 @@
     "leaflet.heat": "^0.2.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "vis-network": "^10.1.1",
     "zone.js": "^0.16.2"
   },
   "devDependencies": {

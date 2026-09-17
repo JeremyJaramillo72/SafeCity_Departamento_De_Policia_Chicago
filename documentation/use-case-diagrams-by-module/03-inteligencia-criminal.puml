@@ -1,0 +1,76 @@
+@startuml Módulo 03 - Inteligencia Criminal y Archivo
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam actorStyle helio
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam package {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor White
+  BorderColor Black
+}
+
+title Módulo 03: Inteligencia Criminal y Archivo\n(Inteligencia Criminal y Archivo)
+
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "Sistema SafeCity Intelligence Ops" {
+
+  actor "Detective" as Detective
+  actor "Oficial de Patrulla" as Officer
+
+  package "Módulo: Inteligencia Criminal" as mod3 {
+    usecase "CU-O10: Ingresar Alias\no Apodo de Sospechoso" as UC10
+    usecase "CU-O11: Describir Tatuajes\no Señas Particulares" as UC11
+    usecase "CU-O12: Registrar Placas y\nModelo de Vehículos" as UC12
+    usecase "CU-O13: Digitar Testimonio\nConfidencial de Testigos" as UC13
+    usecase "CU-O14: Subir Audios de\nInterrogatorios / Entrevistas" as UC14
+    usecase "CU-O16: Registrar Custodia y\nRotulado de Evidencia" as UC16
+    usecase "CU-T05: Gestionar Catálogo\nde Bandas Criminales" as UC_T05
+    usecase "CU-T12: Ejecutar Análisis de\nVínculos Criminales en Red" as UC_T12
+  }
+
+  Detective --> UC10
+  Detective --> UC13
+  Detective --> UC14
+  Detective --> UC16
+  Detective --> UC_T05
+  Detective --> UC_T12
+
+  Officer --> UC11
+  Officer --> UC12
+
+  UC_T05 ..> UC_T12 : <<alimenta>>
+}
+
+note right of mod3
+  <b>Actor principal:</b> Detective
+  <b>Objetivo:</b> Directorio de bandas,
+  sospechosos, evidencias
+  <b>Técnicas:</b> Teoría de Grafos,
+  Análisis de Enlaces, NLP
+  <b>Tablas Fact:</b> Fact_Evidencia,
+  Fact_Investigacion_Especial
+  <b>Tablas Dim:</b> Dim_Sospechoso,
+  Dim_Banda_Criminal, Dim_Testigo
+end note
+
+@enduml

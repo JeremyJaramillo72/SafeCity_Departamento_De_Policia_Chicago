@@ -1,0 +1,255 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full relative">
+  <app-sidebar></app-sidebar>
+
+  <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto relative">
+
+    <!-- Main Canvas (Fluid Full Width) -->
+    <main class="p-4 lg:p-6 flex flex-col gap-4 w-full relative pb-16">
+      <div class="flex-1 w-full flex flex-col gap-6">
+      <!-- Page Title -->
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center">
+            <span class="material-symbols-outlined text-[24px] notranslate" translate="no">history</span>
+          </div>
+          <div>
+            <h1 class="font-display-sm text-display-sm font-bold text-on-surface m-0 tracking-tight leading-tight">Registro de Arrestos</h1>
+            <p class="text-secondary text-sm m-0 mt-0.5">Historial completo de arrestos, registros de custodia y bitácoras.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-[250px]">
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Buscar (Nombre, ID, Cargos)</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[20px] notranslate" translate="no">search</span>
+            <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()"
+                   class="w-full bg-surface-container border border-outline-variant rounded-lg pl-10 pr-4 py-2 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant/60"
+                   placeholder="Buscar detenido...">
+          </div>
+        </div>
+        <div class="w-[200px]">
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Estado de Custodia</label>
+          <select [(ngModel)]="filters.status" (change)="applyFilters()"
+                  class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-2 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer">
+            <option value="Todos">Todos</option>
+            <option value="Activa">Activo</option>
+            <option value="Liberado">Liberado</option>
+            <option value="Hospitalizado">Hospitalizado</option>
+            <option value="Trasladado">Trasladado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="flex gap-6 items-start">
+        
+        <!-- Data Table -->
+        <div class="flex-1 bg-surface-container-lowest border border-outline-variant shadow-sm rounded-xl overflow-hidden transition-all duration-300"
+             [ngClass]="selectedBooking ? 'w-2/3' : 'w-full'">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container-low border-b border-outline-variant">
+                  <th class="px-6 py-4 font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Fecha de Ingreso</th>
+                  <th class="px-6 py-4 font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Detenido (ID)</th>
+                  <th class="px-6 py-4 font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Cargos</th>
+                  <th class="px-6 py-4 font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Estado</th>
+                  <th class="px-6 py-4 font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant">
+                @if (isLoading) {
+                  <tr><td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">Cargando registros...</td></tr>
+                }
+                @for (b of filteredBookings; track b.id_ingreso) {
+                  <tr class="hover:bg-surface-container-low transition-colors group cursor-pointer" (click)="viewLogs(b)" [ngClass]="{'bg-primary/5': selectedBooking?.id_ingreso === b.id_ingreso}">
+                    <td class="px-6 py-4 text-sm font-medium text-on-surface">
+                      {{ b.hora_ingreso | date:'short' }}
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="text-sm font-bold text-on-surface">{{ b.nombre_sospechoso || b.nombre_detenido }}</div>
+                      <div class="text-xs text-on-surface-variant font-data-mono">ID: {{ b.identificacion || b.id_sospechoso }}</div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-on-surface max-w-[200px] truncate" [title]="b.cargos || b.cargo_principal">
+                      {{ b.cargos || b.cargo_principal }}
+                    </td>
+                    <td class="px-6 py-4">
+                      <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border"
+                        [ngClass]="{
+                          'bg-success/10 text-success border-success/20': b.custodia_estado === 'Activa',
+                          'bg-on-surface/10 text-on-surface border-outline/20': b.custodia_estado === 'Liberado',
+                          'bg-warning/10 text-warning border-warning/20': b.custodia_estado === 'Hospitalizado',
+                          'bg-tertiary/10 text-tertiary border-tertiary/20': b.custodia_estado === 'Trasladado'
+                        }">
+                        {{ b.custodia_estado }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-2">
+                        <button (click)="viewLogs(b, 'view'); $event.stopPropagation()" class="text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 transition-colors cursor-pointer">
+                          <span class="material-symbols-outlined text-[18px] notranslate" translate="no">history_edu</span>
+                          Ver Bitácora
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+                @if (filteredBookings.length === 0 && !isLoading) {
+                  <tr><td colspan="5" class="px-6 py-8 text-center text-on-surface-variant font-medium">No se encontraron registros.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Detail Sidebar (Custody Logs) -->
+        @if (selectedBooking) {
+        <div class="w-1/3 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col max-h-[800px] sticky top-[100px]">
+          <!-- Header detail -->
+          <div class="bg-surface-container-high p-5 text-on-surface flex justify-between items-start border-b border-outline-variant">
+            <div>
+              <h3 class="font-bold text-lg leading-tight">{{ selectedBooking.nombre_sospechoso || selectedBooking.nombre_detenido }}</h3>
+              <p class="text-on-surface-variant text-xs mt-1 font-data-mono">ID: {{ selectedBooking.id_ingreso }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button (click)="exportCSV()" title="Exportar Bitácora como CSV" class="p-1.5 rounded text-primary hover:bg-primary/10 transition-colors flex items-center justify-center cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">download</span>
+              </button>
+              <button (click)="closeLogs()" class="p-1.5 rounded text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors flex items-center justify-center cursor-pointer">
+                <span class="material-symbols-outlined text-[20px] notranslate" translate="no">close</span>
+              </button>
+            </div>
+          </div>
+          <div class="p-4 border-b border-outline-variant bg-surface-container-low">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider font-bold mb-0.5">Estado</p>
+                <p class="font-semibold text-on-surface">{{ selectedBooking.custodia_estado }}</p>
+              </div>
+              <div>
+                <p class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider font-bold mb-0.5">Celda Asignada</p>
+                <p class="font-semibold text-on-surface">{{ selectedBooking.numero_celda || selectedBooking.celda_asignada || 'Ninguna' }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Add Mode: Form -->
+          <div class="p-5 bg-surface-container-lowest flex-1 overflow-y-auto animate-fade-in" *ngIf="sidebarMode === 'add'">
+            <h4 class="font-bold text-on-surface mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[20px] notranslate" translate="no">post_add</span>
+              Registrar Nuevo Evento
+            </h4>
+            
+            <div class="flex flex-col gap-4">
+              <div>
+                <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Tipo de Evento</label>
+                <select [(ngModel)]="newLog.tipo_accion" class="w-full px-3 py-2 bg-surface-bright border border-outline-variant rounded-lg text-sm focus:outline-none focus:border-primary text-on-surface">
+                  <option value="RONDA_SUPERVISION">Ronda de Supervisión</option>
+                  <option value="VISITA_FAMILIAR">Visita Familiar</option>
+                  <option value="VISITA_LEGAL">Visita Legal</option>
+                  <option value="LLAMADA_TELEFONICA">Llamada Telefónica</option>
+                  <option value="COMIDA">Alimentación</option>
+                  <option value="INCIDENTE">Incidente en Celda</option>
+                  <option value="ASISTENCIA_MEDICA">Asistencia Médica</option>
+                </select>
+              </div>
+
+              <!-- Extra fields for Visits -->
+              <div *ngIf="newLog.tipo_accion.includes('VISITA')" class="flex flex-col gap-3 p-3 bg-surface-container-low rounded-lg border border-outline-variant animate-fade-in">
+                <div>
+                  <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Nombre del Visitante</label>
+                  <input type="text" [(ngModel)]="newLog.visitorName" class="w-full px-3 py-1.5 bg-surface-bright border border-outline-variant rounded-md text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                  <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Parentesco / Relación</label>
+                  <input type="text" [(ngModel)]="newLog.visitorRelation" placeholder="ej. Abogado, Cónyuge, Hermano/a" class="w-full px-3 py-1.5 bg-surface-bright border border-outline-variant rounded-md text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+              </div>
+
+              <!-- Extra fields for Calls -->
+              <div *ngIf="newLog.tipo_accion === 'LLAMADA_TELEFONICA'" class="flex flex-col gap-3 p-3 bg-surface-container-low rounded-lg border border-outline-variant animate-fade-in">
+                <div>
+                  <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Persona Contactada (Nombre)</label>
+                  <input type="text" [(ngModel)]="newLog.visitorName" class="w-full px-3 py-1.5 bg-surface-bright border border-outline-variant rounded-md text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                  <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Parentesco / Relación</label>
+                  <input type="text" [(ngModel)]="newLog.visitorRelation" class="w-full px-3 py-1.5 bg-surface-bright border border-outline-variant rounded-md text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                  <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Número Telefónico</label>
+                  <input type="text" [(ngModel)]="newLog.phoneNumber" class="w-full px-3 py-1.5 bg-surface-bright border border-outline-variant rounded-md text-sm focus:outline-none focus:border-primary text-on-surface font-data-mono">
+                </div>
+              </div>
+
+              <div>
+                <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Notas / Detalles</label>
+                <textarea [(ngModel)]="newLog.descripcion" rows="3" class="w-full px-3 py-2 bg-surface-bright border border-outline-variant rounded-lg text-sm focus:outline-none focus:border-primary text-on-surface resize-none" placeholder="Agregue notas o detalles (obligatorio)..."></textarea>
+              </div>
+
+              <div class="flex justify-end gap-2 mt-2">
+                <button (click)="sidebarMode = 'view'" class="px-4 py-2 border border-outline-variant text-on-surface-variant hover:bg-surface-container-high rounded-lg text-sm font-bold transition-colors cursor-pointer">
+                  Cancelar
+                </button>
+                <button (click)="addLogEntry()" [disabled]="isSubmittingLog || !newLog.descripcion.trim()" class="px-4 py-2 bg-primary text-on-primary hover:bg-primary-fixed hover:text-on-primary-fixed rounded-lg text-sm font-bold flex items-center justify-center transition-colors disabled:opacity-50 gap-2 cursor-pointer">
+                  <span class="material-symbols-outlined text-[18px] notranslate" translate="no" *ngIf="!isSubmittingLog">save</span>
+                  <span class="material-symbols-outlined text-[18px] animate-spin notranslate" translate="no" *ngIf="isSubmittingLog">progress_activity</span>
+                  Guardar Evento
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- View Mode: Timeline Logs -->
+          <div class="flex-1 overflow-y-auto p-5 relative bg-surface" *ngIf="sidebarMode === 'view'">
+            <div class="absolute left-9 top-5 bottom-5 w-px bg-outline-variant"></div>
+            <div class="space-y-6 relative">
+              @for (log of bookingLogs; track log.id_log) {
+              <div class="flex gap-4 relative z-10">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 border-surface-container-lowest shadow-sm"
+                     [ngClass]="{
+                       'bg-success/20 text-success': log.tipo_accion === 'INGRESO',
+                       'bg-primary/20 text-primary': log.tipo_accion === 'RONDA_SUPERVISION',
+                       'bg-warning/20 text-warning': log.tipo_accion === 'COMIDA' || log.tipo_accion === 'ASISTENCIA_MEDICA',
+                       'bg-tertiary/20 text-tertiary': log.tipo_accion === 'VISITA' || log.tipo_accion === 'VISITA_LEGAL' || log.tipo_accion === 'VISITA_FAMILIAR' || log.tipo_accion === 'LLAMADA_TELEFONICA',
+                       'bg-error/20 text-error': log.tipo_accion === 'INCIDENTE',
+                       'bg-surface-variant text-on-surface-variant': log.tipo_accion === 'SALIDA' || log.tipo_accion === 'TRASLADO'
+                     }">
+                  <span class="material-symbols-outlined text-[16px] notranslate" translate="no">
+                    {{ 
+                      log.tipo_accion === 'INGRESO' ? 'login' :
+                      log.tipo_accion === 'RONDA_SUPERVISION' ? 'verified_user' :
+                      log.tipo_accion === 'COMIDA' ? 'restaurant' :
+                      (log.tipo_accion.includes('VISITA')) ? 'group' :
+                      log.tipo_accion === 'LLAMADA_TELEFONICA' ? 'call' :
+                      log.tipo_accion === 'ASISTENCIA_MEDICA' ? 'medical_services' :
+                      log.tipo_accion === 'INCIDENTE' ? 'warning' :
+                      log.tipo_accion === 'SALIDA' ? 'logout' : 'sync_alt'
+                    }}
+                  </span>
+                </div>
+                <div class="bg-surface-container-lowest border border-outline-variant p-3 rounded-lg shadow-sm flex-1">
+                  <div class="flex justify-between items-start mb-1">
+                    <span class="text-xs font-bold text-on-surface uppercase tracking-wider">{{ log.tipo_accion }}</span>
+                    <span class="font-data-mono text-[10px] text-on-surface-variant bg-surface-container-low px-2 py-0.5 rounded">{{ log.fecha_hora | date:'short' }}</span>
+                  </div>
+                  <p class="text-sm text-on-surface mt-1.5 leading-relaxed">{{ log.descripcion }}</p>
+                </div>
+              </div>
+              }
+              @if (bookingLogs.length === 0) {
+                <div class="text-center text-on-surface-variant text-sm mt-4 italic bg-surface relative z-10">Aún no hay entradas en la bitácora de custodia.</div>
+              }
+            </div>
+          </div>
+        </div>
+        }
+
+      </div>
+      </div>
+    </main>
+  </div>
+</div>

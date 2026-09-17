@@ -1,0 +1,145 @@
+postgresql,safecity,public,descarga_taser,id_descarga,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,descarga_taser,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,descarga_taser,case_number,3,character varying,255,FOREIGN KEY,public,chicago_crimes,case_number
+postgresql,safecity,public,descarga_taser,fecha_descarga,4,timestamp,,,,,
+postgresql,safecity,public,descarga_taser,voltaje,5,character varying,255,,,,
+postgresql,safecity,public,descarga_taser,cartuchos_usados,6,integer,,,,,
+postgresql,safecity,public,descarga_taser,motivo,7,text,,,,,
+postgresql,safecity,public,fotografia_evidencia,id_foto,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,fotografia_evidencia,id_equipo,2,integer,,FOREIGN KEY,public,evidencia,id_equipo
+postgresql,safecity,public,fotografia_evidencia,ruta_supabase_url,3,character varying,255,,,,
+postgresql,safecity,public,fotografia_evidencia,fecha_captura,4,timestamp,,,,,
+postgresql,safecity,public,fotografia_evidencia,resolucion,5,character varying,255,,,,
+postgresql,safecity,public,fotografia_evidencia,metadata_gps,6,character varying,255,,,,
+postgresql,safecity,public,caracteristica_fisica_tatuaje,id_caracteristica,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,caracteristica_fisica_tatuaje,id_sospechoso,2,integer,,FOREIGN KEY,public,sospechoso,id_sospechoso
+postgresql,safecity,public,caracteristica_fisica_tatuaje,tipo,3,character varying,255,,,,
+postgresql,safecity,public,caracteristica_fisica_tatuaje,zona_cuerpo,4,character varying,255,,,,
+postgresql,safecity,public,caracteristica_fisica_tatuaje,descripcion_detallada,5,text,,,,,
+postgresql,safecity,public,caracteristica_fisica_tatuaje,fotografia_url,6,character varying,255,,,,
+postgresql,safecity,public,vehiculo_sospechoso,id_vehiculo_sospechoso,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,vehiculo_sospechoso,case_number,2,character varying,255,FOREIGN KEY,public,chicago_crimes,case_number
+postgresql,safecity,public,vehiculo_sospechoso,placa,3,character varying,255,,,,
+postgresql,safecity,public,vehiculo_sospechoso,marca,4,character varying,255,,,,
+postgresql,safecity,public,vehiculo_sospechoso,modelo,5,character varying,255,,,,
+postgresql,safecity,public,vehiculo_sospechoso,color,6,character varying,255,,,,
+postgresql,safecity,public,vehiculo_sospechoso,estado_reporte,7,character varying,255,,,,
+postgresql,safecity,public,interrogatorio_audio,id_audio,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,interrogatorio_audio,case_number,2,character varying,255,FOREIGN KEY,public,chicago_crimes,case_number
+postgresql,safecity,public,interrogatorio_audio,id_oficial,3,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,interrogatorio_audio,id_sospechoso,4,integer,,FOREIGN KEY,public,sospechoso,id_sospechoso
+postgresql,safecity,public,interrogatorio_audio,ruta_supabase_url,5,character varying,255,,,,
+postgresql,safecity,public,interrogatorio_audio,duracion,6,character varying,255,,,,
+postgresql,safecity,public,interrogatorio_audio,fecha_grabacion,7,timestamp,,,,,
+postgresql,safecity,public,cadena_custodia_log,id_custodia,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,cadena_custodia_log,id_equipo,2,integer,,FOREIGN KEY,public,evidencia,id_equipo
+postgresql,safecity,public,cadena_custodia_log,id_oficial,3,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,cadena_custodia_log,fecha_hora_transferencia,4,timestamp,,,,,
+postgresql,safecity,public,cadena_custodia_log,motivo_transferencia,5,character varying,255,,,,
+postgresql,safecity,public,cadena_custodia_log,firma_digital,6,character varying,255,,,,
+postgresql,safecity,public,nota_pericial,id_nota,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,nota_pericial,id_equipo,2,integer,,FOREIGN KEY,public,evidencia,id_equipo
+postgresql,safecity,public,nota_pericial,id_oficial,3,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,nota_pericial,fecha_nota,4,timestamp,,,,,
+postgresql,safecity,public,nota_pericial,hallazgos,5,text,,,,,
+postgresql,safecity,public,registro_celdas_booking,id_booking,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,registro_celdas_booking,id_sospechoso,2,integer,,FOREIGN KEY,public,sospechoso,id_sospechoso
+postgresql,safecity,public,registro_celdas_booking,id_oficial,3,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,registro_celdas_booking,id_estacion,4,integer,,FOREIGN KEY,public,estacion_policial,id_estacion
+postgresql,safecity,public,registro_celdas_booking,fecha_ingreso,5,timestamp,,,,,
+postgresql,safecity,public,registro_celdas_booking,celda_asignada,6,character varying,255,,,,
+postgresql,safecity,public,registro_celdas_booking,inventario_pertenencias,7,text,,,,,
+postgresql,safecity,public,registro_celdas_booking,fecha_liberacion,8,timestamp,,,,,
+postgresql,safecity,public,inspeccion_vehicular_diaria,id_inspeccion,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,inspeccion_vehicular_diaria,id_vehiculo,2,integer,,FOREIGN KEY,public,vehiculo_patrulla,id_vehiculo
+postgresql,safecity,public,inspeccion_vehicular_diaria,id_oficial,3,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,inspeccion_vehicular_diaria,fecha_inspeccion,4,date,,,,,
+postgresql,safecity,public,inspeccion_vehicular_diaria,kilometraje_actual,5,integer,,,,,
+postgresql,safecity,public,inspeccion_vehicular_diaria,nivel_combustible,6,character varying,255,,,,
+postgresql,safecity,public,inspeccion_vehicular_diaria,presion_neumaticos_psi,7,integer,,,,,
+postgresql,safecity,public,reporte_dano_carroceria,id_dano,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,reporte_dano_carroceria,id_vehiculo,2,integer,,FOREIGN KEY,public,vehiculo_patrulla,id_vehiculo
+postgresql,safecity,public,reporte_dano_carroceria,id_oficial,3,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,reporte_dano_carroceria,fecha_reporte,4,timestamp,,,,,
+postgresql,safecity,public,reporte_dano_carroceria,zona_afectada,5,character varying,255,,,,
+postgresql,safecity,public,reporte_dano_carroceria,descripcion_dano,6,text,,,,,
+postgresql,safecity,public,reporte_dano_carroceria,fotografia_url,7,character varying,255,,,,
+postgresql,safecity,public,ticket_falla_mecanica,id_ticket,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,ticket_falla_mecanica,id_vehiculo,2,integer,,FOREIGN KEY,public,vehiculo_patrulla,id_vehiculo
+postgresql,safecity,public,ticket_falla_mecanica,id_oficial,3,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,ticket_falla_mecanica,fecha_falla,4,timestamp,,,,,
+postgresql,safecity,public,ticket_falla_mecanica,descripcion_falla,5,text,,,,,
+postgresql,safecity,public,ticket_falla_mecanica,estado_reparacion,6,character varying,255,,,,
+postgresql,safecity,public,registro_asistencia,id_asistencia,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,registro_asistencia,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,registro_asistencia,fecha,3,date,,,,,
+postgresql,safecity,public,registro_asistencia,hora_entrada,4,timestamp,,,,,
+postgresql,safecity,public,registro_asistencia,hora_salida,5,timestamp,,,,,
+postgresql,safecity,public,registro_asistencia,metodo_registro,6,character varying,255,,,,
+postgresql,safecity,public,asignacion_cuadrante,id_asignacion,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,asignacion_cuadrante,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,asignacion_cuadrante,cuadrante_poligono,3,character varying,255,,,,
+postgresql,safecity,public,asignacion_cuadrante,turno_asignado,4,character varying,255,,,,
+postgresql,safecity,public,asignacion_cuadrante,fecha_inicio,5,date,,,,,
+postgresql,safecity,public,asignacion_cuadrante,fecha_fin,6,date,,,,,
+postgresql,safecity,public,solicitud_permiso,id_solicitud,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,solicitud_permiso,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,solicitud_permiso,tipo_permiso,3,character varying,255,,,,
+postgresql,safecity,public,solicitud_permiso,fecha_inicio,4,date,,,,,
+postgresql,safecity,public,solicitud_permiso,fecha_fin,5,date,,,,,
+postgresql,safecity,public,solicitud_permiso,motivo,6,text,,,,,
+postgresql,safecity,public,solicitud_permiso,estado_aprobacion,7,character varying,255,,,,
+postgresql,safecity,public,solicitud_permiso,id_comandante,8,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,evaluacion_desempeno,id_evaluacion,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,evaluacion_desempeno,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,evaluacion_desempeno,id_comandante,3,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,evaluacion_desempeno,fecha_evaluacion,4,date,,,,,
+postgresql,safecity,public,evaluacion_desempeno,puntaje_respuesta,5,integer,,,,,
+postgresql,safecity,public,evaluacion_desempeno,puntaje_uso_fuerza,6,integer,,,,,
+postgresql,safecity,public,evaluacion_desempeno,comentarios,7,text,,,,,
+postgresql,safecity,public,evaluacion_desempeno,firma_oficial,8,boolean,,,,,
+postgresql,safecity,public,expediente_disciplinario,id_expediente,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,expediente_disciplinario,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,expediente_disciplinario,fecha_incidente,3,date,,,,,
+postgresql,safecity,public,expediente_disciplinario,tipo_infraccion,4,character varying,255,,,,
+postgresql,safecity,public,expediente_disciplinario,descripcion_hechos,5,text,,,,,
+postgresql,safecity,public,expediente_disciplinario,estado_resolucion,6,character varying,255,,,,
+postgresql,safecity,public,expediente_disciplinario,resolucion_final,7,text,,,,,
+postgresql,safecity,public,certificacion_capacitacion,id_certificacion,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,certificacion_capacitacion,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,certificacion_capacitacion,nombre_curso,3,character varying,255,,,,
+postgresql,safecity,public,certificacion_capacitacion,fecha_emision,4,date,,,,,
+postgresql,safecity,public,certificacion_capacitacion,fecha_vencimiento,5,date,,,,,
+postgresql,safecity,public,certificacion_capacitacion,estado_vigencia,6,character varying,255,,,,
+postgresql,safecity,public,certificacion_capacitacion,documento_url,7,character varying,255,,,,
+postgresql,safecity,public,infraccion_transito,id_infraccion,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,infraccion_transito,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,infraccion_transito,fecha_hora,3,timestamp,,,,,
+postgresql,safecity,public,infraccion_transito,ubicacion,4,character varying,255,,,,
+postgresql,safecity,public,infraccion_transito,placa_vehiculo,5,character varying,255,,,,
+postgresql,safecity,public,infraccion_transito,ley_infringida,6,character varying,255,,,,
+postgresql,safecity,public,infraccion_transito,monto_multa,7,decimal,,,,,
+postgresql,safecity,public,prueba_alcoholemia,id_prueba,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,prueba_alcoholemia,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,prueba_alcoholemia,fecha_hora,3,timestamp,,,,,
+postgresql,safecity,public,prueba_alcoholemia,placa_vehiculo,4,character varying,255,,,,
+postgresql,safecity,public,prueba_alcoholemia,nivel_alcohol_bac,5,decimal,,,,,
+postgresql,safecity,public,prueba_alcoholemia,num_serie_alcoholimetro,6,character varying,255,,,,
+postgresql,safecity,public,despacho_grua,id_despacho_grua,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,despacho_grua,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,despacho_grua,placa_vehiculo,3,character varying,255,,,,
+postgresql,safecity,public,despacho_grua,compania_grua,4,character varying,255,,,,
+postgresql,safecity,public,despacho_grua,corralon_destino,5,character varying,255,,,,
+postgresql,safecity,public,despacho_grua,motivo_remolque,6,text,,,,,
+postgresql,safecity,public,despacho_grua,fecha_hora_llegada,7,timestamp,,,,,
+postgresql,safecity,public,reunion_comunitaria,id_reunion,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,reunion_comunitaria,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,reunion_comunitaria,fecha_reunion,3,date,,,,,
+postgresql,safecity,public,reunion_comunitaria,ubicacion,4,character varying,255,,,,
+postgresql,safecity,public,reunion_comunitaria,temas_tratados,5,text,,,,,
+postgresql,safecity,public,reunion_comunitaria,numero_asistentes,6,integer,,,,,
+postgresql,safecity,public,alerta_boton_panico,id_alerta,1,integer,,PRIMARY KEY,,,
+postgresql,safecity,public,alerta_boton_panico,id_oficial,2,integer,,FOREIGN KEY,public,oficial_policia,id_oficial
+postgresql,safecity,public,alerta_boton_panico,fecha_hora_activacion,3,timestamp,,,,,
+postgresql,safecity,public,alerta_boton_panico,coordenadas_gps,4,character varying,255,,,,
+postgresql,safecity,public,alerta_boton_panico,estado_alerta,5,character varying,255,,,,

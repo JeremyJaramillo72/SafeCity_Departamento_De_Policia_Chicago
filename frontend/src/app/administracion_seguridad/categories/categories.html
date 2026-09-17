@@ -1,0 +1,162 @@
+<div class="flex flex-col bg-background font-body-md text-on-background min-h-screen w-full">
+    <app-sidebar></app-sidebar>
+    
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <!-- Canvas (Fluid Full Width) -->
+        <main class="p-4 lg:p-6 flex flex-col gap-5 w-full pb-16">
+            <!-- Summary Dashboard Card -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center shadow-sm select-none gap-4">
+                <div>
+                    <h2 class="text-[17px] font-bold text-on-surface">Catálogos Dinámicos del Sistema</h2>
+                    <p class="text-xs text-on-surface-variant mt-1">Configure y administre las opciones activas utilizadas en formularios de incidentes, flota de patrullas e infracciones de tránsito.</p>
+                </div>
+                <button (click)="openCreateModal()" class="bg-primary hover:bg-primary/95 text-white text-[13px] font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all duration-200">
+                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">add_box</span>
+                    Agregar Opción al Catálogo
+                </button>
+            </div>
+
+            <!-- Layout Grid: Catalog Tabs & Table -->
+            <div class="grid grid-cols-12 gap-lg items-start">
+                <!-- Left Column: Catalog Tabs -->
+                <div class="col-span-12 lg:col-span-4 flex flex-col gap-3">
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+                        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider px-2 mb-1">Catálogos Disponibles</span>
+                        
+                        <button *ngFor="let cat of catalogTypesList" 
+                                (click)="selectCatalog(cat.type)"
+                                [ngClass]="selectedCatalogType === cat.type ? 'bg-primary/10 text-primary border-primary' : 'hover:bg-surface-container border-transparent text-on-surface-variant'"
+                                class="w-full flex items-center gap-3 px-3 py-3 rounded-lg border-l-2 text-left transition-all cursor-pointer font-bold text-xs select-none">
+                            <span class="material-symbols-outlined text-[19px] notranslate" translate="no">{{ cat.icon }}</span>
+                            <span class="flex-1">{{ cat.label }}</span>
+                            <span class="material-symbols-outlined text-[14px] notranslate opacity-55" translate="no">chevron_right</span>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-surface-container-low/50 border border-outline-variant/50 rounded-xl p-4 text-xs text-on-surface-variant leading-relaxed">
+                        <span class="font-bold block mb-1 text-on-surface">Descripción del Catálogo:</span>
+                        {{ catalogTypesList[0].type === selectedCatalogType ? catalogTypesList[0].desc : '' }}
+                        {{ catalogTypesList[1].type === selectedCatalogType ? catalogTypesList[1].desc : '' }}
+                        {{ catalogTypesList[2].type === selectedCatalogType ? catalogTypesList[2].desc : '' }}
+                        {{ catalogTypesList[3].type === selectedCatalogType ? catalogTypesList[3].desc : '' }}
+                        {{ catalogTypesList[4].type === selectedCatalogType ? catalogTypesList[4].desc : '' }}
+                    </div>
+                </div>
+
+                <!-- Right Column: Catalog Options Table -->
+                <div class="col-span-12 lg:col-span-8 flex flex-col gap-4">
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col overflow-hidden">
+                        
+                        <!-- Search & Table Header -->
+                        <div class="p-4 border-b border-outline-variant bg-surface-container-lowest flex justify-between items-center gap-4">
+                            <div class="relative w-full">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm notranslate" translate="no">search</span>
+                                <input [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" class="pl-9 pr-4 py-2 bg-surface-bright border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary w-full transition-all" placeholder="Buscar opciones del catálogo..."/>
+                            </div>
+                        </div>
+
+                        <!-- Options Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse text-left text-xs font-semibold text-on-surface">
+                                <thead>
+                                    <tr class="border-b border-outline-variant bg-surface-container-low select-none">
+                                        <th class="py-3 px-4 text-on-surface-variant uppercase tracking-wider text-[10px]">ID</th>
+                                        <th class="py-3 px-4 text-on-surface-variant uppercase tracking-wider text-[10px]">Valor</th>
+                                        <th class="py-3 px-4 text-on-surface-variant uppercase tracking-wider text-[10px]">Descripción</th>
+                                        <th class="py-3 px-4 text-on-surface-variant uppercase tracking-wider text-[10px] text-center">Estado</th>
+                                        <th class="py-3 px-4 text-on-surface-variant uppercase tracking-wider text-[10px] text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-outline-variant/30">
+                                    <tr *ngFor="let item of filteredCategories" class="hover:bg-surface-container-lowest/50 transition-colors">
+                                        <td class="py-3.5 px-4 text-on-surface-variant font-data-mono font-bold">{{ item.id_catalogo }}</td>
+                                        <td class="py-3.5 px-4 font-bold text-on-surface">{{ item.valor }}</td>
+                                        <td class="py-3.5 px-4 text-on-surface-variant max-w-[240px] truncate" [title]="item.descripcion">{{ item.descripcion || 'Sin descripción ingresada' }}</td>
+                                        <td class="py-3.5 px-4 text-center">
+                                            <span [ngClass]="item.activo ? 'bg-success/15 text-success border-success/20' : 'bg-outline/10 text-on-surface-variant border-outline/15'"
+                                                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border">
+                                                {{ item.activo ? 'Activo' : 'Inactivo' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3.5 px-4 text-right">
+                                            <div class="flex gap-2 justify-end">
+                                                <button (click)="openEditModal(item)" class="p-1 hover:bg-surface-container rounded text-primary transition-colors cursor-pointer" title="Editar">
+                                                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">edit</span>
+                                                </button>
+                                                <button (click)="toggleActive(item)" 
+                                                        [ngClass]="item.activo ? 'text-error hover:bg-error/10' : 'text-success hover:bg-success/10'" 
+                                                        class="p-1 rounded transition-colors cursor-pointer" 
+                                                        [title]="item.activo ? 'Desactivar' : 'Activar'">
+                                                    <span class="material-symbols-outlined text-[18px] notranslate" translate="no">
+                                                        {{ item.activo ? 'toggle_on' : 'toggle_off' }}
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        @if (filteredCategories.length === 0) {
+                            <div class="p-12 text-center text-on-surface-variant select-none">
+                                <span class="material-symbols-outlined text-4xl mb-2 opacity-40 notranslate" translate="no">search_off</span>
+                                <p class="font-body-md text-body-md">No se encontraron opciones en este catálogo.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Form (Add / Edit) -->
+    @if (showModal) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div class="w-full max-w-md mx-4 premium-modal-container bg-surface-container-lowest border border-outline-variant p-6 rounded-2xl flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-outline-variant pb-3">
+                    <h3 class="text-[16px] font-bold text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary notranslate" translate="no">{{ isEditing ? 'edit' : 'add_box' }}</span>
+                        {{ isEditing ? 'Editar Opción del Catálogo' : 'Agregar Opción al Catálogo' }}
+                    </h3>
+                    <button (click)="closeModal()" class="text-on-surface-variant hover:text-on-surface cursor-pointer select-none">
+                        <span class="material-symbols-outlined notranslate" translate="no">close</span>
+                    </button>
+                </div>
+                
+                @if (modalError) {
+                    <div class="p-3 rounded-lg bg-error/10 text-error text-xs font-semibold flex items-center gap-2 border border-error/25">
+                        <span class="material-symbols-outlined text-sm notranslate" translate="no">error</span>
+                        {{ modalError }}
+                    </div>
+                }
+
+                <form (ngSubmit)="saveCategory()" class="flex flex-col gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Categoría del Catálogo</label>
+                        <input type="text" [value]="getCatalogLabel(selectedCatalogType)" readonly class="w-full mt-1.5 p-2 bg-surface-bright/50 border border-outline-variant rounded-lg text-on-surface/70 text-[13px] font-bold cursor-not-allowed outline-none"/>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Valor de la Opción *</label>
+                        <input type="text" name="valor" [(ngModel)]="currentCategory.valor" required placeholder="Ej. DELITOS INFORMÁTICOS" class="w-full mt-1.5 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary font-bold"/>
+                        <span class="text-[9px] text-on-surface-variant mt-1 block">Utilice texto claro en mayúsculas para tipologías y distritos.</span>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Descripción</label>
+                        <textarea name="descripcion" [(ngModel)]="currentCategory.descripcion" rows="3" placeholder="Ingrese una breve descripción o alcance de esta opción..." class="w-full mt-1.5 p-2 bg-surface-bright border border-outline-variant rounded-lg text-on-surface text-[13px] focus:outline-none focus:border-primary resize-none"></textarea>
+                    </div>
+
+                    <div class="border-t border-outline-variant pt-4 mt-2 flex justify-end gap-3">
+                        <button type="button" (click)="closeModal()" class="border border-outline-variant hover:bg-surface-container-low text-on-surface text-[12px] font-semibold py-2 px-4 rounded-lg cursor-pointer transition-all">Cancelar</button>
+                        <button type="submit" [disabled]="isSaving || !currentCategory.valor" class="bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-[12px] font-semibold py-2 px-5 rounded-lg cursor-pointer transition-all">
+                            {{ isSaving ? 'Guardando...' : 'Guardar Opción' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+</div>

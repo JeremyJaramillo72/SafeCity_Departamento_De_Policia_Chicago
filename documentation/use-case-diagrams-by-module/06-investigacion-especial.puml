@@ -1,0 +1,71 @@
+@startuml Módulo 06 - Gestión de Investigación Especial
+!theme plain
+skinparam charset UTF-8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam actorStyle helio
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam package {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam note {
+  BackgroundColor White
+  BorderColor Black
+}
+
+title Módulo 06: Gestión de Investigación Especial\n(Casos Mayores)
+
+left to right direction
+skinparam packageStyle rectangle
+
+rectangle "Sistema SafeCity Intelligence Ops" {
+
+  actor "Detective" as Detective
+  actor "Sheriff" as Commander
+
+  package "Módulo: Investigación Especial" as mod6 {
+    usecase "CU-T09: Escalar Incidente a\nInvestigación Especial" as UC_T09
+    usecase "CU-T10: Consultar Bandeja de\nInvestigaciones Asignadas" as UC_T10
+    usecase "CU-O15: Relacionar Arresto\ncon Expediente Abierto" as UC15
+    usecase "CU-O17: Ingresar Notas de\nSeguimiento Pericial" as UC17
+    usecase "CU-O18: Redactar Reporte\nConclusivo (Cierre)" as UC18
+  }
+
+  Detective --> UC_T09
+  Detective --> UC_T10
+  Detective --> UC15
+  Detective --> UC17
+  Detective --> UC18
+
+  Commander --> UC_T09 : <<aprueba>>
+
+  UC_T09 ..> UC_T10 : <<genera>>
+  UC15 ..> UC17 : <<alimenta>>
+  UC17 ..> UC18 : <<concluye>>
+}
+
+note right of mod6
+  <b>Actor principal:</b> Detective
+  <b>Objetivo:</b> Asignación, escalado y cierre
+  formal de casos de alta complejidad
+  <b>Tablas Fact:</b> Fact_Investigacion_Especial,
+  Fact_Seguimiento_Incidente
+  <b>Tablas Dim:</b> Dim_Sospechoso,
+  Dim_Caso_Judicial
+end note
+
+@enduml
