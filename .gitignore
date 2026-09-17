@@ -65,3 +65,43 @@ reconstructed.html
 recovered.html
 logistics_head.html
 
+# Loose root scripts, SQL dumps, and evaluation drafts
+assign_patrols.py
+bolo_data.json
+check_patrols*.py
+demo_openspec_incidentes/
+Diagrama_Interactivo.html
+diagrama_*.md
+guion_video_evaluacion.md
+lucidchart_import*.csv
+m1_crimenes.sql
+m2_sospechosos.sql
+m3_rrhh.sql
+m4_logistica.sql
+migrar_*_mas.py
+migrar_*_nuevos.py
+migrar_*_final.py
+re_migrar_*.py
+query*.py
+randomize_and_seed.py
+resumen_objetivos_evaluacion.md
+schema_full.sql
+seed_incident_details.py
+seed_more_officers.py
+seed_top3_incidents.py
+seed_traffic_violations.py
+seed_vehicle_fleet.py
+update_system.py
+
+# Django scratch scripts
+django_app/class_diagram.puml
+django_app/extract_strings.py
+django_app/translate_views.py
+django_app/unassign.py
+django_app/test_pdf_style.py
+django_app/test_report.py
+django_app/update_missing_persons_schema.py
+django_app/update_transito_schema.py
+django_app/seed_*.py
+django_app/populate_*.py
+django_app/migrate_*.py
