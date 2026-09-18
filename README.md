@@ -44,27 +44,16 @@ La arquitectura de SafeCity está fundamentada en el desacoplamiento de capas me
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer["Capa de Presentación (Frontend Táctico)"]
-        UI["Angular 21 SPA\n(Standalone Components / Tailwind CSS / Leaflet Heat)"]
-    end
+    UI["Frontend Táctico<br/>Angular 21 SPA"]
+    API["Backend REST API<br/>Django 5.0 DRF"]
+    PB[("Base Operativa OLTP<br/>PocketBase")]
+    CH[("Data Warehouse OLAP<br/>ClickHouse MergeTree")]
+    Airflow["Orquestador ETL<br/>Apache Airflow 2.8"]
 
-    subgraph APILayer["Capa de Servicios y Lógica de Negocio (Backend)"]
-        API["Django 5.0 REST Framework\n(JWT / RBAC / Audit Interceptor / ReportLab)"]
-    end
-
-    subgraph DataLayer["Capa de Persistencia y Big Data"]
-        PB[("PocketBase / Relacional\n(Gestión Operativa OLTP)")]
-        CH[("ClickHouse OLAP DW\n(MergeTree / Analítica Masiva)")]
-    end
-
-    subgraph DataPipeline["Orquestación y Pipelines de Datos"]
-        Airflow["Apache Airflow 2.8\n(ETL Nocturno Incremental / Ingesta Masiva)"]
-    end
-
-    UI <-->|"HTTPS / REST (JWT Bearer)"| API
-    API <-->|"SDK / HTTP"| PB
-    API <-->|"Native Protocol (Puerto 9000)"| CH
-    Airflow -->|"Batch Ingestion"| CH
+    UI -->|HTTPS / JWT| API
+    API -->|Consultas y Metadatos| PB
+    API -->|Protocolo Nativo Puerto 9000| CH
+    Airflow -->|Carga Incremental Nocturna| CH
 ```
 
 ### Principios de Diseño Arquitectónico
