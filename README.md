@@ -1,4 +1,4 @@
-# 🏙️ SafeCity Intelligence & Tactical Operations Platform
+# SafeCity Intelligence & Tactical Operations Platform
 ### *Plataforma SaaS B2G de Misión Crítica para Inteligencia Policial, Gestión Operativa y Despacho Táctico 911*
 
 [![Django](https://img.shields.io/badge/Django-5.0.6-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
@@ -12,21 +12,21 @@
 
 ---
 
-## 📑 Tabla de Contenidos
-1. [Resumen Ejecutivo](#-resumen-ejecutivo)
-2. [Arquitectura del Sistema](#-arquitectura-del-sistema)
-3. [Módulos Funcionales del Ecosistema](#-módulos-funcionales-del-ecosistema)
-4. [Matriz de Roles y Control de Acceso (RBAC)](#-matriz-de-roles-y-control-de-acceso-rbac)
-5. [Stack Tecnológico](#-stack-tecnológico)
-6. [Estructura del Proyecto](#-estructura-del-proyecto)
-7. [Garantía de Calidad y Pruebas Automatizadas (QA)](#-garantía-de-calidad-y-pruebas-automatizadas-qa)
-8. [Guía de Despliegue y Puesta en Marcha](#-guía-de-despliegue-y-puesta-en-marcha)
-9. [Gobernanza de Datos y Seguridad](#-gobernanza-de-datos-y-seguridad)
-10. [Documentación Técnica y Metodología SDD](#-documentación-técnica-y-metodología-sdd)
+## Tabla de Contenidos
+1. [Resumen Ejecutivo](#resumen-ejecutivo)
+2. [Arquitectura del Sistema](#arquitectura-del-sistema)
+3. [Módulos Funcionales del Ecosistema](#módulos-funcionales-del-ecosistema)
+4. [Matriz de Roles y Control de Acceso (RBAC)](#matriz-de-roles-y-control-de-acceso-rbac)
+5. [Stack Tecnológico](#stack-tecnológico)
+6. [Estructura del Proyecto](#estructura-del-proyecto)
+7. [Garantía de Calidad y Pruebas Automatizadas (QA)](#garantía-de-calidad-y-pruebas-automatizadas-qa)
+8. [Guía de Despliegue y Puesta en Marcha](#guía-de-despliegue-y-puesta-en-marcha)
+9. [Gobernanza de Datos y Seguridad](#gobernanza-de-datos-y-seguridad)
+10. [Documentación Técnica y Metodología SDD](#documentación-técnica-y-metodología-sdd)
 
 ---
 
-## 🏛️ Resumen Ejecutivo
+## Resumen Ejecutivo
 
 **SafeCity Intelligence Ops** es una solución integral de software de misión crítica diseñada para modernizar, agilizar y securizar las operaciones de departamentos de policía, agencias de seguridad ciudadana y centros de comando y control (C4/C5/911).
 
@@ -38,26 +38,26 @@ El sistema consolida en una arquitectura única y de alto rendimiento:
 
 ---
 
-## 🏗️ Arquitectura del Sistema
+## Arquitectura del Sistema
 
 La arquitectura de SafeCity está fundamentada en el desacoplamiento de capas mediante una estrategia híbrida **OLTP + OLAP DW**, orquestada por microservicios y contenedores:
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer["🖥️ Capa de Presentación (Frontend Táctico)"]
+    subgraph ClientLayer["Capa de Presentación (Frontend Táctico)"]
         UI["Angular 21 SPA\n(Standalone Components / Tailwind CSS / Leaflet Heat)"]
     end
 
-    subgraph APILayer["⚙️ Capa de Servicios y Lógica de Negocio (Backend)"]
+    subgraph APILayer["Capa de Servicios y Lógica de Negocio (Backend)"]
         API["Django 5.0 REST Framework\n(JWT / RBAC / Audit Interceptor / ReportLab)"]
     end
 
-    subgraph DataLayer["💾 Capa de Persistencia y Big Data"]
+    subgraph DataLayer["Capa de Persistencia y Big Data"]
         PB[("PocketBase / Relacional\n(Gestión Operativa OLTP)")]
         CH[("ClickHouse OLAP DW\n(MergeTree / Analítica Masiva)")]
     end
 
-    subgraph DataPipeline["🔄 Orquestación y Pipelines de Datos"]
+    subgraph DataPipeline["Orquestación y Pipelines de Datos"]
         Airflow["Apache Airflow 2.8\n(ETL Nocturno Incremental / Ingesta Masiva)"]
     end
 
@@ -74,25 +74,25 @@ flowchart TD
 
 ---
 
-## 🚀 Módulos Funcionales del Ecosistema
+## Módulos Funcionales del Ecosistema
 
 SafeCity se estructura en **9 módulos operativos y estratégicos**, abarcando todo el ciclo de vida policial:
 
-| Módulo | Icono | Descripción Funcional |
-| :--- | :---: | :--- |
-| **Gestión Operativa y 911** | 🚨 | Recepción y despacho de llamadas 911, triage de incidentes, estimación de tiempo de respuesta (ETA), libro de detenciones (*Booking System*), registro de celdas, accidentes de tránsito y solicitud de grúas. |
-| **Inteligencia Criminal** | 🧠 | Centralización de sospechosos, expedientes delictivos, personas desaparecidas con estimación algorítmica de riesgo (Crítico/Alto/Medio), alertas tácticas BOLO (*Be On the Lookout*) y subida de evidencia multimedia inmutable. |
-| **Inteligencia Geográfica** | 🗺️ | Cartografía táctica interactiva en tiempo real construida sobre Leaflet, mapas de calor dinámicos (*Heatmaps*) basados en densidad delictiva, zonificación de cuadrantes y analítica predictiva de incidentes. |
-| **Logística y Flota** | 🚔 | Control de parque automotor policial, estado operativo y telemetría de unidades, IA predictiva de fallas mecánicas, inspección de mantenimiento preventivo y control de equipamiento táctico (chalecos, tasers, armamento, munición). |
-| **Recursos Humanos Operativos** | 👥 | Kiosco digital de oficiales, gestión de relevos de turno (*Roll Call / Shift Handover*), solicitudes de licencias con documentación de respaldo y trazabilidad de certificaciones profesionales de tiro y aptitud física. |
-| **Investigación Especial** | 🔍 | Portal exclusivo para detectives de casos mayores, asignación de expedientes confidenciales, notas de progreso, gestión de evidencias periciales y exportación de informes balísticos y judiciales en PDF. |
-| **Órdenes Judiciales** | ⚖️ | Registro y ejecución de órdenes de aprehensión y allanamiento emitidas por tribunales, control de jueces emisores, archivo de autos judiciales en PDF y estatus de ejecución en vía pública. |
-| **Policía Comunitaria** | 🛡️ | Portal público de transparencia con indicadores de gestión Balanced Scorecard (BSC), recepción de quejas ciudadanas con radicado anónimo y trazabilidad rigurosa de eventos de uso de la fuerza policial. |
-| **Administración y Ciberseguridad** | 🔐 | Gestión de identidades y accesos policiales (RBAC), control de sesiones concurrentes activas, visor de logs de auditoría en tiempo real, generador y descargador de copias de seguridad cifradas del sistema. |
+| Módulo | Descripción Funcional |
+| :--- | :--- |
+| **Gestión Operativa y 911** | Recepción y despacho de llamadas 911, triage de incidentes, estimación de tiempo de respuesta (ETA), libro de detenciones (*Booking System*), registro de celdas, accidentes de tránsito y solicitud de grúas. |
+| **Inteligencia Criminal** | Centralización de sospechosos, expedientes delictivos, personas desaparecidas con estimación algorítmica de riesgo (Crítico/Alto/Medio), alertas tácticas BOLO (*Be On the Lookout*) y subida de evidencia multimedia inmutable. |
+| **Inteligencia Geográfica** | Cartografía táctica interactiva en tiempo real construida sobre Leaflet, mapas de calor dinámicos (*Heatmaps*) basados en densidad delictiva, zonificación de cuadrantes y analítica predictiva de incidentes. |
+| **Logística y Flota** | Control de parque automotor policial, estado operativo y telemetría de unidades, IA predictiva de fallas mecánicas, inspección de mantenimiento preventivo y control de equipamiento táctico (chalecos, tasers, armamento, munición). |
+| **Recursos Humanos Operativos** | Kiosco digital de oficiales, gestión de relevos de turno (*Roll Call / Shift Handover*), solicitudes de licencias con documentación de respaldo y trazabilidad de certificaciones profesionales de tiro y aptitud física. |
+| **Investigación Especial** | Portal exclusivo para detectives de casos mayores, asignación de expedientes confidenciales, notas de progreso, gestión de evidencias periciales y exportación de informes balísticos y judiciales en PDF. |
+| **Órdenes Judiciales** | Registro y ejecución de órdenes de aprehensión y allanamiento emitidas por tribunales, control de jueces emisores, archivo de autos judiciales en PDF y estatus de ejecución en vía pública. |
+| **Policía Comunitaria** | Portal público de transparencia con indicadores de gestión Balanced Scorecard (BSC), recepción de quejas ciudadanas con radicado anónimo y trazabilidad rigurosa de eventos de uso de la fuerza policial. |
+| **Administración y Ciberseguridad** | Gestión de identidades y accesos policiales (RBAC), control de sesiones concurrentes activas, visor de logs de auditoría en tiempo real, generador y descargador de copias de seguridad cifradas del sistema. |
 
 ---
 
-## 🔑 Matriz de Roles y Control de Acceso (RBAC)
+## Matriz de Roles y Control de Acceso (RBAC)
 
 El acceso al sistema está blindado mediante un modelo estricto de roles jerárquicos:
 
@@ -121,7 +121,7 @@ El acceso al sistema está blindado mediante un modelo estricto de roles jerárq
 
 ---
 
-## 💻 Stack Tecnológico
+## Stack Tecnológico
 
 ### Frontend
 * **Core:** Angular 21.1.0 (Standalone Components, Signals, Control Flow Syntax)
@@ -143,7 +143,7 @@ El acceso al sistema está blindado mediante un modelo estricto de roles jerárq
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 safecity_project/
@@ -184,12 +184,12 @@ safecity_project/
 ├── .gitignore                      # Reglas de exclusión para entornos corporativos
 ├── docker-compose.yml              # Orquestación multicontenedor de infraestructura
 ├── requirements.txt                # Dependencias globales de entorno Python
-└── README.md                       # ← ESTE DOCUMENTO
+└── README.md                       # Documentación principal
 ```
 
 ---
 
-## 🧪 Garantía de Calidad y Pruebas Automatizadas (QA)
+## Garantía de Calidad y Pruebas Automatizadas (QA)
 
 El proyecto incluye un conjunto riguroso de suites de pruebas automáticas que validan la estabilidad, consistencia de datos y rendimiento del sistema antes de cada pase a producción:
 
@@ -218,7 +218,7 @@ node frontend/tests_frontend_qa.mjs
 
 ---
 
-## 🛠️ Guía de Despliegue y Puesta en Marcha
+## Guía de Despliegue y Puesta en Marcha
 
 ### Requisitos Previos
 * **Docker Engine** 24.0+ y **Docker Compose** v2+
@@ -278,7 +278,7 @@ docker compose up -d --build
 
 ---
 
-## 🔒 Gobernanza de Datos y Seguridad
+## Gobernanza de Datos y Seguridad
 
 * **Cadena de Custodia Inmutable:** Las evidencias registradas en `inteligencia_criminal` y `gestion_operativa` almacenan metadatos inmutables de autor, placa policial, fecha/hora atómica e integridad de archivos.
 * **Trazabilidad de Auditoría:** Toda consulta de lectura sensible o modificación queda asentada en la tabla `registro_auditoria` con detalles de la sentencia SQL ejecutada, IP origen y usuario autenticado.
@@ -287,19 +287,19 @@ docker compose up -d --build
 
 ---
 
-## 📚 Documentación Técnica y Metodología SDD
+## Documentación Técnica y Metodología SDD
 
 El proyecto ha sido concebido bajo la metodología **Spec-Driven Development (SDD)**, asegurando que cada línea de código responda a un requerimiento funcional formalizado:
 
-* 📖 [**Planificación Estratégica Completa**](./documentation/planificacion_estrategica_safecity.md): Jerarquía 5 OE → 10 OT → 44 OP y Balanced Scorecard.
-* 📐 [**Especificación Detallada de Funcionalidades**](./documentation/Documento_Maestro_Especificacion.md): Especificación formal de casos de uso y contratos de datos.
-* 📊 [**Diagrama Entidad-Relación (DW ERD)**](./documentation/database-diagram/database-diagram.md): Arquitectura Fact/Dim del data warehouse.
-* 🧩 [**Diagrama de Componentes**](./documentation/component-diagram/component-diagram.puml): Interacción estructural de servicios.
-* 📋 [**Catálogo de Casos de Uso por Módulo**](./documentation/use-case-diagrams-by-module/README.md): Especificaciones en formato PlantUML por cada rol.
+* [**Planificación Estratégica Completa**](./documentation/planificacion_estrategica_safecity.md): Jerarquía 5 OE -> 10 OT -> 44 OP y Balanced Scorecard.
+* [**Especificación Detallada de Funcionalidades**](./documentation/Documento_Maestro_Especificacion.md): Especificación formal de casos de uso y contratos de datos.
+* [**Diagrama Entidad-Relación (DW ERD)**](./documentation/database-diagram/database-diagram.md): Arquitectura Fact/Dim del data warehouse.
+* [**Diagrama de Componentes**](./documentation/component-diagram/component-diagram.puml): Interacción estructural de servicios.
+* [**Catálogo de Casos de Uso por Módulo**](./documentation/use-case-diagrams-by-module/README.md): Especificaciones en formato PlantUML por cada rol.
 
 ---
 
-## ⚖️ Licencia y Propiedad
+## Licencia y Propiedad
 
-© 2026 **SafeCity Solutions Inc.** Todos los derechos reservados.  
+(C) 2026 **SafeCity Solutions Inc.** Todos los derechos reservados.  
 Plataforma desarrollada para entidades gubernamentales y departamentos de seguridad pública. Queda prohibida la reproducción total o parcial sin autorización expresa de la organización.
